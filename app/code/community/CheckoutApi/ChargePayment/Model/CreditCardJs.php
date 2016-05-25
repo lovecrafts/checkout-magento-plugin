@@ -106,7 +106,10 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         if ($Api->getExceptionState()->hasError()) {
             Mage::log($Api->getExceptionState()->getErrorMessage(), null, $this->_code.'.log');
             Mage::log($Api->getExceptionState(), null, $this->_code.'.log');
+
             $errorMessage = Mage::helper('chargepayment')->__('Your payment was not completed.'. $Api->getExceptionState()->getErrorMessage().' and try again or contact customer support.');
+
+            Mage::getSingleton('core/session')->addError($errorMessage);
             Mage::throwException($errorMessage);
         }
 
