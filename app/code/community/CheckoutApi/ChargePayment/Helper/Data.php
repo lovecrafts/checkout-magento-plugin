@@ -79,4 +79,28 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
     public function getExtensionVersion() {
         return (string)Mage::getConfig()->getModuleConfig("CheckoutApi_ChargePayment")->version;
     }
+
+    /**
+     * Return Customer Email
+     *
+     * @return string
+     */
+    public function getCustomerEmail() {
+        $quote = Mage::getSingleton('checkout/session')->getQuote();
+        $email = $quote->getBillingAddress()->getEmail();
+
+        if (!empty($email)) {
+            return $email;
+        }
+
+        $isLogged = Mage::getSingleton('customer/session')->isLoggedIn();
+
+        if (!$isLogged) {
+            return '';
+        }
+
+        $customer = Mage::getSingleton('customer/session')->getCustomer();
+
+        return $customer->getEmail();
+    }
 }
