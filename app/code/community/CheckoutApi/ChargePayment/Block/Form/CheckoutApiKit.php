@@ -69,8 +69,6 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiKit  extends Mage_Payment_
      * @version 20160504
      */
     public function getCustomerEmail() {
-        $quote = Mage::getSingleton('checkout/session')->getQuote();
-
-        return $quote->getBillingAddress()->getEmail();
+        return $this->_helper->getCustomerEmail();
     }
 }
