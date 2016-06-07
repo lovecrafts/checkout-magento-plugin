@@ -89,12 +89,11 @@ abstract class CheckoutApi_ChargePayment_Model_Checkout extends Mage_Payment_Mod
     /**
      * Return secret key from config
      *
-     * @return bool|mixed
-     *
-     * @version 20151023
+     * @param null $storeId
+     * @return bool
      */
-    protected function _getSecretKey() {
-        $secretKey = Mage::helper('chargepayment')->getConfigData($this->_code, 'secretkey');
+    protected function _getSecretKey($storeId = NULL) {
+        $secretKey = Mage::helper('chargepayment')->getConfigData($this->_code, 'secretkey', $storeId);
 
         return !empty($secretKey) ? $secretKey : false;
     }
@@ -254,7 +253,7 @@ abstract class CheckoutApi_ChargePayment_Model_Checkout extends Mage_Payment_Mod
             Mage::throwException($this->__('Order is empty.'));
         }
 
-        $secretKey      = $this->_getSecretKey();
+        $secretKey      = $this->_getSecretKey($order->getStoreId());
 
         if (!$secretKey) {
             Mage::throwException(Mage::helper('chargepayment')->__('Payment method is not available.'));
@@ -427,15 +426,14 @@ abstract class CheckoutApi_ChargePayment_Model_Checkout extends Mage_Payment_Mod
      * @version 20151021
      */
     protected function _getVoidChargeData($payment) {
-        $secretKey      = $this->_getSecretKey();
+        $config         = array();
+        $order          = $payment->getOrder();
+        $orderId        = $order->getIncrementId();
+        $secretKey      = $this->_getSecretKey($order->getStoreId());
 
         if (!$secretKey) {
             Mage::throwException(Mage::helper('chargepayment')->__('Payment method is not available.'));
         }
-
-        $config         = array();
-        $order          = $payment->getOrder();
-        $orderId        = $order->getIncrementId();
 
         $config['trackId']      = $orderId;
         $config['description']  = 'Description';

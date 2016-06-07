@@ -32,7 +32,7 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
      * @version 20151006
      */
     public function getConfigData($method, $field, $storeId = NULL) {
-        if (NULL === $storeId) {
+        if (is_null($storeId)) {
             $storeId = Mage::app()->getStore();
         }
 

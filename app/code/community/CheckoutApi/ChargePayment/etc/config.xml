@@ -92,6 +92,7 @@
         <payment>
             <checkoutapicard>
                 <active>0</active>
+                <cctypes>AE,VI,MC,DI</cctypes>
                 <title>Credit Card (Checkout.com)</title>
                 <model>chargepayment/creditCard</model>
                 <order_status>pending</order_status>
@@ -111,9 +112,7 @@
                 <is_3d>1</is_3d>
                 <timeout>60</timeout>
                 <theme_color>#00b660</theme_color>
-                <button_color>#00b660</button_color>
                 <widget_color>#333</widget_color>
-                <button_label_color>#ffffff</button_label_color>
                 <form_button_color>#00b660</form_button_color>
                 <form_button_color_label>#ffffff</form_button_color_label>
                 <overlay_shade>dark</overlay_shade>
