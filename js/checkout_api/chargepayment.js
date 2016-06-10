@@ -1,4 +1,4 @@
-jQuery(document).ready(function(){
+document.observe('dom:loaded', function(){
     if (!window.hasOwnProperty('jsCheckoutApi')) {
         return false;
     }
