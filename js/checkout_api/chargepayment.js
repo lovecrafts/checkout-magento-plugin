@@ -1,4 +1,4 @@
-jQuery(document).ready(function(){
+document.observe('dom:loaded', function(){
     if (!window.hasOwnProperty('jsCheckoutApi')) {
         return false;
     }
@@ -35,8 +35,7 @@ jQuery(document).ready(function(){
 
         setTimeout(function(){
             if (CheckoutKit !== undefined) {
-                CheckoutKit.setCustomerEmail(window.jsCheckoutApi.email);
-                CheckoutKit.setPublicKey(window.jsCheckoutApi.kit_public_key);
+                CheckoutKit.configure(window.CKOConfigKit);
 
                 $$('.cardNumber')[0].value  = window.jsCheckoutApi.kit_number;
                 $$('.chName')[0].value      = window.jsCheckoutApi.kit_name;
@@ -81,16 +80,16 @@ window.checkoutApiSubmitOrder = function() {
         return true;
     }
 
-    if (jQuery('#aw-onestepcheckout-place-order-button').length > 0) {
-        jQuery('#aw-onestepcheckout-place-order-button').trigger('click');
+    if ($('aw-onestepcheckout-place-order-button') !== null) {
+        $('aw-onestepcheckout-place-order-button').click();
     }
 
-    if (jQuery('#onestepcheckout-button-place-order').length > 0) {
-        jQuery('#onestepcheckout-button-place-order').trigger('click');
+    if ($('onestepcheckout-button-place-order') !== null) {
+        $('onestepcheckout-button-place-order').click();
     }
 
-    if (jQuery('#onestepcheckout-place-order').length > 0) {
-        jQuery('#onestepcheckout-place-order').trigger('click');
+    if ($('onestepcheckout-place-order') !== null) {
+        $('onestepcheckout-place-order').click();
     }
 
     if (typeof review !== 'undefined' && review) {

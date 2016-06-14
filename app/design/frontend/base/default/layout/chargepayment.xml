@@ -54,16 +54,6 @@
             <action method="addCss"><stylesheet>css/checkout-styles.css</stylesheet></action>
         </reference>
         <reference name="after_body_start">
-            <block type="core/text" name="checkoutapijs">
-                <action method="setText" ifconfig="payment/checkoutapijs/active">
-                    <content  helper="chargepayment/getJsPathHtml"></content>
-                </action>
-            </block>
-            <block type="core/text" name="checkoutapikit">
-                <action method="setText" ifconfig="payment/checkoutapikit/active">
-                    <content  helper="chargepayment/getKitJsPathHtml"></content>
-                </action>
-            </block>
             <block name="checkoutapi.default" type="chargepayment/default" >
                 <action method="setTemplate">
                     <template>checkoutapi/chargepayment/default.phtml</template>

@@ -97,8 +97,7 @@ checkoutApi.prototype = {
         var self = this;
 
         if (this.agreementIsValid()) {
-            CheckoutKit.setCustomerEmail(window.CKOConfig.customerEmail);
-            CheckoutKit.setPublicKey(window.CKOConfig.publicKey);
+            CheckoutKit.configure(window.CKOConfigKit);
 
             CheckoutKit.createCardToken({
                     number: $$('.cardNumber')[0].value,
