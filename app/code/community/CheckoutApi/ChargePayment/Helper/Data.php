@@ -48,11 +48,11 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
      *
      * @version 20160202
      */
-    public function getJsPathHtml() {
+    public function getJsPath() {
         $mode   = (string)$this->getConfigData(self::CODE_CREDIT_CARD_JS, 'mode');
         $jsUrl  = $mode === self::API_MODE_LIVE ? self::JS_PATH_CARD_TOKEN_LIVE : self::JS_PATH_CARD_TOKEN;
 
-        return '<script src="' . $jsUrl . '" data-namespace="CKOAPIJS"></script>';
+        return $jsUrl;
     }
 
     /**
@@ -62,11 +62,11 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
      *
      * @version 20160502
      */
-    public function getKitJsPathHtml() {
+    public function getKitJsPath() {
         $mode   = (string)$this->getConfigData(self::CODE_CREDIT_CARD_KIT, 'mode');
         $jsUrl  = $mode === self::API_MODE_LIVE ? self::JS_PATH_CHECKOUT_KIT_LIVE : self::JS_PATH_CHECKOUT_KIT;
 
-        return '<script src="' . $jsUrl . '" id="cko_script_tag"></script>';
+        return $jsUrl;
     }
 
     /**

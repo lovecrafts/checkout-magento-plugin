@@ -28,8 +28,8 @@
                     <input class="chCvv input-text cvv required-entry" name="payment[checkout_kit_cvv]" type="text" placeholder="CVV">
                 </div>
             </form>
-            <script>
-                window.CKOConfig = {
+            <script type="text/javascript">
+                window.CKOConfigKit = {
                     debugMode: '<?php echo $isDebug ? 'true' : 'false'?>',
                     publicKey: '<?php echo $this->getPublicKey()?>',
                     customerEmail: '<?php echo $this->getCustomerEmail();?>',
@@ -37,6 +37,11 @@
                         console.log("Error object: %o", event.data);
                     }
                 };
+
+                var script = document.createElement('script');
+                script.src = '<?php echo $this->getKitJsPath();?>';
+                script.async = false;
+                document.head.appendChild(script);
             </script>
         </li>
     </ul>

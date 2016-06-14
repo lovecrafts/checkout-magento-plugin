@@ -35,8 +35,7 @@ document.observe('dom:loaded', function(){
 
         setTimeout(function(){
             if (CheckoutKit !== undefined) {
-                CheckoutKit.setCustomerEmail(window.jsCheckoutApi.email);
-                CheckoutKit.setPublicKey(window.jsCheckoutApi.kit_public_key);
+                CheckoutKit.configure(window.CKOConfigKit);
 
                 $$('.cardNumber')[0].value  = window.jsCheckoutApi.kit_number;
                 $$('.chName')[0].value      = window.jsCheckoutApi.kit_name;

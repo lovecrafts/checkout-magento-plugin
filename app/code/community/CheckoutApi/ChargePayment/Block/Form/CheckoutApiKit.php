@@ -71,4 +71,15 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiKit  extends Mage_Payment_
     public function getCustomerEmail() {
         return $this->_helper->getCustomerEmail();
     }
+
+    /**
+     * Return Checkout.com script
+     *
+     * @return mixed
+     *
+     * @version 20160512
+     */
+    public function getKitJsPath() {
+        return Mage::helper('chargepayment')->getKitJsPath();
+    }
 }
