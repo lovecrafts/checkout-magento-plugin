@@ -186,8 +186,8 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
                     $payment->setAdditionalInformation('payment_token', $entityId);
                     $payment->setAdditionalInformation('payment_token_url', $redirectUrl);
 
+                    $session->addPaymentToken($entityId);
                     $session
-                        ->setPaymentToken($entityId)
                         ->setIs3d(true)
                         ->setPaymentRedirectUrl($redirectUrl)
                         ->setEndpointMode($this->getEndpointMode())

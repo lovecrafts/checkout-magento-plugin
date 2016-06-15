@@ -86,7 +86,6 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
      */
     public function callbackAction() {
         $responseToken  = (string)$this->getRequest()->getParam('cko-payment-token');
-
         $session        = Mage::getSingleton('chargepayment/session_quote');
         $isLocalPayment = $session->isCheckoutLocalPaymentTokenExist($responseToken);
 
@@ -104,8 +103,10 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
                 $redirectUrl    = 'checkout/onepage/success';
 
                 if ($result['error'] === true) {
-                    $redirectUrl = 'checkout/onepage/';
+                    $redirectUrl = Mage::helper('checkout/url')->getCheckoutUrl();
                     Mage::getSingleton('core/session')->addError('Please check you card details and try again. Thank you');
+                    $this->_redirectUrl($redirectUrl);
+                    return;
                 }
 
                 $this->_redirect($redirectUrl);
@@ -139,6 +140,12 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
             $this->norouteAction();
             return;
         }
+
+        /* Clear checkout */
+        Mage::getSingleton('checkout/session')->clear();
+        $cart = Mage::getModel('checkout/cart');
+        $cart->truncate();
+        $cart->save();
 
         $session->removeCheckoutLocalPaymentToken($responseToken);
 
