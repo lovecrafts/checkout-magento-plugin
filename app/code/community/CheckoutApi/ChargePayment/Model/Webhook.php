@@ -383,6 +383,23 @@ class CheckoutApi_ChargePayment_Model_Webhook
         }
 
         if(!$response->isValid() || !$this->_responseValidation($response)) {
+            Mage::register('isSecureArea', true);
+            $badOrderIncrementId = $response->getTrackId();
+            Mage::log('Bad order increment id - ' . $badOrderIncrementId, null, $this->_code.'.log');
+            if ($badOrderIncrementId) {
+                $order = Mage::getModel('sales/order')->loadByIncrementId($badOrderIncrementId);
+                $invoices = $order->getInvoiceCollection();
+                foreach ($invoices as $invoice){
+                    //delete all invoice items
+                    $items = $invoice->getAllItems();
+                    foreach ($items as $item) {
+                        $item->delete();
+                    }
+                    //delete invoice
+                    $invoice->delete();
+                }
+            }
+
             return $result;
         }
 

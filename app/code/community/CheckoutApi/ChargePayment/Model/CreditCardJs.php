@@ -129,7 +129,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
             $paymentTokenReturn['value']            = $amount;
             $paymentTokenReturn['currency']         = $priceCode;
 
-            Mage::getSingleton('checkout/session')->setPaymentToken($paymentToken);
+            Mage::getSingleton('chargepayment/session_quote')->addPaymentToken($paymentToken);
         }else {
             if($paymentTokenCharge->getEventId()) {
                 $eventCode = $paymentTokenCharge->getEventId();
@@ -213,7 +213,6 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
     public function authorize(Varien_Object $payment, $amount) {
         $requestData        = Mage::app()->getRequest()->getParam('payment');
         $session            = Mage::getSingleton('chargepayment/session_quote');
-        $currentToken       = Mage::getSingleton('checkout/session')->getPaymentToken();
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
 
         /* Local Payment */
@@ -222,6 +221,11 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         $isLocalPayment = $this->isLocalPayment();
 
         if ($isLocalPayment && !is_null($lpRedirectUrl) && !is_null($lpName)) {
+            /* Get Current token from url */
+            $query = parse_url($lpRedirectUrl, PHP_URL_QUERY);
+            parse_str($query, $params);
+            $currentToken = $params['paymentToken'];
+
             $Api            = CheckoutApi_Api::getApi(array('mode' => $this->getEndpointMode()));
             $verifyParams   = array('paymentToken' => $currentToken, 'authorization' => $this->_getSecretKey());
             $response       = $Api->verifyChargePaymentToken($verifyParams);
@@ -260,17 +264,11 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
 
         /* Normal Payment */
         $cardToken      = !empty($requestData['checkout_card_token']) ? $requestData['checkout_card_token'] : NULL;
-        $paymentToken   = $currentToken;
         $isDebug        = $this->isDebug();
 
         if (is_null($cardToken)) {
             Mage::throwException(Mage::helper('chargepayment')->__('Authorize action is not available.'));
             Mage::log('Empty Card Token', null, $this->_code.'.log');
-        }
-
-        if ($paymentToken !== $currentToken) {
-            Mage::throwException(Mage::helper('chargepayment')->__('Authorize action is not available.'));
-            Mage::log('Payment Tokens mismatch.', null, $this->_code.'.log');
         }
 
         $price              = $isCurrentCurrency ? $this->_getQuote()->getGrandTotal() : $this->_getQuote()->getBaseGrandTotal();
@@ -307,8 +305,8 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
                     $payment->setAdditionalInformation('payment_token', $entityId);
                     $payment->setAdditionalInformation('payment_token_url', $redirectUrl);
 
+                    $session->addPaymentToken($entityId);
                     $session
-                        ->setPaymentToken($entityId)
                         ->setIs3d(true)
                         ->setPaymentRedirectUrl($redirectUrl)
                         ->setEndpointMode($this->getEndpointMode())
@@ -371,14 +369,20 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
 
         $street = Mage::helper('customer/address')
             ->convertStreetLines($shippingAddress->getStreet(), 2);
+
         $shippingAddressConfig = array(
             'addressLine1'       => $street[0],
             'addressLine2'       => $street[1],
             'postcode'           => $shippingAddress->getPostcode(),
             'country'            => $shippingAddress->getCountry(),
-            'city'               => $shippingAddress->getCity(),
-            'phone'              => array('number' => $shippingAddress->getTelephone())
+            'city'               => $shippingAddress->getCity()
         );
+
+        $phoneNumber = $shippingAddress->getTelephone();
+
+        if (!empty($phoneNumber)) {
+            $shippingAddressConfig['phone'] = array('number' => $phoneNumber);
+        }
 
         $products = array();
 
