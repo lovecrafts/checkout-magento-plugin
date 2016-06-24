@@ -98,6 +98,11 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         $price              = $isCurrentCurrency ? $this->_getQuote()->getGrandTotal() : $this->_getQuote()->getBaseGrandTotal();
         $priceCode          = $isCurrentCurrency ? $this->getCurrencyCode() : Mage::app()->getStore()->getBaseCurrencyCode();
 
+		// does not create charge on checkout.com if amount is 0
+        if (empty($amount)) {
+            return array();
+        }
+		
         $amount     = $Api->valueToDecimal($price, $priceCode);
         $config     = $this->_getCharge($amount);
 
@@ -211,6 +216,11 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
      * @version 20160204
      */
     public function authorize(Varien_Object $payment, $amount) {
+		// does not create charge on checkout.com if amount is 0
+        if (empty($amount)) {
+            return $this;
+        }
+		
         $requestData        = Mage::app()->getRequest()->getParam('payment');
         $session            = Mage::getSingleton('chargepayment/session_quote');
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
