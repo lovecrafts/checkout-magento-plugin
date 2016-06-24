@@ -143,6 +143,11 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
      * @version 20160505
      */
     public function authorize(Varien_Object $payment, $amount) {
+		// does not create charge on checkout.com if amount is 0
+        if (empty($amount)) {
+            return $this;
+        }
+		
         $requestData        = Mage::app()->getRequest()->getParam('payment');
         $session            = Mage::getSingleton('chargepayment/session_quote');
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();

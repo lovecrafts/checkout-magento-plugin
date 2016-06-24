@@ -152,6 +152,11 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
      * @version 20151006
      */
     public function authorize(Varien_Object $payment, $amount) {
+		// does not create charge on checkout.com if amount is 0
+        if (empty($amount)) {
+            return $this;
+        }
+		
         $isDebug            = $this->isDebug();
         $autoCapture        = $this->_isAutoCapture();
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();

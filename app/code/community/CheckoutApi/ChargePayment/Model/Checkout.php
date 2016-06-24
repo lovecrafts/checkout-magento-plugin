@@ -163,8 +163,9 @@ abstract class CheckoutApi_ChargePayment_Model_Checkout extends Mage_Payment_Mod
             return $this;
         }
 
+        /* does not create charge on checkout.com if amount is 0 */
         if ($amount <= 0) {
-            Mage::throwException(Mage::helper('chargepayment')->__('Invalid amount for capture.'));
+            return $this;
         }
 
         $transactionId  = $payment->getParentTransactionId();
