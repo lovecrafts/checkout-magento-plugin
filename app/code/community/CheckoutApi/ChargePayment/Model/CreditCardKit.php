@@ -291,7 +291,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
         $config['postedParam'] = array (
             'trackId'           => NULL,
             'customerName'      => $billingAddress->getName(),
-            'email'             => $billingAddress->getEmail(),
+            'email'             => Mage::helper('chargepayment')->getCustomerEmail(),
             'value'             => $amountCents,
             'chargeMode'        => $chargeMode,
             'currency'          => $currencyDesc,

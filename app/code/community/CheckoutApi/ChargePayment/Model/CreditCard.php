@@ -329,7 +329,7 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
         $config['autoCapture']  = $autoCapture ? CheckoutApi_Client_Constant::AUTOCAPUTURE_CAPTURE : CheckoutApi_Client_Constant::AUTOCAPUTURE_AUTH;
         $config['chargeMode']   = $this->getChargeMode();
 
-        $email                  = $shippingAddress->getEmail();
+        $email                  = Mage::helper('chargepayment')->getCustomerEmail();
         $email                  = !empty($email) ? $email : $order->getCustomerEmail();
         $config['email']        = $email;
         $config['description']  = 'charge description';

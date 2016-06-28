@@ -18,13 +18,14 @@
 				<script type="text/javascript">
 					window.checkoutIntegrationCurrentConfig = {
                         debugMode: '<?php echo $this->getDebugMode() ? 'true' : 'false';?>',
+						renderMode: '<?php echo $this->getRenderMode();?>',
                         publicKey: '<?php echo $this->getPublicKey();?>',
                         paymentToken: '<?php echo $tokenResult['token'];?>',
                         customerEmail: '<?php echo $tokenResult['customerEmail'];?>',
                         customerName: '<?php echo $tokenResult['customerName'];?>',
                         value: '<?php echo $tokenResult['value'];?>',
                         currency: '<?php echo $tokenResult['currency'];?>',
-                        widgetContainerSelector: '#payment_form_<?php echo $this->getMethodCode() ?>_block',
+                        widgetContainerSelector: '#payment_form_<?php echo $this->getMethodCode() ?>',
                         paymentMode: '<?php echo $this->getPaymentMode();?>',
                         logoUrl: '<?php echo $this->getLogoUrl();?>',
                         themeColor: '<?php echo $this->getThemeColor();?>',
