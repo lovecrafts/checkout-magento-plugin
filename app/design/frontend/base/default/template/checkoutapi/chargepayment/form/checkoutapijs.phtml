@@ -18,6 +18,7 @@
 				<script type="text/javascript">
 					window.checkoutIntegrationCurrentConfig = {
                         debugMode: '<?php echo $this->getDebugMode() ? 'true' : 'false';?>',
+						renderMode: '<?php echo $this->getRenderMode();?>',
                         publicKey: '<?php echo $this->getPublicKey();?>',
                         paymentToken: '<?php echo $tokenResult['token'];?>',
                         customerEmail: '<?php echo $tokenResult['customerEmail'];?>',
