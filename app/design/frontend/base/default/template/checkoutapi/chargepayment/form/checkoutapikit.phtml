@@ -38,10 +38,14 @@
                     }
                 };
 
-                var script = document.createElement('script');
-                script.src = '<?php echo $this->getKitJsPath();?>';
-                script.async = false;
-                document.head.appendChild(script);
+				if (!window.hasOwnProperty('checkoutIntegrationScriptKitAdded')) {
+					var script = document.createElement('script');
+					script.src = '<?php echo $this->getKitJsPath();?>';
+					script.async = false;
+					document.head.appendChild(script);
+				}
+				
+				window.checkoutIntegrationScriptKitAdded = true;
             </script>
         </li>
     </ul>

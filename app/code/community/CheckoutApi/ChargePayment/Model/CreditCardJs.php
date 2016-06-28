@@ -99,7 +99,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         $priceCode          = $isCurrentCurrency ? $this->getCurrencyCode() : Mage::app()->getStore()->getBaseCurrencyCode();
 
 		// does not create charge on checkout.com if amount is 0
-        if (empty($amount)) {
+        if (empty($price)) {
             return array();
         }
 		

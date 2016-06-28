@@ -92,11 +92,15 @@
 						}
 					};
 
-					var script = document.createElement('script');
-					script.src = '<?php echo $this->getJsPath();?>';
-					script.async = true;
-					script.setAttribute('data-namespace', 'CKOAPIJS');
-					document.head.appendChild(script);
+					if (!window.hasOwnProperty('checkoutIntegrationScriptAdded')) {
+						var script = document.createElement('script');
+						script.src = '<?php echo $this->getJsPath();?>';
+						script.async = true;
+						script.setAttribute('data-namespace', 'CKOAPIJS');
+						document.head.appendChild(script);
+					}
+					
+					window.checkoutIntegrationScriptAdded = true;
 				</script>
 			</li>
 			<?php else:?>
