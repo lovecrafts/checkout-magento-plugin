@@ -16,6 +16,8 @@
 				<input type="hidden" id="cko-lp-redirectUrl" name="payment[lp_redirect_url]" value=""/>
 				<input type="hidden" id="cko-lp-lpName" name="payment[lp_name]" value=""/>
 				<script type="text/javascript">
+					window.checkoutIntegrationTotalValue = '<?php echo $tokenResult['value'];?>';
+				
 					window.checkoutIntegrationCurrentConfig = {
                         debugMode: '<?php echo $this->getDebugMode() ? 'true' : 'false';?>',
 						renderMode: '<?php echo $this->getRenderMode();?>',
@@ -103,6 +105,10 @@
 				<li><?php echo $this->__('Error creating Payment Token.') ?></li>
 			<?php endif?>
 		</ul>
+	<?php else:?>
+        <script type="text/javascript">
+            window.checkoutIntegrationTotalValue = 0;
+        </script>
 	<?php endif;?>
 <?php else :?>
     <ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>" style="display:none;">
