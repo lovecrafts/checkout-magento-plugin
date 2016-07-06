@@ -450,11 +450,18 @@ class CheckoutApi_ChargePayment_Model_Webhook
             ;
 
             if ($isAuto) {
+                $message = Mage::helper('sales')->__('Capturing amount of %s is pending approval on gateway.', $this->_formatPrice($order, $amount));
+
                 $payment->setIsTransactionPending(true);
                 $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_CAPTURE, null, false , '');
             } else {
+                $message = Mage::helper('sales')->__('Authorized amount of %s.', $this->_formatPrice($order, $amount));
                 $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH, null, false , '');
             }
+
+            $message .= ' ' . Mage::helper('sales')->__('Transaction ID: "%s".', $transactionId);
+
+            $history = $order->addStatusHistoryComment($message, false);
 
             $order->setStatus($session->getNewOrderStatus());
             $order->save();
@@ -493,5 +500,21 @@ class CheckoutApi_ChargePayment_Model_Webhook
         }
 
         return true;
+    }
+
+    /**
+     * Format price with currency sign
+     *
+     * @param $order
+     * @param $amount
+     * @param null $currency
+     * @return mixed
+     */
+    protected function _formatPrice($order, $amount, $currency = null)
+    {
+        return $order->getBaseCurrency()->formatTxt(
+            $amount,
+            $currency ? array('currency' => $currency) : array()
+        );
     }
 }

@@ -18,41 +18,6 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
     const RENDER_MODE           = 2;
 
     /**
-     * Redirect URL
-     *
-     * @return mixed
-     *
-     * @version 20160516
-     */
-    public function getCheckoutRedirectUrl() {
-        $controllerName     = (string)Mage::app()->getFrontController()->getRequest()->getControllerName();
-
-        if ($controllerName === 'onepage') {
-            return false;
-        }
-
-        $requestData        = Mage::app()->getRequest()->getParam('payment');
-        $cardToken          = !empty($requestData['checkout_kit_card_token']) ? $requestData['checkout_kit_card_token'] : null;
-        $session            = Mage::getSingleton('chargepayment/session_quote');
-
-        if (!is_null($cardToken)) {
-            return false;
-        }
-
-        $params['method']           = $this->_code;
-        $params['kit_number']       = $requestData['checkout_kit_number'];
-        $params['kit_name']         = $requestData['checkout_kit_name'];
-        $params['kit_month']        = $requestData['checkout_kit_month'];
-        $params['kit_year']         = $requestData['checkout_kit_year'];
-        $params['kit_cvv']          = $requestData['checkout_kit_cvv'];
-        $params['kit_public_key']   = Mage::helper('chargepayment')->getConfigData($this->_code, 'publickey');
-
-        $session->setJsCheckoutApiParams($params);
-
-        return Mage::helper('checkout/url')->getCheckoutUrl();
-    }
-
-    /**
      * Redirect URL after order place
      *
      * @return bool
@@ -143,11 +108,11 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
      * @version 20160505
      */
     public function authorize(Varien_Object $payment, $amount) {
-		// does not create charge on checkout.com if amount is 0
+        // does not create charge on checkout.com if amount is 0
         if (empty($amount)) {
             return $this;
         }
-		
+
         $requestData        = Mage::app()->getRequest()->getParam('payment');
         $session            = Mage::getSingleton('chargepayment/session_quote');
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
@@ -157,7 +122,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
         $isDebug        = $this->isDebug();
 
         if (is_null($cardToken)) {
-            Mage::throwException(Mage::helper('chargepayment')->__('Authorize action is not available.'));
+            Mage::throwException(Mage::helper('chargepayment')->__('Please use the "Add Card" button to complete your order.'));
             Mage::log('Empty Card Token', null, $this->_code.'.log');
         }
 

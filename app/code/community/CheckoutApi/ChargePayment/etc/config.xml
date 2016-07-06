@@ -28,6 +28,11 @@
             <chargepayment>
                 <class>CheckoutApi_ChargePayment_Block</class>
             </chargepayment>
+            <checkout>
+                <rewrite>
+                    <cart_totals>CheckoutApi_ChargePayment_Block_Cart_Totals</cart_totals>
+                </rewrite>
+            </checkout>
         </blocks>
         <resources>
             <chargepayment_setup>
