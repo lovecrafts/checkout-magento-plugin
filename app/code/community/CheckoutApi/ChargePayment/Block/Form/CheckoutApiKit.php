@@ -79,7 +79,16 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiKit  extends Mage_Payment_
      *
      * @version 20160512
      */
-    public function getKitJsPath() {
+    public function getKitJsLibPath() {
         return Mage::helper('chargepayment')->getKitJsPath();
+    }
+
+    /**
+     * Return js file path
+     *
+     * @return string
+     */
+    public function getKitJsPath() {
+        return Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_JS) . 'checkout_api/kit.js';
     }
 }

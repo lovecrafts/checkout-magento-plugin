@@ -1,3 +1,10 @@
 .checkout-kit-card-block {
     margin-bottom: 8px;
 }
+
+.checkout-widget > #cko-widget {
+    width: 110px;
+    padding-left: 0;
+    padding-right: 0;
+    text-align: left;
+}

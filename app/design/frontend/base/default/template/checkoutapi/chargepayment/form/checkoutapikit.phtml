@@ -10,7 +10,7 @@
 <?php if ($isActive):?>
     <ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>" style="display:none;">
         <li>
-            <form class="card-form" method="POST" action="<?php echo Mage::helper('core/url')->getCurrentUrl()?>">
+            <form id="checkout-api-kit-payment-form" class="card-form" method="POST" action="<?php echo Mage::helper('core/url')->getCurrentUrl()?>">
                 <input type="hidden" id="cko-kit-card-token" name="payment[checkout_kit_card_token]" value=""/>
                 <div class="checkout-kit-card-block">
                     <input type="text" placeholder="Name on card" name="payment[checkout_kit_name]" class="chName input-text required-entry"/>
@@ -27,25 +27,42 @@
                 <div class="checkout-kit-card-block">
                     <input class="chCvv input-text cvv required-entry" name="payment[checkout_kit_cvv]" type="text" placeholder="CVV">
                 </div>
+                <div class="checkout-kit-card-block a-right">
+                    <button id="checkout-kit-pay-button" type="button" class="button" onclick="checkoutApiKitPayNow();"><?php echo $this->__('Add Card') ?></button>
+                </div>
+                <div class="checkout-kit-card-block">
+                    <input class="validate-kit-token" type="hidden">
+                </div>
             </form>
             <script type="text/javascript">
+                Validation.add('validate-kit-token','<?php echo $this->__('Please use the "Add Card" button to complete your payment.') ?>',function(v){
+                    return v === '' ? false : true;
+                });
+
                 window.CKOConfigKit = {
                     debugMode: '<?php echo $isDebug ? 'true' : 'false'?>',
                     publicKey: '<?php echo $this->getPublicKey()?>',
                     customerEmail: '<?php echo $this->getCustomerEmail();?>',
+                    cardTokenisation: 'cardTokenisation',
                     apiError: function (event) {
                         console.log("Error object: %o", event.data);
                     }
                 };
 
-				if (!window.hasOwnProperty('checkoutIntegrationScriptKitAdded')) {
-					var script = document.createElement('script');
-					script.src = '<?php echo $this->getKitJsPath();?>';
-					script.async = false;
-					document.head.appendChild(script);
-				}
-				
-				window.checkoutIntegrationScriptKitAdded = true;
+                function CheckoutApiKitNewScript(url) {
+                    var script = document.createElement('script');
+                    script.src = url;
+                    script.async = false;
+                    document.head.appendChild(script);
+                };
+
+                if (!window.hasOwnProperty('checkoutIntegrationScriptKitAdded')) {
+                    CheckoutApiKitNewScript('<?php echo $this->getKitJsLibPath();?>');
+                }
+
+                CheckoutApiKitNewScript('<?php echo $this->getKitJsPath();?>');
+
+                window.checkoutIntegrationScriptKitAdded = true;
             </script>
         </li>
     </ul>

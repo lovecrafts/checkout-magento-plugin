@@ -18,17 +18,6 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
     const TRANSACTION_INDICATOR_REGULAR     = 1;
 
     /**
-     * Redirect URL
-     *
-     * @return mixed
-     *
-     * @version 20160516
-     */
-    public function getCheckoutRedirectUrl() {
-        return false;
-    }
-
-    /**
      * Redirect URL after order place
      *
      * @return mixed
@@ -152,11 +141,11 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
      * @version 20151006
      */
     public function authorize(Varien_Object $payment, $amount) {
-		// does not create charge on checkout.com if amount is 0
+        // does not create charge on checkout.com if amount is 0
         if (empty($amount)) {
             return $this;
         }
-		
+
         $isDebug            = $this->isDebug();
         $autoCapture        = $this->_isAutoCapture();
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();

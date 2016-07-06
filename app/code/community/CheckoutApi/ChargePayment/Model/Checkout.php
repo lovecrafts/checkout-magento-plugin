@@ -23,15 +23,6 @@ abstract class CheckoutApi_ChargePayment_Model_Checkout extends Mage_Payment_Mod
     protected $_canSaveCc       = false;
 
     /**
-     * Redirect URL
-     *
-     * @return mixed
-     *
-     * @version 20160516
-     */
-    public abstract function getCheckoutRedirectUrl();
-
-    /**
      * Redirect URL after order place
      *
      * @return mixed
