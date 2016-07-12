@@ -300,13 +300,15 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
 
         foreach ($orderedItems as $item) {
             $product        = Mage::getModel('catalog/product')->load($item->getProductId());
+            $productPrice   = $item->getPrice();
+            $productPrice   = is_null($productPrice) || empty($productPrice) ? 0 : $productPrice;
             $productImage   = $product->getImage();
 
             $products[] = array(
                 'description'   => $product->getShortDescription(),
                 'image'         => $productImage != 'no_selection' && !is_null($productImage) ? Mage::helper('catalog/image')->init($product , 'image')->__toString() : '',
                 'name'          => $item->getName(),
-                'price'         => $item->getPrice(),
+                'price'         => $productPrice,
                 'quantity'      => $item->getQtyOrdered(),
                 'sku'           => $item->getSku()
             );
