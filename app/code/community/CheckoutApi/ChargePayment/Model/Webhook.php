@@ -120,7 +120,7 @@ class CheckoutApi_ChargePayment_Model_Webhook
 
                 $incrementId = $invoiceIncId[0];
 
-                $invoive = Mage::getModel('sales/order_invoice')->loadByIncrementId($incrementId);
+                $invoice = Mage::getModel('sales/order_invoice')->loadByIncrementId($incrementId);
                 $invoice->setTransactionId((string)$response->message->id);
                 $invoice->save();
             }
@@ -276,7 +276,7 @@ class CheckoutApi_ChargePayment_Model_Webhook
         $order      = $modelOrder->loadByIncrementId($trackId);
 
         if ($order->hasInvoices()) {
-            $this->refundOrder($response);
+            $this->cancelInvoicedOrder($response, $order);
             return;
         }
 
@@ -355,6 +355,40 @@ class CheckoutApi_ChargePayment_Model_Webhook
         }
 
         return true;
+    }
+
+    /**
+     * Void order for flagged transaction
+     *
+     * @param $response
+     * @param $order
+     */
+    public function cancelInvoicedOrder($response, $order) {
+        $transactionId  = (string)$response->message->id;
+        $message        = Mage::helper('sales')->__('Transaction has been void. Transaction ID: "%s".', $transactionId);
+
+        try {
+            foreach ($order->getInvoiceCollection() as $invoice) {
+                $invoiceObj = Mage::getModel('sales/order_invoice')->loadByIncrementId($invoice->getIncrementId());
+                $invoiceObj->cancel();
+                $invoiceObj->save();
+            }
+
+            $transactionModel = Mage::getModel('sales/order_payment_transaction');
+            $transactionModel
+                ->setOrderPaymentObject($order->getPayment())
+                ->setTxnId($transactionId)
+                ->setParentTxnId((string)$response->message->originalId)
+                ->setTxnType(Mage_Sales_Model_Order_Payment_Transaction::TYPE_VOID)
+                ->save();
+
+
+            $order->addStatusHistoryComment($message);
+            $order->setStatus(Mage_Sales_Model_Order::STATE_CANCELED);
+            $order->save();;
+        } catch (Mage_Core_Exception $e) {
+            Mage::log($e->getMessage(), null, self::LOG_FILE);
+        }
     }
 
     /**
