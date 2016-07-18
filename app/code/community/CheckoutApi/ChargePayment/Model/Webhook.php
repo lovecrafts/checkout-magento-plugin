@@ -274,6 +274,12 @@ class CheckoutApi_ChargePayment_Model_Webhook
         $trackId    = (string)$response->message->trackId;
         $modelOrder = Mage::getModel('sales/order');
         $order      = $modelOrder->loadByIncrementId($trackId);
+
+        if ($order->hasInvoices()) {
+            $this->refundOrder($response);
+            return;
+        }
+
         $orderId    = $order->getId();
 
         $transactionId          = (string)$response->message->id;
