@@ -116,7 +116,7 @@
                     </script>
                 </li>
             <?php else:?>
-                <li><?php echo $this->__('Error creating Payment Token.') ?></li>
+                <li><?php echo $this->__($tokenResult['message']) ?></li>
             <?php endif?>
         </ul>
     <?php else:?>
