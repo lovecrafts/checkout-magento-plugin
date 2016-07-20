@@ -365,7 +365,19 @@ class CheckoutApi_ChargePayment_Model_Webhook
      */
     public function cancelInvoicedOrder($response, $order) {
         $transactionId  = (string)$response->message->id;
-        $message        = Mage::helper('sales')->__('Transaction has been void. Transaction ID: "%s".', $transactionId);
+        $message        = Mage::helper('sales')->__('Transaction has been void.');
+        $voidMessage    = (string)$response->message->description;
+
+        $voidMessage .= ' ' . Mage::helper('sales')->__('Registered a Void notification.');
+
+        $amount         = (float)$order->getBaseGrandTotal();
+
+        if ($amount) {
+            $amount = Mage::app()->getStore()->roundPrice($amount);
+            $voidMessage .= ' ' . Mage::helper('sales')->__('Amount: %s.', $order->getBaseCurrency()->formatTxt($amount, array()));
+        }
+
+        $voidMessage .= ' ' . Mage::helper('sales')->__('Transaction ID: "%s".', $transactionId);
 
         try {
             foreach ($order->getInvoiceCollection() as $invoice) {
@@ -382,8 +394,8 @@ class CheckoutApi_ChargePayment_Model_Webhook
                 ->setTxnType(Mage_Sales_Model_Order_Payment_Transaction::TYPE_VOID)
                 ->save();
 
-
-            $order->addStatusHistoryComment($message);
+            $order->addStatusHistoryComment($voidMessage);
+            $order->registerCancellation($message);
             $order->setStatus(Mage_Sales_Model_Order::STATE_CANCELED);
             $order->save();;
         } catch (Mage_Core_Exception $e) {
