@@ -117,13 +117,10 @@
                 <is_3d>1</is_3d>
                 <timeout>60</timeout>
                 <theme_color>#00b660</theme_color>
-                <widget_color>#333</widget_color>
                 <form_button_color>#00b660</form_button_color>
                 <form_button_color_label>#ffffff</form_button_color_label>
                 <overlay_shade>dark</overlay_shade>
                 <overlay_opacity>0.8</overlay_opacity>
-                <show_mobile_icons>0</show_mobile_icons>
-                <widget_icon_size>small</widget_icon_size>
                 <payment_mode>mixed</payment_mode>
             </checkoutapijs>
             <checkoutapikit>
