@@ -146,17 +146,6 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiJs  extends Mage_Payment_B
     }
 
     /**
-     * Return color for widgetColor param
-     *
-     * @return mixed
-     *
-     * @version 20160203
-     */
-    public function getWidgetColor() {
-        return Mage::helper('chargepayment')->getConfigData($this->_paymentCode, 'widget_color');
-    }
-
-    /**
      * Return color for formButtonColor param
      *
      * @return mixed
@@ -198,28 +187,6 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiJs  extends Mage_Payment_B
      */
     public function getOverlayOpacity() {
         return Mage::helper('chargepayment')->getConfigData($this->_paymentCode, 'overlay_opacity');
-    }
-
-    /**
-     * Return bool for showMobileIcons param
-     *
-     * @return mixed
-     *
-     * @version 20160203
-     */
-    public function isShowMobileIcons() {
-        return Mage::helper('chargepayment')->getConfigData($this->_paymentCode, 'show_mobile_icons');
-    }
-
-    /**
-     * Return size for widgetIconSize param
-     *
-     * @return mixed
-     *
-     * @version 20160203
-     */
-    public function getWidgetIconSize() {
-        return Mage::helper('chargepayment')->getConfigData($this->_paymentCode, 'widget_icon_size');
     }
 
     /**

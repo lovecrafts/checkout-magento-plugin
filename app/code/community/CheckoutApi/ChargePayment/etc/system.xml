@@ -216,7 +216,7 @@
                             </depends>
                         </secretkey>
                         <publickey_web translate="label">
-                            <label>Public Shared Key</label>
+                            <label>Private Shared Key</label>
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -426,20 +426,6 @@
                                 <![CDATA[The title of your payment form.]]>
                             </comment>
                         </form_title>
-                        <widget_color translate="label">
-                            <label>Widget Color</label>
-                            <frontend_type>text</frontend_type>
-                            <sort_order>20</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends>
-                                <active>1</active>
-                            </depends>
-                            <comment>
-                                <![CDATA[#HEX value of your chosen widget color.]]>
-                            </comment>
-                        </widget_color>
                         <form_button_color translate="label">
                             <label>Form Button Color</label>
                             <frontend_type>text</frontend_type>
@@ -494,36 +480,6 @@
                                 <![CDATA[A number between 0.7 and 1]]>
                             </comment>
                         </overlay_opacity>
-                        <show_mobile_icons translate="label">
-                            <label>Show Mobile Icons</label>
-                            <frontend_type>select</frontend_type>
-                            <source_model>adminhtml/system_config_source_yesno</source_model>
-                            <sort_order>25</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends>
-                                <active>1</active>
-                            </depends>
-                            <comment>
-                                <![CDATA[Show widget icons on mobile.]]>
-                            </comment>
-                        </show_mobile_icons>
-                        <widget_icon_size translate="label">
-                            <label>Widget Icon Size</label>
-                            <frontend_type>select</frontend_type>
-                            <source_model>chargepayment/adminhtml_system_config_source_widgetIconSize</source_model>
-                            <sort_order>26</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends>
-                                <active>1</active>
-                            </depends>
-                            <comment>
-                                <![CDATA[Available sizes: small, medium,large.]]>
-                            </comment>
-                        </widget_icon_size>
                         <payment_mode translate="label">
                             <label>Payment Mode</label>
                             <frontend_type>select</frontend_type>
@@ -536,7 +492,7 @@
                                 <active>1</active>
                             </depends>
                             <comment>
-                                <![CDATA[Customise the payment mode: mixed, card, localpayment.]]>
+                                <![CDATA[Customise the payment mode: mixed, card, local payment.]]>
                             </comment>
                         </payment_mode>
                     </fields>
@@ -584,7 +540,7 @@
                             </depends>
                         </secretkey>
                         <publickey_web translate="label">
-                            <label>Public Shared Key</label>
+                            <label>Private Shared Key</label>
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
