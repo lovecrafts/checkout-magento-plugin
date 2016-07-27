@@ -492,7 +492,7 @@
                                 <active>1</active>
                             </depends>
                             <comment>
-                                <![CDATA[Customise the payment mode: mixed, card, localpayment.]]>
+                                <![CDATA[Customise the payment mode: mixed, card, local payment.]]>
                             </comment>
                         </payment_mode>
                     </fields>
