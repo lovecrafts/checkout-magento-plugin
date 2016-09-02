@@ -30,8 +30,8 @@ class CheckoutApi_ChargePayment_Model_Webhook
         }
 
         $responseCode       = (int)$response->message->responseCode;
-        $status             = (string)$response->message->status;
-        $responseMessage    = (string)$response->message->responseMessage;
+        $status             = property_exists($response->message, 'status') ? (string)$response->message->status : '';
+        $responseMessage    = property_exists($response->message, 'responseMessage') ? (string)$response->message->responseMessage : '';
         $trackId            = (string)$response->message->trackId;
 
         if ($responseCode !== CheckoutApi_ChargePayment_Model_CreditCard::CHECKOUT_API_RESPONSE_CODE_APPROVED &&
@@ -120,7 +120,7 @@ class CheckoutApi_ChargePayment_Model_Webhook
 
                 $incrementId = $invoiceIncId[0];
 
-                $invoive = Mage::getModel('sales/order_invoice')->loadByIncrementId($incrementId);
+                $invoice = Mage::getModel('sales/order_invoice')->loadByIncrementId($incrementId);
                 $invoice->setTransactionId((string)$response->message->id);
                 $invoice->save();
             }
@@ -274,6 +274,12 @@ class CheckoutApi_ChargePayment_Model_Webhook
         $trackId    = (string)$response->message->trackId;
         $modelOrder = Mage::getModel('sales/order');
         $order      = $modelOrder->loadByIncrementId($trackId);
+
+        if ($order->hasInvoices()) {
+            $this->cancelInvoicedOrder($response, $order);
+            return;
+        }
+
         $orderId    = $order->getId();
 
         $transactionId          = (string)$response->message->id;
@@ -352,6 +358,52 @@ class CheckoutApi_ChargePayment_Model_Webhook
     }
 
     /**
+     * Void order for flagged transaction
+     *
+     * @param $response
+     * @param $order
+     */
+    public function cancelInvoicedOrder($response, $order) {
+        $transactionId  = (string)$response->message->id;
+        $message        = Mage::helper('sales')->__('Transaction has been void.');
+        $voidMessage    = (string)$response->message->description;
+
+        $voidMessage .= ' ' . Mage::helper('sales')->__('Registered a Void notification.');
+
+        $amount         = (float)$order->getBaseGrandTotal();
+
+        if ($amount) {
+            $amount = Mage::app()->getStore()->roundPrice($amount);
+            $voidMessage .= ' ' . Mage::helper('sales')->__('Amount: %s.', $order->getBaseCurrency()->formatTxt($amount, array()));
+        }
+
+        $voidMessage .= ' ' . Mage::helper('sales')->__('Transaction ID: "%s".', $transactionId);
+
+        try {
+            foreach ($order->getInvoiceCollection() as $invoice) {
+                $invoiceObj = Mage::getModel('sales/order_invoice')->loadByIncrementId($invoice->getIncrementId());
+                $invoiceObj->cancel();
+                $invoiceObj->save();
+            }
+
+            $transactionModel = Mage::getModel('sales/order_payment_transaction');
+            $transactionModel
+                ->setOrderPaymentObject($order->getPayment())
+                ->setTxnId($transactionId)
+                ->setParentTxnId((string)$response->message->originalId)
+                ->setTxnType(Mage_Sales_Model_Order_Payment_Transaction::TYPE_VOID)
+                ->save();
+
+            $order->addStatusHistoryComment($voidMessage);
+            $order->registerCancellation($message);
+            $order->setStatus(Mage_Sales_Model_Order::STATE_CANCELED);
+            $order->save();;
+        } catch (Mage_Core_Exception $e) {
+            Mage::log($e->getMessage(), null, self::LOG_FILE);
+        }
+    }
+
+    /**
      * Convert Quote to Order if tokens match
      *
      * @param $responseToken
@@ -383,6 +435,22 @@ class CheckoutApi_ChargePayment_Model_Webhook
         }
 
         if(!$response->isValid() || !$this->_responseValidation($response)) {
+            Mage::register('isSecureArea', true);
+            $badOrderIncrementId = $response->getTrackId();
+            Mage::log('Bad order increment id - ' . $badOrderIncrementId, null, $this->_code.'.log');
+            if ($badOrderIncrementId) {
+                $order = Mage::getModel('sales/order')->loadByIncrementId($badOrderIncrementId);
+                $invoices = $order->getInvoiceCollection();
+                foreach ($invoices as $invoice){
+                    //delete all invoice items
+                    $items = $invoice->getAllItems();
+                    foreach ($items as $item) {
+                        $item->delete();
+                    }
+                    //delete invoice
+                    $invoice->delete();
+                }
+            }
             return $result;
         }
 
@@ -433,11 +501,18 @@ class CheckoutApi_ChargePayment_Model_Webhook
             ;
 
             if ($isAuto) {
+                $message = Mage::helper('sales')->__('Capturing amount of %s is pending approval on gateway.', $this->_formatPrice($order, $amount));
+
                 $payment->setIsTransactionPending(true);
                 $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_CAPTURE, null, false , '');
             } else {
+                $message = Mage::helper('sales')->__('Authorized amount of %s.', $this->_formatPrice($order, $amount));
                 $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH, null, false , '');
             }
+
+            $message .= ' ' . Mage::helper('sales')->__('Transaction ID: "%s".', $transactionId);
+
+            $history = $order->addStatusHistoryComment($message, false);
 
             $order->setStatus($session->getNewOrderStatus());
             $order->save();
@@ -476,5 +551,21 @@ class CheckoutApi_ChargePayment_Model_Webhook
         }
 
         return true;
+    }
+
+    /**
+     * Format price with currency sign
+     *
+     * @param $order
+     * @param $amount
+     * @param null $currency
+     * @return mixed
+     */
+    protected function _formatPrice($order, $amount, $currency = null)
+    {
+        return $order->getBaseCurrency()->formatTxt(
+            $amount,
+            $currency ? array('currency' => $currency) : array()
+        );
     }
 }
