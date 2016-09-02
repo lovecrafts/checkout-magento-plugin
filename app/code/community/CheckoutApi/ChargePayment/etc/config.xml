@@ -28,6 +28,11 @@
             <chargepayment>
                 <class>CheckoutApi_ChargePayment_Block</class>
             </chargepayment>
+            <checkout>
+                <rewrite>
+                    <cart_totals>CheckoutApi_ChargePayment_Block_Cart_Totals</cart_totals>
+                </rewrite>
+            </checkout>
         </blocks>
         <resources>
             <chargepayment_setup>
@@ -67,22 +72,14 @@
             </chargepayment>
         </routers>
         <events>
-            <checkout_submit_all_after>
+            <sales_order_save_after>
                 <observers>
                     <creditcard_save_order_after_submit>
                         <class>chargepayment/observer</class>
                         <method>saveOrderAfterSubmit</method>
                     </creditcard_save_order_after_submit>
                 </observers>
-            </checkout_submit_all_after>
-            <controller_action_postdispatch_checkout_onepage_saveOrder>
-                <observers>
-                    <creditcard_save_order_onepage>
-                        <class>chargepayment/observer</class>
-                        <method>addAdditionalFieldsToResponseFrontend</method>
-                    </creditcard_save_order_onepage>
-                </observers>
-            </controller_action_postdispatch_checkout_onepage_saveOrder>
+            </sales_order_save_after>
         </events>
     </frontend>
     <admin>
@@ -100,6 +97,7 @@
         <payment>
             <checkoutapicard>
                 <active>0</active>
+                <cctypes>AE,VI,MC,DI</cctypes>
                 <title>Credit Card (Checkout.com)</title>
                 <model>chargepayment/creditCard</model>
                 <order_status>pending</order_status>
@@ -119,15 +117,10 @@
                 <is_3d>1</is_3d>
                 <timeout>60</timeout>
                 <theme_color>#00b660</theme_color>
-                <button_color>#00b660</button_color>
-                <widget_color>#333</widget_color>
-                <button_label_color>#ffffff</button_label_color>
                 <form_button_color>#00b660</form_button_color>
                 <form_button_color_label>#ffffff</form_button_color_label>
                 <overlay_shade>dark</overlay_shade>
                 <overlay_opacity>0.8</overlay_opacity>
-                <show_mobile_icons>0</show_mobile_icons>
-                <widget_icon_size>small</widget_icon_size>
                 <payment_mode>mixed</payment_mode>
             </checkoutapijs>
             <checkoutapikit>
@@ -142,6 +135,16 @@
                 <is_3d>1</is_3d>
                 <timeout>60</timeout>
             </checkoutapikit>
+            <checkoutapihosted>
+                <active>0</active>
+                <title>Checkout.com (Hosted JS Solution)</title>
+                <model>chargepayment/Hosted</model>
+                <current_currency>0</current_currency>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <mode>sandbox</mode>
+                <is_3d>1</is_3d>
+            </checkoutapihosted>
         </payment>
     </default>
     <adminhtml>

@@ -8,12 +8,14 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
 {
     const CODE_CREDIT_CARD                  = 'checkoutapicard';
     const CODE_CREDIT_CARD_JS               = 'checkoutapijs';
+    const CODE_CREDIT_CARD_HOSTED           = 'checkoutapihosted';
     const CODE_CREDIT_CARD_KIT              = 'checkoutapikit';
 
     const JS_PATH_CARD_TOKEN                = 'https://cdn.checkout.com/sandbox/js/checkout.js';
     const JS_PATH_CARD_TOKEN_LIVE           = 'https://cdn3.checkout.com/js/checkout.js';
     const JS_PATH_CHECKOUT_KIT_LIVE         = 'https://cdn.checkout.com/js/checkoutkit.js';
     const JS_PATH_CHECKOUT_KIT              = 'https://sandbox.checkout.com/js/checkoutkit.js';
+    const REDIRECT_PAYMENT_URL              = 'https://secure1.checkout.com/sandbox/payment/';
 
     const CREDIT_CARD_CHARGE_MODE_NOT_3D    = 1;
     const CREDIT_CARD_CHARGE_MODE_3D        = 2;
@@ -32,7 +34,7 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
      * @version 20151006
      */
     public function getConfigData($method, $field, $storeId = NULL) {
-        if (NULL === $storeId) {
+        if (is_null($storeId)) {
             $storeId = Mage::app()->getStore();
         }
 
@@ -48,11 +50,11 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
      *
      * @version 20160202
      */
-    public function getJsPathHtml() {
+    public function getJsPath() {
         $mode   = (string)$this->getConfigData(self::CODE_CREDIT_CARD_JS, 'mode');
         $jsUrl  = $mode === self::API_MODE_LIVE ? self::JS_PATH_CARD_TOKEN_LIVE : self::JS_PATH_CARD_TOKEN;
 
-        return '<script src="' . $jsUrl . '" async></script>';
+        return $jsUrl;
     }
 
     /**
@@ -62,11 +64,11 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
      *
      * @version 20160502
      */
-    public function getKitJsPathHtml() {
+    public function getKitJsPath() {
         $mode   = (string)$this->getConfigData(self::CODE_CREDIT_CARD_KIT, 'mode');
         $jsUrl  = $mode === self::API_MODE_LIVE ? self::JS_PATH_CHECKOUT_KIT_LIVE : self::JS_PATH_CHECKOUT_KIT;
 
-        return '<script src="' . $jsUrl . '" id="cko_script_tag" async></script>';
+        return $jsUrl;
     }
 
     /**
@@ -78,5 +80,29 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
      */
     public function getExtensionVersion() {
         return (string)Mage::getConfig()->getModuleConfig("CheckoutApi_ChargePayment")->version;
+    }
+
+    /**
+     * Return Customer Email
+     *
+     * @return string
+     */
+    public function getCustomerEmail() {
+        $quote = Mage::getSingleton('checkout/session')->getQuote();
+        $email = $quote->getBillingAddress()->getEmail();
+
+        if (!empty($email)) {
+            return $email;
+        }
+
+        $isLogged = Mage::getSingleton('customer/session')->isLoggedIn();
+
+        if (!$isLogged) {
+            return '';
+        }
+
+        $customer = Mage::getSingleton('customer/session')->getCustomer();
+
+        return $customer->getEmail();
     }
 }

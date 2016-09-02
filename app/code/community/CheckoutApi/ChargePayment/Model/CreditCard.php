@@ -18,6 +18,29 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
     const TRANSACTION_INDICATOR_REGULAR     = 1;
 
     /**
+     * Redirect URL after order place
+     *
+     * @return mixed
+     */
+    public function getOrderPlaceRedirectUrl() {
+        $session    = Mage::getSingleton('chargepayment/session_quote');
+        $is3d       = $session->getIs3d();
+        $is3dUrl    = $session->getPaymentRedirectUrl();
+
+        $session
+            ->setIs3d(false)
+            ->setPaymentRedirectUrl(false);
+
+        if ($is3d && $is3dUrl) {
+            $this->restoreQuoteSession();
+
+            return $is3dUrl;
+        }
+
+        return false;
+    }
+
+    /**
      * Assign data to info model instance
      *
      * @param   mixed $data
@@ -118,6 +141,11 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
      * @version 20151006
      */
     public function authorize(Varien_Object $payment, $amount) {
+        // does not create charge on checkout.com if amount is 0
+        if (empty($amount)) {
+            return $this;
+        }
+
         $isDebug            = $this->isDebug();
         $autoCapture        = $this->_isAutoCapture();
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
@@ -152,8 +180,8 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
                     $payment->setAdditionalInformation('payment_token', $entityId);
                     $payment->setAdditionalInformation('payment_token_url', $redirectUrl);
 
+                    $session->addPaymentToken($entityId);
                     $session
-                        ->setPaymentToken($entityId)
                         ->setIs3d(true)
                         ->setPaymentRedirectUrl($redirectUrl)
                         ->setEndpointMode($this->getEndpointMode())
@@ -272,13 +300,15 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
 
         foreach ($orderedItems as $item) {
             $product        = Mage::getModel('catalog/product')->load($item->getProductId());
+            $productPrice   = $item->getPrice();
+            $productPrice   = is_null($productPrice) || empty($productPrice) ? 0 : $productPrice;
             $productImage   = $product->getImage();
 
             $products[] = array(
                 'description'   => $product->getShortDescription(),
                 'image'         => $productImage != 'no_selection' && !is_null($productImage) ? Mage::helper('catalog/image')->init($product , 'image')->__toString() : '',
                 'name'          => $item->getName(),
-                'price'         => $item->getPrice(),
+                'price'         => $productPrice,
                 'quantity'      => $item->getQtyOrdered(),
                 'sku'           => $item->getSku()
             );
@@ -290,7 +320,7 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
         $config['autoCapture']  = $autoCapture ? CheckoutApi_Client_Constant::AUTOCAPUTURE_CAPTURE : CheckoutApi_Client_Constant::AUTOCAPUTURE_AUTH;
         $config['chargeMode']   = $this->getChargeMode();
 
-        $email                  = $shippingAddress->getEmail();
+        $email                  = Mage::helper('chargepayment')->getCustomerEmail();
         $email                  = !empty($email) ? $email : $order->getCustomerEmail();
         $config['email']        = $email;
         $config['description']  = 'charge description';

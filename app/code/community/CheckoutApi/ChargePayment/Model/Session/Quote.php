@@ -130,4 +130,41 @@ class CheckoutApi_ChargePayment_Model_Session_Quote extends Mage_Core_Model_Sess
 
         return $result;
     }
+
+    /**
+     * Add Payment Token to session
+     *
+     * @param $paymentToken
+     */
+    public function addPaymentToken($paymentToken) {
+        $paymentTokens = $this->getPaymentTokens();
+        $paymentTokens = !$paymentTokens ? array() : $paymentTokens;
+
+        $paymentTokens[] = strtolower($paymentToken);
+        $this->setPaymentTokens($paymentTokens);
+    }
+
+    /**
+     * Return if Payment Token is in session.
+     *
+     * @param $paymentToken
+     * @return bool
+     */
+    public function isPaymentTokenExist($paymentToken) {
+        $paymentTokens  = $this->getPaymentTokens();
+        $result         = false;
+
+        if (!is_array($paymentTokens)) {
+            return $result;
+        }
+
+        foreach($paymentTokens as $row) {
+            if ($row === $paymentToken) {
+                $result = true;
+                break;
+            }
+        }
+
+        return $result;
+    }
 }

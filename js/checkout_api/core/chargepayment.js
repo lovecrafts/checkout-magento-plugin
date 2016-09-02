@@ -83,9 +83,9 @@ checkoutApi.prototype = {
     },
     checkoutApiFrame: function() {
         if (this.agreementIsValid()) {
-            Checkout.open();
+            CKOAPIJS.open();
 
-            if (Checkout.isMobile()) {
+            if (CKOAPIJS.isMobile()) {
                 $('checkout-api-js-hover').show();
             }
         } else {
@@ -97,8 +97,7 @@ checkoutApi.prototype = {
         var self = this;
 
         if (this.agreementIsValid()) {
-            CheckoutKit.setCustomerEmail(window.CKOConfig.customerEmail);
-            CheckoutKit.setPublicKey(window.CKOConfig.publicKey);
+            CheckoutKit.configure(window.CKOConfigKit);
 
             CheckoutKit.createCardToken({
                     number: $$('.cardNumber')[0].value,
@@ -141,60 +140,11 @@ checkoutApi.prototype = {
         return isValid;
     },
     saveOrderSubmit: function() {
-        checkout.setLoadWaiting('review');
-        var params = Form.serialize(payment.form);
-
-        if (review.agreementsForm) {
-            params += '&' + Form.serialize(review.agreementsForm);
+        if (this.agreementIsValid()) {
+            review.save();
+        } else {
+            alert('Please agree to all the terms and conditions before placing the order.');
+            return;
         }
-
-        new Ajax.Request(this.saveOrderUrl, {
-            method : 'post',
-            parameters : params,
-            onComplete : function(transport) {
-                checkout.setLoadWaiting(false);
-                var response;
-
-                if (transport.status == 403) {
-                    checkout.ajaxFailure();
-                }
-                try {
-                    response = eval('(' + transport.responseText + ')');
-                } catch (e) {
-                    response = {};
-                }
-
-                if (response.success) {
-                    window.location = response.redirect_url;
-                } else {
-                    var msg = response.error_messages;
-                    if (typeof (msg) == 'object') {
-                        msg = msg.join("\n");
-                    }
-                    if (msg) {
-                        if (Checkout.isMobile && Checkout.isMobile()) {
-                            $('checkout-api-js-hover').hide();
-                        }
-                        alert(msg);
-                    }
-
-                    if (response.update_section) {
-                        $('checkout-' + response.update_section.name + '-load').update(response.update_section.html);
-                        response.update_section.html.evalScripts();
-                    }
-
-                    if (response.goto_section) {
-                        checkout.gotoSection(response.goto_section);
-                        checkout.reloadProgressBlock();
-                    }
-                }
-            },
-            onFailure : function(transport) {
-                checkout.setLoadWaiting(false);
-                if (transport.status == 403) {
-                    checkout.ajaxFailure();
-                }
-            }
-        });
     }
 };
