@@ -125,11 +125,16 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
     /**
      * Return Quote from session
      *
+     * @param null $quoteId
      * @return mixed
-     *
-     * @version 20160202
      */
-    private function _getQuote() {
+    private function _getQuote($quoteId = null) {
+        $quoteId = (int)$quoteId;
+
+        if (!empty($quoteId)) {
+            return Mage::getModel('sales/quote')->load($quoteId);
+        }
+
         return Mage::getSingleton('checkout/session')->getQuote();
     }
 
@@ -196,6 +201,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         $requestData        = Mage::app()->getRequest()->getParam('payment');
         $session            = Mage::getSingleton('chargepayment/session_quote');
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
+        $quoteId            = null;
 
         /* Local Payment */
         $lpRedirectUrl  = !empty($requestData['lp_redirect_url']) ? $requestData['lp_redirect_url'] : NULL;
@@ -245,20 +251,27 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         }
 
         /* Normal Payment */
-        $cardToken      = !empty($requestData['checkout_card_token']) ? $requestData['checkout_card_token'] : NULL;
-        $isDebug        = $this->isDebug();
+        $cardToken = $payment->getData('cc_type');
+
+        if (empty($cardToken)) {
+            $cardToken = !empty($requestData['checkout_card_token']) ? $requestData['checkout_card_token'] : NULL;
+        } else {
+            $quoteId = $payment->getData('cc_owner');
+        }
+
+        $isDebug = $this->isDebug();
 
         if (is_null($cardToken)) {
             Mage::throwException(Mage::helper('chargepayment')->__('Please use the "Add Card" button to complete your payment.'));
             Mage::log('Empty Card Token', null, $this->_code.'.log');
         }
 
-        $price              = $isCurrentCurrency ? $this->_getQuote()->getGrandTotal() : $this->_getQuote()->getBaseGrandTotal();
+        $price              = $isCurrentCurrency ? $this->_getQuote($quoteId)->getGrandTotal() : $this->_getQuote($quoteId)->getBaseGrandTotal();
         $priceCode          = $isCurrentCurrency ? $this->getCurrencyCode() : Mage::app()->getStore()->getBaseCurrencyCode();
 
         $Api    = CheckoutApi_Api::getApi(array('mode' => $this->getEndpointMode()));
         $amount = $Api->valueToDecimal($price, $priceCode);
-        $config = $this->_getCharge($amount);
+        $config = $this->_getCharge($amount, $quoteId);
 
         $config['postedParam']['trackId']   = $payment->getOrder()->getIncrementId();
         $config['postedParam']['cardToken'] = $cardToken;
@@ -334,17 +347,19 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
      * Return base data for charge
      *
      * @param null $amount
+     * @param null $quoteId
      * @return array
      *
      * @version 20160204
      */
-    private function _getCharge($amount = null) {
+    private function _getCharge($amount = null, $quoteId = null) {
         $secretKey          = $this->_getSecretKey();
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
+        $quote              = $this->_getQuote($quoteId);
 
-        $billingAddress     = $this->_getQuote()->getBillingAddress();
-        $shippingAddress    = $this->_getQuote()->getBillingAddress();
-        $orderedItems       = $this->_getQuote()->getAllItems();
+        $billingAddress     = $quote->getBillingAddress();
+        $shippingAddress    = $quote->getBillingAddress();
+        $orderedItems       = $quote->getAllItems();
         $currencyDesc       = $isCurrentCurrency ? $this->getCurrencyCode() : Mage::app()->getStore()->getBaseCurrencyCode();
         $amountCents        = $amount;
         $chargeMode         = $this->getIs3D();
@@ -389,7 +404,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         $config['postedParam'] = array (
             'trackId'           => NULL,
             'customerName'      => $billingAddress->getName(),
-            'email'             => Mage::helper('chargepayment')->getCustomerEmail(),
+            'email'             => Mage::helper('chargepayment')->getCustomerEmail($quoteId),
             'value'             => $amountCents,
             'chargeMode'        => $chargeMode,
             'currency'          => $currencyDesc,
@@ -398,7 +413,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
             'customerIp'        => Mage::helper('core/http')->getRemoteAddr(),
             'metadata'          => array(
                 'server'            => Mage::helper('core/http')->getHttpUserAgent(),
-                'quoteId'           => $this->_getQuote()->getId(),
+                'quoteId'           => $quote->getId(),
                 'magento_version'   => Mage::getVersion(),
                 'plugin_version'    => Mage::helper('chargepayment')->getExtensionVersion(),
                 'lib_version'       => CheckoutApi_Client_Constant::LIB_VERSION,

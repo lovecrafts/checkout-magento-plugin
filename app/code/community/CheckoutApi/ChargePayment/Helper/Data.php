@@ -83,11 +83,18 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
     /**
      * Return Customer Email
      *
+     * @param null $quoteId
      * @return string
      */
-    public function getCustomerEmail() {
-        $quote = Mage::getSingleton('checkout/session')->getQuote();
-        $email = $quote->getBillingAddress()->getEmail();
+    public function getCustomerEmail($quoteId = null) {
+        if (!empty($quoteId)) {
+            $cart   = Mage::getModel('sales/quote')->load($quoteId);
+            $email  = $cart->getBillingAddress()->getEmail();
+            $email  = empty($email) ? $cart->getCustomerEmail() : $email;
+        } else {
+            $quote = Mage::getSingleton('checkout/session')->getQuote();
+            $email = $quote->getBillingAddress()->getEmail();
+        }
 
         if (!empty($email)) {
             return $email;
