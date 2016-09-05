@@ -632,6 +632,9 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
 
         $response = $Api->createCharge($config);
 
+
+  
+
         if (is_object($response) && method_exists($response, 'toArray')) {
             Mage::log($response->toArray(), null, $this->_code.'.log');
         }
@@ -643,9 +646,12 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
         }
 
         if(!$response->isValid() || !$this->_responseValidation($response)) {
+
             return $result;
         }
 
+        
+         
         $payment            = $order->getPayment();
         $redirectUrl        = $response->getRedirectUrl();
         $entityId           = $response->getId();
@@ -837,5 +843,9 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
         }
 
         return true;
+    }
+
+    public function getPublicKeyWebHook() {
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'publickey_web');
     }
 }
