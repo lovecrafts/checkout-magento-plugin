@@ -519,8 +519,12 @@ class CheckoutApi_ChargePayment_Model_Webhook
             $order->save();
 
             Mage::getModel('chargepayment/customerCard')->saveCard($payment, $response);
-            Mage::getSingleton('checkout/cart')->truncate();
-            Mage::getSingleton('checkout/cart')->save();
+
+            $cart = Mage::getModel('checkout/cart');
+
+            Mage::helper('chargepayment')->restoreStockItemsQty($cart);
+
+            $cart->truncate()->save();
         } catch (Mage_Core_Exception $e) {
             Mage::log($e->getMessage(), null, self::LOG_FILE);
             return $result;
