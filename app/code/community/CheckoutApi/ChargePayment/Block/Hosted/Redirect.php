@@ -36,6 +36,9 @@ class CheckoutApi_ChargePayment_Block_Hosted_Redirect  extends Mage_Core_Block_T
      * @return string
      */
     public function getPostUrl() {
-        return CheckoutApi_ChargePayment_Helper_Data::REDIRECT_PAYMENT_URL;
+        $mode =  Mage::getModel('chargepayment/hosted')->getEndpointMode();
+        $hostedUrl  = $mode === CheckoutApi_ChargePayment_Helper_Data::API_MODE_LIVE ? CheckoutApi_ChargePayment_Helper_Data::REDIRECT_PAYMENT_URL_LIVE : CheckoutApi_ChargePayment_Helper_Data::REDIRECT_PAYMENT_URL;
+
+        return $hostedUrl;
     }
 }
