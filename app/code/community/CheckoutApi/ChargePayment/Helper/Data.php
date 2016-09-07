@@ -106,4 +106,30 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
 
         return $customer->getEmail();
     }
+
+    /**
+     * Restore stock items qty for restored session
+     *
+     * @param Mage_Checkout_Model_Cart $cart
+     * @return bool
+     */
+    public function restoreStockItemsQty(Mage_Checkout_Model_Cart $cart) {
+        foreach($cart->getItems() as $item) {
+            if ($item->getHasChildren()) {
+                continue;
+            }
+
+            $quantity       = $item->getQty();
+            $productSku     = $item->getSku();
+            $product        = Mage::getModel('catalog/product')->loadByAttribute('sku', $productSku);
+
+            if($product) {
+                $stock = Mage::getModel('cataloginventory/stock_item')->loadByProduct($product);
+                $stock->setQty($stock->getQty() + $quantity);
+                $stock->save();
+            }
+        }
+
+        return true;
+    }
 }

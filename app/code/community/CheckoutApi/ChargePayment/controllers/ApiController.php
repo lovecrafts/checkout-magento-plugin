@@ -143,9 +143,12 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
 
         /* Clear checkout */
         Mage::getSingleton('checkout/session')->clear();
+
         $cart = Mage::getModel('checkout/cart');
-        $cart->truncate();
-        $cart->save();
+
+        Mage::helper('chargepayment')->restoreStockItemsQty($cart);
+
+        $cart->truncate()->save();
 
         $session->removeCheckoutLocalPaymentToken($responseToken);
 

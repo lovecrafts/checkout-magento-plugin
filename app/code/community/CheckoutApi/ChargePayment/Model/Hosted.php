@@ -612,7 +612,6 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
      * @param $cardToken
      * @return array
      * @throws Exception
-     * @throws Mage_Core_Exception
      */
     public function authorizeByCardToken(Mage_Sales_Model_Order $order, $cardToken) {
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
@@ -697,8 +696,11 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
             $order->setStatus($this->getNewOrderStatus());
             $order->save();
 
-            Mage::getSingleton('checkout/cart')->truncate();
-            Mage::getSingleton('checkout/cart')->save();
+            $cart = Mage::getSingleton('checkout/cart');
+
+            Mage::helper('chargepayment')->restoreStockItemsQty($cart);
+
+            $cart->truncate()->save();
 
             $session->setIs3d(false);
 
@@ -824,7 +826,6 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
      *
      * @param $response
      * @return bool
-     * @throws Mage_Core_Exception
      */
     protected function _responseValidation($response) {
         $responseCode       = (int)$response->getResponseCode();
@@ -839,7 +840,9 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
                 $message = "Please check you card details and try again. Thank you";
             }
 
-            Mage::throwException(Mage::helper('chargepayment')->__($message));
+            Mage::log($message, null, $this->_code.'.log');
+
+            return false;
         }
 
         return true;
