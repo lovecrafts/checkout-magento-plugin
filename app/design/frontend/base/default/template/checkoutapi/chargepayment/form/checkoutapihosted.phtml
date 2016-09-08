@@ -29,16 +29,39 @@
                             cardFormMode: '<?php echo $this->getCardFormMode();?>'
                         };
 
-                        var script = document.createElement('script');
-                        script.src = '<?php echo $this->getJsPath();?>';
-                        script.async = true;
-                        script.setAttribute('data-namespace', 'CKOAPIHOSTED');
-                        document.head.appendChild(script);
+                        window.checkoutIntegrationIsReady = window.checkoutIntegrationIsReady || false;
+                        if (!window.checkoutIntegrationIsReady) {
+                            window.CKOConfig = {
+                                ready: function () {
 
-                        var script = document.createElement('script');
-                        script.src = '<?php echo $this->getCheckoutJsPath();?>';
-                        script.async = false;
-                        document.head.appendChild(script);
+                                    if (window.checkoutIntegrationIsReady) {
+                                        return false;
+                                    }
+
+                                    if (typeof CKOAPIHOSTED == 'undefined') {
+                                        return false;
+                                    }
+
+                                    CKOAPIHOSTED.render(window.checkoutIntegrationHostedConfig);
+
+                                    window.checkoutIntegrationIsReady = true;
+                                }
+                            };
+
+                            var script = document.createElement('script');
+                            script.src = '<?php echo $this->getJsPath();?>';
+                            script.async = true;
+                            script.setAttribute('data-namespace', 'CKOAPIHOSTED');
+                            document.head.appendChild(script);
+
+                            var script = document.createElement('script');
+                            script.src = '<?php echo $this->getCheckoutJsPath();?>';
+                            script.async = false;
+                            document.head.appendChild(script);
+
+                        } else {
+                            CKOAPIHOSTED.render(window.checkoutIntegrationHostedConfig);
+                        }
                     </script>
                 </li>
             <?php else:?>
