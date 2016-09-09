@@ -7,7 +7,6 @@
 class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
 {
     const CODE_CREDIT_CARD                  = 'checkoutapicard';
-    const CODE_CREDIT_CARD_JS               = 'checkoutapijs';
     const CODE_CREDIT_CARD_HOSTED           = 'checkoutapihosted';
     const CODE_CREDIT_CARD_KIT              = 'checkoutapikit';
 
@@ -45,14 +44,12 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * Return js Path for Checkout JS
+     * Return js Path for Hosted method
      *
      * @return string
-     *
-     * @version 20160202
      */
     public function getJsPath() {
-        $mode   = (string)$this->getConfigData(self::CODE_CREDIT_CARD_JS, 'mode');
+        $mode   = (string)$this->getConfigData(self::CODE_CREDIT_CARD_HOSTED, 'mode');
         $jsUrl  = $mode === self::API_MODE_LIVE ? self::JS_PATH_CARD_TOKEN_LIVE : self::JS_PATH_CARD_TOKEN;
 
         return $jsUrl;

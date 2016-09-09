@@ -158,8 +158,10 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
 
                 /* is 3D payment */
                 if ($redirectUrl && $entityId) {
-                    $payment->setAdditionalInformation('payment_token', $entityId);
-                    $payment->setAdditionalInformation('payment_token_url', $redirectUrl);
+                    $payment
+                        ->setAdditionalInformation('payment_token', $entityId)
+                        ->setAdditionalInformation('payment_token_url', $redirectUrl)
+                        ->setAdditionalInformation('use_current_currency', $isCurrentCurrency);
 
                     $session->addPaymentToken($entityId);
                     $session
