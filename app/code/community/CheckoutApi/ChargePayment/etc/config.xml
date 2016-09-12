@@ -105,24 +105,6 @@
                 <mode>sandbox</mode>
                 <current_currency>0</current_currency>
             </checkoutapicard>
-            <checkoutapijs>
-                <active>0</active>
-                <cctypes>AE,VI,MC,DI</cctypes>
-                <title>Credit Card (Checkout.com)</title>
-                <model>chargepayment/creditCardJs</model>
-                <current_currency>0</current_currency>
-                <order_status>pending</order_status>
-                <allowspecific>0</allowspecific>
-                <mode>sandbox</mode>
-                <is_3d>1</is_3d>
-                <timeout>60</timeout>
-                <theme_color>#00b660</theme_color>
-                <form_button_color>#00b660</form_button_color>
-                <form_button_color_label>#ffffff</form_button_color_label>
-                <overlay_shade>dark</overlay_shade>
-                <overlay_opacity>0.8</overlay_opacity>
-                <payment_mode>mixed</payment_mode>
-            </checkoutapijs>
             <checkoutapikit>
                 <active>0</active>
                 <cctypes>AE,VI,MC,DI</cctypes>

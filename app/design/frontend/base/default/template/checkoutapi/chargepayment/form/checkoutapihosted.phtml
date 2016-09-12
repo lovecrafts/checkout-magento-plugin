@@ -53,12 +53,6 @@
                             script.async = true;
                             script.setAttribute('data-namespace', 'CKOAPIHOSTED');
                             document.head.appendChild(script);
-
-                            var script = document.createElement('script');
-                            script.src = '<?php echo $this->getCheckoutJsPath();?>';
-                            script.async = false;
-                            document.head.appendChild(script);
-
                         } else {
                             CKOAPIHOSTED.render(window.checkoutIntegrationHostedConfig);
                         }
