@@ -19,6 +19,7 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
     protected $_canCapture              = true;
     protected $_canCapturePartial       = true;
     protected $_canRefund               = true;
+    protected $_canRefundInvoicePartial = true;
     protected $_canVoid                 = true;
     protected $_isInitializeNeeded      = true;
 
@@ -451,14 +452,22 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
      */
     public function refund(Varien_Object $payment, $amount) {
         $isDebug        = $this->isDebug();
-        $refundData     = $this->_getVoidChargeData($payment);
+        $refundData     = $this->_getVoidChargeData($payment, true);
         $order          = $payment->getOrder();
 
         $Api                    = CheckoutApi_Api::getApi(array('mode'=>$this->getEndpointMode()));
         $isCurrentCurrency      = $payment->getAdditionalInformation('use_current_currency');
-        $amount                 = $isCurrentCurrency ? $order->getGrandTotal() : $order->getBaseGrandTotal();
-        $refundData['value']    = $Api->valueToDecimal($amount, $isCurrentCurrency ? $order->getOrderCurrencyCode(): $order->getBaseCurrencyCode());
-        $result                 = $Api->refundCharge($refundData);
+
+        if ($isCurrentCurrency) {
+            // Allowed currencies
+            $amount = Mage::helper('directory')->currencyConvert($amount, $order->getBaseCurrencyCode(), $order->getOrderCurrencyCode());
+            $amount = $Api->valueToDecimal($amount, $order->getOrderCurrencyCode());
+        } else {
+            $amount = $Api->valueToDecimal($amount, $order->getBaseCurrencyCode());
+        }
+
+        $refundData['postedParam']['value']     = $amount;
+        $result                                 = $Api->refundCharge($refundData);
 
         if (is_object($result) && method_exists($result, 'toArray')) {
             Mage::log($result->toArray(), null, $this->_code.'.log');
@@ -558,20 +567,40 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
      * Return array for Void Charge
      *
      * @param $payment
-     * @return array
+     * @param bool $isRefund
+     * @return mixed
+     * @throws Mage_Core_Exception
      */
-    protected function _getVoidChargeData($payment) {
+    protected function _getVoidChargeData($payment, $isRefund = false) {
         $config         = array();
         $order          = $payment->getOrder();
         $orderId        = $order->getIncrementId();
         $secretKey      = $this->_getSecretKey($order->getStoreId());
+        $items          = $order->getAllItems();
+        $products       = array();
 
         if (!$secretKey) {
             Mage::throwException(Mage::helper('chargepayment')->__('Payment method is not available.'));
         }
 
+        foreach ($items as $item) {
+            $product        = Mage::getModel('catalog/product')->load($item->getProductId());
+            $productPrice   = $item->getPrice();
+            $productPrice   = is_null($productPrice) || empty($productPrice) ? 0 : $productPrice;
+            $productImage   = $product->getImage();
+
+            $products[] = array (
+                'name'       => $item->getName(),
+                'sku'        => $item->getSku(),
+                'price'      => $productPrice,
+                'quantity'   => $isRefund ? (int)$item->getQtyRefunded() : (int)$item->getQty(),
+                'image'      => $productImage != 'no_selection' && !is_null($productImage) ? Mage::helper('catalog/image')->init($product , 'image')->__toString() : '',
+            );
+        }
+
         $config['trackId']      = $orderId;
         $config['description']  = 'Description';
+        $config['products']     = $products;
 
         $result['authorization']    = $secretKey;
         $result['postedParam']      = $config;
@@ -631,9 +660,6 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
 
         $response = $Api->createCharge($config);
 
-
-  
-
         if (is_object($response) && method_exists($response, 'toArray')) {
             Mage::log($response->toArray(), null, $this->_code.'.log');
         }
@@ -648,16 +674,16 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
 
             return $result;
         }
-
-        
          
         $payment            = $order->getPayment();
         $redirectUrl        = $response->getRedirectUrl();
         $entityId           = $response->getId();
 
         if ($redirectUrl && $entityId) {
-            $payment->setAdditionalInformation('payment_token', $entityId);
-            $payment->setAdditionalInformation('payment_token_url', $redirectUrl);
+            $payment
+                ->setAdditionalInformation('payment_token', $entityId)
+                ->setAdditionalInformation('payment_token_url', $redirectUrl)
+                ->setAdditionalInformation('use_current_currency', $isCurrentCurrency);
             $payment->save();
             $order->save();
 
@@ -848,6 +874,20 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
         return true;
     }
 
+    /**
+     * Return Order Status For Void
+     *
+     * @return mixed
+     */
+    public function getVoidStatus() {
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'void_status');
+    }
+
+    /**
+     * Return Public Key for WebHook
+     *
+     * @return mixed
+     */
     public function getPublicKeyWebHook() {
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'publickey_web');
     }

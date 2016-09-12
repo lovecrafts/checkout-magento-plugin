@@ -38,7 +38,7 @@ class CheckoutApi_ChargePayment_Block_Cart_Totals extends Mage_Checkout_Block_Ca
 
         switch ($paymentMethod) {
             case CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD:
-            case CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD_JS:
+            case CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD_HOSTED:
             case CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD_KIT:
                 $useCurrentCurrency = Mage::helper('chargepayment')->getConfigData($paymentMethod, 'current_currency');
                 $result = $useCurrentCurrency ? false : true;

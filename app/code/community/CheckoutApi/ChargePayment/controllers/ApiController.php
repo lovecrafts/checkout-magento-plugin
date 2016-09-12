@@ -20,7 +20,11 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
     {
         $modelWebhook   = Mage::getModel('chargepayment/webhook');
 
-        $isDebug = Mage::getModel('chargepayment/creditCard')->isDebug();
+        $isDebugCard    = Mage::getModel('chargepayment/creditCard')->isDebug();
+        $isDebugKit     = Mage::getModel('chargepayment/creditCardKit')->isDebug();
+        $isDebugHosted  = Mage::getModel('chargepayment/hosted')->isDebug();
+
+        $isDebug        = $isDebugCard || $isDebugKit || $isDebugHosted ? true : false;
 
         if ($isDebug) {
             Mage::log(file_get_contents('php://input'), null, CheckoutApi_ChargePayment_Model_Webhook::LOG_FILE);

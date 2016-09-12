@@ -27,10 +27,16 @@ class CheckoutApi_ChargePayment_Model_Observer {
         $paymentCode        = (string)$payment->getMethodInstance()->getCode();
         $isCancelledOrder   = false;
 
-        if ($paymentCode === CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD) {
-            $isCancelledOrder   = Mage::getModel('chargepayment/creditCard')->getVoidStatus();
-        } else if ($paymentCode === CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD_JS) {
-            $isCancelledOrder   = Mage::getModel('chargepayment/creditCardJs')->getVoidStatus();
+        switch ($paymentCode) {
+            case CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD:
+                $isCancelledOrder = Mage::getModel('chargepayment/creditCard')->getVoidStatus();
+                break;
+            case CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD_KIT:
+                $isCancelledOrder = Mage::getModel('chargepayment/creditCardKit')->getVoidStatus();
+                break;
+            case CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD_HOSTED:
+                $isCancelledOrder = Mage::getModel('chargepayment/hosted')->getVoidStatus();
+                break;
         }
 
         if (!$isCancelledOrder) {

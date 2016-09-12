@@ -149,12 +149,11 @@ class CheckoutApi_ChargePayment_Model_Webhook
             return false;
         }
 
-        $publicKey      = Mage::getModel('chargepayment/creditCard')->getPublicKey();
-        $publicJsKey    = Mage::getModel('chargepayment/creditCardJs')->getPublicKeyWebHook();
-        $publicKitKey   = Mage::getModel('chargepayment/creditCardKit')->getPublicKeyWebHook();
-        $publicHostedKey   = Mage::getModel('chargepayment/hosted')->getPublicKeyWebHook();
+        $publicKey          = Mage::getModel('chargepayment/creditCard')->getPublicKey();
+        $publicKitKey       = Mage::getModel('chargepayment/creditCardKit')->getPublicKeyWebHook();
+        $publicHostedKey    = Mage::getModel('chargepayment/hosted')->getPublicKeyWebHook();
 
-        $result         = $publicKey === $key || $publicJsKey === $key || $publicHostedKey === $key || $publicKitKey === $key ? true : false;
+        $result = $publicKey === $key || $publicHostedKey === $key || $publicKitKey === $key ? true : false;
 
         if (!$result) {
             Mage::log("Public shared keys {$key} (API) and {$publicKey} (Magento) do not match.", null, self::LOG_FILE);
