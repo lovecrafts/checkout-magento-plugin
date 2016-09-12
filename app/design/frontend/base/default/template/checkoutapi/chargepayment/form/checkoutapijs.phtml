@@ -75,7 +75,7 @@
                         window.checkoutIntegrationIsReady = window.checkoutIntegrationIsReady || false;
                         if (!window.checkoutIntegrationIsReady) {
                             window.CKOConfig = {
-								namespace: 'CKOAPIJS',
+				namespace: 'CKOAPIJS',
                                 ready: function () {
                                     if (window.checkoutIntegrationIsReady) {
                                         return false;
@@ -92,13 +92,13 @@
                             };
 
                             var script = document.createElement('script');
-							script.type = "text/javascript";
+                            script.type = "text/javascript";
                             script.src = '<?php echo $this->getJsPath();?>';
                             script.async = true;
                             document.head.appendChild(script);
 
                             var script = document.createElement('script');
-							script.type = "text/javascript";
+                            script.type = "text/javascript";
                             script.src = '<?php echo $this->getCheckoutJsPath();?>';
                             script.async = false;
                             document.head.appendChild(script);
