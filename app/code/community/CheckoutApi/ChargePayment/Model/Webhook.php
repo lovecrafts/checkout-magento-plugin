@@ -82,13 +82,17 @@ class CheckoutApi_ChargePayment_Model_Webhook
         $amount     = $order->getBaseGrandTotal();
 
         $payment = $order->getPayment();
+
         $parentTransactionId    = $payment->getLastTransId();
+
         $transactionCollection  = Mage::getModel('sales/order_payment_transaction')
             ->getCollection()
             ->addAttributeToFilter('order_id', array('eq' => $orderId))
             ->addPaymentIdFilter($payment->getId());
 
         $collectionCount = $transactionCollection->count();
+
+
 
         if (!$collectionCount) {
             Mage::log("Cannot create an invoice. Order - {$trackId}. Empty transactions.", null, self::LOG_FILE);
@@ -108,7 +112,6 @@ class CheckoutApi_ChargePayment_Model_Webhook
 
             $order->setStatus(Mage_Sales_Model_Order::STATE_PROCESSING);
             $order->save();
-
 
             $order = $modelOrder->loadByIncrementId($trackId);
 
@@ -284,6 +287,7 @@ class CheckoutApi_ChargePayment_Model_Webhook
 
         $transactionId          = (string)$response->message->id;
         $parentTransactionId    = (string)$response->message->originalId;
+        $chargeMode             = (int)$response->message->chargeMode;
 
         if (!$orderId) {
             Mage::log("Cannot void Order - {$trackId}", null, self::LOG_FILE);
@@ -317,10 +321,17 @@ class CheckoutApi_ChargePayment_Model_Webhook
             $transactionStatus  = $transaction->getTxnType();
             $isClosed           = (int)$transaction->getIsClosed();
 
-            if ($parentTransactionId === $transactionTxnId && Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH === $transactionStatus
-            && !$isClosed) {
-                $isVoid = true;
-                break;
+            if($chargeMode === 3){
+                if ( !$isClosed) {
+                    $isVoid = true;
+                    break;
+                }
+            } else {
+                if ($parentTransactionId === $transactionTxnId && Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH === $transactionStatus
+                    && !$isClosed) {
+                    $isVoid = true;
+                    break;
+                }
             }
         }
 
@@ -423,6 +434,7 @@ class CheckoutApi_ChargePayment_Model_Webhook
         $verifyParams   = array('paymentToken' => $responseToken, 'authorization' => $session->getSecretKey());
         $response       = $Api->verifyChargePaymentToken($verifyParams);
 
+
         if (is_object($response) && method_exists($response, 'toArray')) {
             Mage::log($response->toArray(), null, self::LOG_FILE);
         }
@@ -456,7 +468,8 @@ class CheckoutApi_ChargePayment_Model_Webhook
 
         $chargeMode         = (int)$response->getChargeMode();
 
-        if ($chargeMode !== CheckoutApi_ChargePayment_Helper_Data::CREDIT_CARD_CHARGE_MODE_3D) {
+        if ($chargeMode !== CheckoutApi_ChargePayment_Helper_Data::CREDIT_CARD_CHARGE_MODE_3D
+            && $chargeMode !== CheckoutApi_ChargePayment_Helper_Data::CREDIT_CARD_CHARGE_MODE_LP ) {
             return $result;
         }
 
@@ -466,6 +479,17 @@ class CheckoutApi_ChargePayment_Model_Webhook
         $isAuto             = $isAuto == CheckoutApi_Client_Constant::AUTOCAPUTURE_AUTH ? false : true;
 
         $order = Mage::getModel('sales/order')->loadByIncrementId($orderIncrementId);
+
+        $isCurrentCurrency  = $session->getIsUseCurrentCurrency();
+        $price              = $isCurrentCurrency ? $order->getGrandTotal() : $order->getBaseGrandTotal();
+        $priceCode          = $isCurrentCurrency ? $this->getCurrencyCode() : Mage::app()->getStore()->getBaseCurrencyCode();
+
+        $toValidate = array(
+            'currency' => $priceCode,
+            'value'    =>  $Api->valueToDecimal($price, $priceCode),
+        );
+
+        $validateRequest = $Api->validateRequest($toValidate,$response);
 
         if (!$order->getId()) {
             return $result;
@@ -477,14 +501,17 @@ class CheckoutApi_ChargePayment_Model_Webhook
             $result['is_admin'] = true;
         }
 
+
         if (!$session->isCheckoutOrderIncrementIdExist($orderIncrementId)) {
             return $result;
         }
 
-        $storedToken = $order->getPayment()->getAdditionalInformation('payment_token');
+        if($chargeMode === CheckoutApi_ChargePayment_Helper_Data::CREDIT_CARD_CHARGE_MODE_3D){
+            $storedToken = $order->getPayment()->getAdditionalInformation('payment_token');
 
-        if ($storedToken !== $responseToken) {
-            return $result;
+            if ($storedToken !== $responseToken) {
+                return $result;
+            }
         }
 
         $payment    = $order->getPayment();
@@ -514,10 +541,26 @@ class CheckoutApi_ChargePayment_Model_Webhook
 
             $history = $order->addStatusHistoryComment($message, false);
 
-            $order->setStatus($session->getNewOrderStatus());
+            if($chargeMode === CheckoutApi_ChargePayment_Helper_Data::CREDIT_CARD_CHARGE_MODE_LP){
+
+                if($validateRequest['status'] != 1 ){
+
+                    $order->addStatusHistoryComment('Suspected fraud - Please verify amount and quantity.', false);
+                    $order->setStatus('fraud');
+                } else {
+                    $order->setStatus('pending');
+                }
+
+            } else {
+                $order->setStatus('pending');
+            }
+
+
             $order->save();
 
-            Mage::getModel('chargepayment/customerCard')->saveCard($payment, $response);
+            if($chargeMode === CheckoutApi_ChargePayment_Helper_Data::CREDIT_CARD_CHARGE_MODE_3D){
+                Mage::getModel('chargepayment/customerCard')->saveCard($payment, $response);
+            }
 
             $cart = Mage::getModel('checkout/cart');
 

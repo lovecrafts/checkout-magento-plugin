@@ -168,6 +168,15 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
             Mage::throwException($errorMessage);
         }
 
+
+        $priceCode          = $isCurrentCurrency ? $order->getOrderCurrencyCode() : $order->getBaseCurrencyCode();
+        $toValidate = array(
+            'currency' => $priceCode,
+            'value'    =>  $Api->valueToDecimal($isCurrentCurrency ? $order->getGrandTotal() : $order->getBaseGrandTotal(), $priceCode),
+        );
+
+        $validateRequest = $Api->validateRequest($toValidate,$result);
+
         if($result->isValid()) {
             if ($this->_responseValidation($result)) {
                 /* Save Customer Credit Cart */
@@ -197,7 +206,13 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
                     $payment->setIsTransactionClosed(0);
                     $payment->setAdditionalInformation('use_current_currency', $isCurrentCurrency);
 
+
                     if ($autoCapture) {
+                        if($validateRequest['status']!== 1 && (int)$result->getResponseCode() !== CheckoutApi_ChargePayment_Model_Checkout::CHECKOUT_API_RESPONSE_CODE_APPROVED ){
+                            $order->addStatusHistoryComment('Suspected fraud - Please verify amount and quantity.', false);
+                            $payment->setIsFraudDetected(true);
+                        }
+
                         $payment->setIsTransactionPending(true);
                     }
 

@@ -93,15 +93,18 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         $session        = Mage::getSingleton('chargepayment/session_quote');
         $isLocalPayment = $session->isCheckoutLocalPaymentTokenExist($responseToken);
 
-        if ($isLocalPayment) {
-            $this->_redirect('chargepayment/api/complete', array('_query' => 'token=' . $responseToken));
-            return;
-        }
-
         $modelWebhook   = Mage::getModel('chargepayment/webhook');
 
         if ($responseToken) {
             $result = $modelWebhook->authorizeByPaymentToken($responseToken);
+
+            if ($isLocalPayment) {
+
+                $this->_redirect('chargepayment/api/complete', array('_query' => 'token=' . $responseToken
+
+                ));
+                return;
+            }
 
             if ($result['is_admin'] === false) {
                 $redirectUrl    = 'checkout/onepage/success';
@@ -175,8 +178,18 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         $orderIncrementId   = (int)$this->getRequest()->getParam('cko-context-id');
         $order              = Mage::getModel('sales/order')->loadByIncrementId($orderIncrementId);
 
-        if (!$cardToken || !$order->getId()) {
+        if (!$order->getId()) {
             $this->norouteAction();
+            return;
+        }
+
+        if (!$cardToken) {
+            Mage::getSingleton('core/session')->addError('Your payment has been cancelled. Please enter your card details and try again.');
+            $result = array('status' => 'error', 'redirect' => Mage::helper('checkout/url')->getCheckoutUrl());
+            $order->setStatus("canceled");
+            $order->save();
+            $result = array('status' => 'error', 'redirect' => Mage::helper('checkout/url')->getCheckoutUrl());
+            $this->_redirectUrl($result['redirect']);
             return;
         }
 
@@ -204,6 +217,8 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
             case 'error':
             default:
                 Mage::getSingleton('core/session')->addError('Please check you card details and try again. Thank you');
+                $order->setStatus("canceled");
+                $order->save();
                 $this->_redirectUrl($result['redirect']);
                 break;
         }
