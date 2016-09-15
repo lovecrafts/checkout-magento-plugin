@@ -2,7 +2,8 @@
     $params = $this->getPostParams();
     $url    = $this->getPostUrl();
 ?>
-<p><?php echo $this->__('You will be redirected to the payment gateway.')?></p>
+<p><center><?php echo $this->__('You will be redirected to the payment gateway.');?></center></p>
+<p><center><img src="<?php echo $this->getSkinUrl('images/checkoutApi/load.gif');?>" /></center></p>
 <form id="payment-form" style="display:none" action="<?php echo $url?>" method="POST">
     <input name="publicKey" value="<?php echo $params['publicKey'] ?>"/>
     <input name="paymentToken" value="<?php echo $params['paymentToken'] ?>"/>
@@ -13,7 +14,7 @@
     <input name="paymentMode" value="<?php echo $params['paymentMode'] ?>"/>
     <input name="environment" value="<?php echo $params['environment'] ?>"/>
     <input name="redirectUrl" value="<?php echo $params['redirectUrl'] ?>"/>
-    <input name="cancelUrl" value="<?php echo $params['cancelUrl'] ?>"/>
+    <input name="cancelUrl" value="<?php echo $params['redirectUrl'] ?>"/>
     <input name="contextId" id="contextId" value="<?php echo $params['contextId'] ?>"/>
     <input name="billingDetails" id="billingDetails"/>
 </form>

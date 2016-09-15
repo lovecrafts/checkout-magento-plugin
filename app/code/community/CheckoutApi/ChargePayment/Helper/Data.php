@@ -19,6 +19,7 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
 
     const CREDIT_CARD_CHARGE_MODE_NOT_3D    = 1;
     const CREDIT_CARD_CHARGE_MODE_3D        = 2;
+    const CREDIT_CARD_CHARGE_MODE_LP        = 3;
     const PAYMENT_ACTION_AUTHORIZE_CAPTURE  = 'authorize_capture';
     const API_MODE_LIVE                     = 'live';
     const API_MODE_SANDBOX                  = 'sandbox';

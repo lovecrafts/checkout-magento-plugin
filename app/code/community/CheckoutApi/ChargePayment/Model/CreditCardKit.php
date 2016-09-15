@@ -116,6 +116,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
         $requestData        = Mage::app()->getRequest()->getParam('payment');
         $session            = Mage::getSingleton('chargepayment/session_quote');
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
+        $order              = $payment->getOrder();
 
         /* Normal Payment */
         $cardToken      = !empty($requestData['checkout_kit_card_token']) ? $requestData['checkout_kit_card_token'] : NULL;
@@ -126,7 +127,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
             Mage::log('Empty Card Token', null, $this->_code.'.log');
         }
 
-        $price              = $isCurrentCurrency ? $this->_getQuote()->getGrandTotal() : $this->_getQuote()->getBaseGrandTotal();
+        $price              = $isCurrentCurrency ? $order->getGrandTotal() : $order->getBaseGrandTotal();
         $priceCode          = $isCurrentCurrency ? $this->getCurrencyCode() : Mage::app()->getStore()->getBaseCurrencyCode();
 
         $Api    = CheckoutApi_Api::getApi(array('mode' => $this->getEndpointMode()));
@@ -149,6 +150,13 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
             $errorMessage = Mage::helper('chargepayment')->__('Your payment was not completed.'. $Api->getExceptionState()->getErrorMessage().' and try again or contact customer support.');
             Mage::throwException($errorMessage);
         }
+
+        $toValidate = array(
+            'currency' => $priceCode,
+            'value'    =>  $Api->valueToDecimal($price, $priceCode),
+        );
+
+        $validateRequest = $Api->validateRequest($toValidate,$result);
 
         if($result->isValid()) {
             if ($this->_responseValidation($result)) {
@@ -177,6 +185,11 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
                     $payment->setAdditionalInformation('use_current_currency', $isCurrentCurrency);
 
                     if ($autoCapture) {
+                        if($validateRequest['status']!== 1 && (int)$result->getResponseCode() !== CheckoutApi_ChargePayment_Model_Checkout::CHECKOUT_API_RESPONSE_CODE_APPROVED ){
+                            $order->addStatusHistoryComment('Suspected fraud - Please verify amount and quantity.', false);
+                            $payment->setIsFraudDetected(true);
+                        }
+
                         $payment->setIsTransactionPending(true);
                     }
 

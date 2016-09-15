@@ -10,6 +10,11 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
     const RENDER_MODE       = 2;
     const RENDER_NAMESPACE  = 'CheckoutIntegration';
 
+
+    const PAYMENT_MODE_MIXED            = 'mixed';
+    const PAYMENT_MODE_CARD             = 'cards';
+    const PAYMENT_MODE_LOCAL_PAYMENT    = 'localpayment';
+
     protected $_formBlockType = 'chargepayment/form_checkoutApiHosted';
     protected $_infoBlockType = 'chargepayment/info_checkoutApiHosted';
 
@@ -427,7 +432,10 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
      * @return mixed
      */
     public function getPaymentMode() {
-        return self::PAYMENT_MODE;
+        $paymentMode = Mage::helper('chargepayment')->getConfigData($this->_code, 'payment_mode');
+
+        return $paymentMode === self::PAYMENT_MODE_MIXED
+        || $paymentMode === self::PAYMENT_MODE_LOCAL_PAYMENT ? true : self::PAYMENT_MODE_CARD;
     }
 
     /**
@@ -642,13 +650,14 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
      * @return array
      * @throws Exception
      */
-    public function authorizeByCardToken(Mage_Sales_Model_Order $order, $cardToken) {
+    public function authorizeByCardToken(Mage_Sales_Model_Order $order, $cardToken, $payment) {
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
         $autoCapture        = $this->_isAutoCapture();
         $session            = Mage::getSingleton('chargepayment/session_quote');
         $result             = array('status' => 'error', 'redirect' => Mage::helper('checkout/url')->getCheckoutUrl());
 
-        $price              = $isCurrentCurrency ? $this->_getQuote()->getGrandTotal() : $this->_getQuote()->getBaseGrandTotal();
+        $price = $isCurrentCurrency ? $order->getGrandTotal() : $order->getBaseGrandTotal();
+
         $priceCode          = $isCurrentCurrency ? $this->getCurrencyCode() : Mage::app()->getStore()->getBaseCurrencyCode();
 
         $Api    = CheckoutApi_Api::getApi(array('mode' => $this->getEndpointMode()));
@@ -671,10 +680,15 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
         }
 
         if(!$response->isValid() || !$this->_responseValidation($response)) {
-
             return $result;
         }
-         
+
+        $toValidate = array(
+            'currency' => $priceCode,
+            'value'    =>  $Api->valueToDecimal($isCurrentCurrency ? $order->getGrandTotal() : $order->getBaseGrandTotal(), $priceCode),
+        );
+        $validateRequest = $Api->validateRequest($toValidate,$response);
+
         $payment            = $order->getPayment();
         $redirectUrl        = $response->getRedirectUrl();
         $entityId           = $response->getId();
@@ -719,7 +733,15 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
             $message .= ' ' . Mage::helper('sales')->__('Transaction ID: "%s".', $entityId);
 
             $order->addStatusHistoryComment($message, false);
-            $order->setStatus($this->getNewOrderStatus());
+
+            if($validateRequest['status'] == 1 && (int)$response->getResponseCode() === CheckoutApi_ChargePayment_Model_Checkout::CHECKOUT_API_RESPONSE_CODE_APPROVED ){
+                $order->setStatus($this->getNewOrderStatus());
+            } else {
+
+                $order->addStatusHistoryComment('Suspected fraud - Please verify amount and quantity.', false);
+                $order->setStatus('fraud');
+            }
+
             $order->save();
 
             $cart = Mage::getSingleton('checkout/cart');
@@ -891,4 +913,5 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
     public function getPublicKeyWebHook() {
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'publickey_web');
     }
+
 }
