@@ -175,7 +175,7 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
      */
     public function hostedAction() {
         $cardToken          = (string)$this->getRequest()->getParam('cko-card-token');
-        $orderIncrementId   = (int)$this->getRequest()->getParam('cko-context-id');
+        $orderIncrementId   = (string)$this->getRequest()->getParam('cko-context-id');
         $order              = Mage::getModel('sales/order')->loadByIncrementId($orderIncrementId);
 
         if (!$order->getId()) {
