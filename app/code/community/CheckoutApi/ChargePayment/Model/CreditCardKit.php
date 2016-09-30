@@ -18,6 +18,41 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
     const RENDER_MODE           = 2;
 
     /**
+     * Redirect URL
+     *
+     * @return mixed
+     *
+     * @version 20160516
+     */
+    public function getCheckoutRedirectUrl() {
+        $controllerName     = (string)Mage::app()->getFrontController()->getRequest()->getControllerName();
+
+        if ($controllerName === 'onepage') {
+            return false;
+        }
+
+        $requestData        = Mage::app()->getRequest()->getParam('payment');
+        $cardToken          = !empty($requestData['checkout_kit_card_token']) ? $requestData['checkout_kit_card_token'] : null;
+        $session            = Mage::getSingleton('chargepayment/session_quote');
+
+        if (!is_null($cardToken)) {
+            return false;
+        }
+
+        $params['method']           = $this->_code;
+        $params['kit_number']       = $requestData['checkout_kit_number'];
+        $params['kit_name']         = $requestData['checkout_kit_name'];
+        $params['kit_month']        = $requestData['checkout_kit_month'];
+        $params['kit_year']         = $requestData['checkout_kit_year'];
+        $params['kit_cvv']          = $requestData['checkout_kit_cvv'];
+        $params['kit_public_key']   = Mage::helper('chargepayment')->getConfigData($this->_code, 'publickey');
+
+        $session->setJsCheckoutApiParams($params);
+
+        return Mage::helper('checkout/url')->getCheckoutUrl();
+    }
+
+    /**
      * Redirect URL after order place
      *
      * @return bool
@@ -108,25 +143,26 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
      * @version 20160505
      */
     public function authorize(Varien_Object $payment, $amount) {
-        // does not create charge on checkout.com if amount is 0
+		// does not create charge on checkout.com if amount is 0
         if (empty($amount)) {
             return $this;
         }
-
+		
         $requestData        = Mage::app()->getRequest()->getParam('payment');
         $session            = Mage::getSingleton('chargepayment/session_quote');
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
+        $order              = $payment->getOrder();
 
         /* Normal Payment */
         $cardToken      = !empty($requestData['checkout_kit_card_token']) ? $requestData['checkout_kit_card_token'] : NULL;
         $isDebug        = $this->isDebug();
 
         if (is_null($cardToken)) {
-            Mage::throwException(Mage::helper('chargepayment')->__('Please use the "Add Card" button to complete your order.'));
+            Mage::throwException(Mage::helper('chargepayment')->__('Authorize action is not available.'));
             Mage::log('Empty Card Token', null, $this->_code.'.log');
         }
 
-        $price              = $isCurrentCurrency ? $this->_getQuote()->getGrandTotal() : $this->_getQuote()->getBaseGrandTotal();
+        $price              = $isCurrentCurrency ? $order->getGrandTotal() : $order->getBaseGrandTotal();
         $priceCode          = $isCurrentCurrency ? $this->getCurrencyCode() : Mage::app()->getStore()->getBaseCurrencyCode();
 
         $Api    = CheckoutApi_Api::getApi(array('mode' => $this->getEndpointMode()));
@@ -150,6 +186,13 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
             Mage::throwException($errorMessage);
         }
 
+        $toValidate = array(
+            'currency' => $priceCode,
+            'value'    =>  $Api->valueToDecimal($price, $priceCode),
+        );
+
+        $validateRequest = $Api->validateRequest($toValidate,$result);
+
         if($result->isValid()) {
             if ($this->_responseValidation($result)) {
                 /* Save Customer Credit Cart */
@@ -158,8 +201,10 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
 
                 /* is 3D payment */
                 if ($redirectUrl && $entityId) {
-                    $payment->setAdditionalInformation('payment_token', $entityId);
-                    $payment->setAdditionalInformation('payment_token_url', $redirectUrl);
+                    $payment
+                        ->setAdditionalInformation('payment_token', $entityId)
+                        ->setAdditionalInformation('payment_token_url', $redirectUrl)
+                        ->setAdditionalInformation('use_current_currency', $isCurrentCurrency);
 
                     $session->addPaymentToken($entityId);
                     $session
@@ -175,6 +220,11 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
                     $payment->setAdditionalInformation('use_current_currency', $isCurrentCurrency);
 
                     if ($autoCapture) {
+                        if($validateRequest['status']!== 1 && (int)$result->getResponseCode() !== CheckoutApi_ChargePayment_Model_Checkout::CHECKOUT_API_RESPONSE_CODE_APPROVED ){
+                            $order->addStatusHistoryComment('Suspected fraud - Please verify amount and quantity.', false);
+                            $payment->setIsFraudDetected(true);
+                        }
+
                         $payment->setIsTransactionPending(true);
                     }
 
@@ -226,6 +276,22 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
         $street = Mage::helper('customer/address')
             ->convertStreetLines($shippingAddress->getStreet(), 2);
 
+        $billingAddressConfig = array (
+            'addressLine1'  => $street[0],
+            'addressLine2'  => $street[1],
+            'postcode'      => $billingAddress->getPostcode(),
+            'country'       => $billingAddress->getCountry(),
+            'city'          => $billingAddress->getCity(),
+            'state'         => $billingAddress->getRegion(),
+            'phone'         => array('number' => $billingAddress->getTelephone())
+        );
+
+        $billingPhoneNumber = $billingAddress->getTelephone();
+
+        if (!empty($billingPhoneNumber)) {
+            $billingAddressConfig['phone'] = array('number' => $billingPhoneNumber);
+        }
+
         $shippingAddressConfig = array(
             'addressLine1'       => $street[0],
             'addressLine2'       => $street[1],
@@ -262,6 +328,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
             'value'             => $amountCents,
             'chargeMode'        => $chargeMode,
             'currency'          => $currencyDesc,
+            'billingDetails'    => $billingAddressConfig,
             'shippingDetails'   => $shippingAddressConfig,
             'products'          => $products,
             'customerIp'        => Mage::helper('core/http')->getRemoteAddr(),

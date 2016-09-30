@@ -20,7 +20,12 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
     {
         $modelWebhook   = Mage::getModel('chargepayment/webhook');
 
-        $isDebug = Mage::getModel('chargepayment/creditCard')->isDebug();
+        $isDebugCard    = Mage::getModel('chargepayment/creditCard')->isDebug();
+        $isDebugJs     = Mage::getModel('chargepayment/creditCardJs')->isDebug();
+        $isDebugKit     = Mage::getModel('chargepayment/creditCardKit')->isDebug();
+        $isDebugHosted  = Mage::getModel('chargepayment/hosted')->isDebug();
+
+        $isDebug        = $isDebugCard || $isDebugJs || $isDebugKit || $isDebugHosted ? true : false;
 
         if ($isDebug) {
             Mage::log(file_get_contents('php://input'), null, CheckoutApi_ChargePayment_Model_Webhook::LOG_FILE);
@@ -89,15 +94,15 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         $session        = Mage::getSingleton('chargepayment/session_quote');
         $isLocalPayment = $session->isCheckoutLocalPaymentTokenExist($responseToken);
 
-        if ($isLocalPayment) {
-            $this->_redirect('chargepayment/api/complete', array('_query' => 'token=' . $responseToken));
-            return;
-        }
-
         $modelWebhook   = Mage::getModel('chargepayment/webhook');
 
         if ($responseToken) {
             $result = $modelWebhook->authorizeByPaymentToken($responseToken);
+
+            if ($isLocalPayment) {
+                $this->_redirect('chargepayment/api/complete', array('_query' => 'token=' . $responseToken));
+                return;
+            }
 
             if ($result['is_admin'] === false) {
                 $redirectUrl    = 'checkout/onepage/success';
@@ -105,6 +110,14 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
                 if ($result['error'] === true) {
                     $redirectUrl = Mage::helper('checkout/url')->getCheckoutUrl();
                     Mage::getSingleton('core/session')->addError('Please check you card details and try again. Thank you');
+
+                    if(!is_null($result['order_increment_id'])){
+                        $order = Mage::getModel('sales/order')->loadByIncrementId($result['order_increment_id']);
+                        $order->cancel();
+                        $order->addStatusHistoryComment('Order has been cancelled.');
+                        $order->save();
+                    }
+
                     $this->_redirectUrl($redirectUrl);
                     return;
                 }
@@ -143,9 +156,10 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
 
         /* Clear checkout */
         Mage::getSingleton('checkout/session')->clear();
+
         $cart = Mage::getModel('checkout/cart');
-        $cart->truncate();
-        $cart->save();
+        Mage::helper('chargepayment')->restoreStockItemsQty($cart);
+        $cart->truncate()->save();
 
         $session->removeCheckoutLocalPaymentToken($responseToken);
 
@@ -155,6 +169,85 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
             ->getBlock('head')
             ->setTitle($this->__('Local Payment Completed (Checkout.com)'));
 
+        $this->renderLayout();
+    }
+
+    /**
+     * Action for verify charge by card token
+     *
+     * @url chargepayment/api/hosted/
+     */
+    public function hostedAction() {
+        $cardToken          = (string)$this->getRequest()->getParam('cko-card-token');
+        $orderIncrementId   = (string)$this->getRequest()->getParam('cko-context-id');
+        $order              = Mage::getModel('sales/order')->loadByIncrementId($orderIncrementId);
+
+        if (!$order->getId()) {
+            $this->norouteAction();
+            return;
+        }
+
+        if (!$cardToken) {
+            Mage::getSingleton('core/session')->addError('Your payment has been cancelled. Please enter your card details and try again.');
+            $result = array('status' => 'error', 'redirect' => Mage::helper('checkout/url')->getCheckoutUrl());
+            $order->cancel();
+            $order->addStatusHistoryComment('Order has been cancelled.');
+            $order->save();
+            $this->_redirectUrl($result['redirect']);
+            return;
+        }
+
+        $hostedModel    = Mage::getModel('chargepayment/hosted');
+
+        $result = $hostedModel->authorizeByCardToken($order, $cardToken);
+        $session = Mage::getSingleton('chargepayment/session_quote');
+
+        switch($result['status']) {
+            case 'success':
+                $session
+                    ->setHostedPaymentRedirect(NULL)
+                    ->setHostedPaymentParams(NULL)
+                    ->setSecretKey(NULL);
+
+                $this->_redirect($result['redirect']);
+                break;
+            case '3d':
+                $session
+                    ->setHostedPaymentRedirect(NULL)
+                    ->setHostedPaymentParams(NULL);
+
+                $this->_redirectUrl($result['redirect']);
+                break;
+            case 'error':
+            default:
+                Mage::getSingleton('core/session')->addError('Please check you card details and try again. Thank you');
+                $order->cancel();
+                $order->addStatusHistoryComment('Order has been cancelled.');
+                $order->save();
+                $this->_redirectUrl($result['redirect']);
+                break;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Redirect Action for Hosted Payment
+     *
+     * @url chargepayment/api/redirect
+     *
+     * @return Mage_Core_Controller_Varien_Action
+     */
+    public function redirectAction() {
+        $session        = Mage::getSingleton('chargepayment/session_quote');
+        $redirectUrl    = $session->getHostedPaymentRedirect();
+
+        if (empty($redirectUrl)) {
+            $this->norouteAction();
+            return $this;
+        }
+
+        $this->loadLayout();
         $this->renderLayout();
     }
 }
