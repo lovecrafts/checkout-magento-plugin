@@ -30,8 +30,8 @@ class CheckoutApi_ChargePayment_Model_Webhook
         }
 
         $responseCode       = (int)$response->message->responseCode;
-        $status             = (string)$response->message->status;
-        $responseMessage    = (string)$response->message->responseMessage;
+        $status             = property_exists($response->message, 'status') ? (string)$response->message->status : '';
+        $responseMessage    = property_exists($response->message, 'responseMessage') ? (string)$response->message->responseMessage : '';
         $trackId            = (string)$response->message->trackId;
 
         if ($responseCode !== CheckoutApi_ChargePayment_Model_CreditCard::CHECKOUT_API_RESPONSE_CODE_APPROVED &&
@@ -152,8 +152,9 @@ class CheckoutApi_ChargePayment_Model_Webhook
         $publicKey      = Mage::getModel('chargepayment/creditCard')->getPublicKey();
         $publicJsKey    = Mage::getModel('chargepayment/creditCardJs')->getPublicKeyWebHook();
         $publicKitKey   = Mage::getModel('chargepayment/creditCardKit')->getPublicKeyWebHook();
+        $publicHostedKey    = Mage::getModel('chargepayment/hosted')->getPublicKeyWebHook();
 
-        $result         = $publicKey === $key || $publicJsKey === $key || $publicKitKey === $key ? true : false;
+        $result         = $publicKey === $key || $publicJsKey === $key || $publicKitKey === $key || $publicHostedKey ? true : false;
 
         if (!$result) {
             Mage::log("Public shared keys {$key} (API) and {$publicKey} (Magento) do not match.", null, self::LOG_FILE);
@@ -284,6 +285,7 @@ class CheckoutApi_ChargePayment_Model_Webhook
 
         $transactionId          = (string)$response->message->id;
         $parentTransactionId    = (string)$response->message->originalId;
+        $chargeMode             = (int)$response->message->chargeMode;
 
         if (!$orderId) {
             Mage::log("Cannot void Order - {$trackId}", null, self::LOG_FILE);
@@ -317,10 +319,17 @@ class CheckoutApi_ChargePayment_Model_Webhook
             $transactionStatus  = $transaction->getTxnType();
             $isClosed           = (int)$transaction->getIsClosed();
 
-            if ($parentTransactionId === $transactionTxnId && Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH === $transactionStatus
-            && !$isClosed) {
-                $isVoid = true;
-                break;
+            if($chargeMode === 3){
+                if ( !$isClosed) {
+                    $isVoid = true;
+                    break;
+                }
+            } else {
+                if ($parentTransactionId === $transactionTxnId && !$isClosed) {
+
+                    $isVoid = true;
+                    break;
+                }
             }
         }
 
@@ -336,19 +345,20 @@ class CheckoutApi_ChargePayment_Model_Webhook
                 ->setPreparedMessage((string)$response->message->description)
                 ->setParentTransactionId($parentTransactionId)
                 ->setShouldCloseParentTransaction(true)
-                ->setIsTransactionClosed(true)
+                ->setIsTransactionClosed(1)
                 ->registerVoidNotification()
             ;
 
             $isCancelledOrder = Mage::getModel('chargepayment/creditCard')->getVoidStatus();
 
             if ($isCancelledOrder) {
-                $order->registerCancellation('Transaction has been void');
-                $order->setStatus(Mage_Sales_Model_Order::STATE_CANCELED);
+                $order->setStatus('canceled');
+                $order->setState('canceled');
+                $order->addStatusHistoryComment('Transaction has been voided', true);
             }
 
             $order->setChargeIsVoided(1);
-            $order->save();
+            $order->save();;
 
         } catch (Mage_Core_Exception $e) {
             Mage::log($e->getMessage(), null, self::LOG_FILE);
@@ -382,7 +392,8 @@ class CheckoutApi_ChargePayment_Model_Webhook
         try {
             foreach ($order->getInvoiceCollection() as $invoice) {
                 $invoiceObj = Mage::getModel('sales/order_invoice')->loadByIncrementId($invoice->getIncrementId());
-                $invoiceObj->cancel();
+                $invoiceObj->setState(Mage_Sales_Model_Order::STATE_CANCELED);
+                $invoiceObj->setStatus(Mage_Sales_Model_Order::STATE_CANCELED);
                 $invoiceObj->save();
             }
 
@@ -394,9 +405,9 @@ class CheckoutApi_ChargePayment_Model_Webhook
                 ->setTxnType(Mage_Sales_Model_Order_Payment_Transaction::TYPE_VOID)
                 ->save();
 
-            $order->addStatusHistoryComment($voidMessage);
             $order->registerCancellation($message);
             $order->setStatus(Mage_Sales_Model_Order::STATE_CANCELED);
+            $order->addStatusHistoryComment($voidMessage);
             $order->save();;
         } catch (Mage_Core_Exception $e) {
             Mage::log($e->getMessage(), null, self::LOG_FILE);
@@ -452,12 +463,16 @@ class CheckoutApi_ChargePayment_Model_Webhook
                 }
             }
 
+            $cancelOrderID = array('order_increment_id' =>$badOrderIncrementId );
+            $result = array_merge($result,$cancelOrderID);
+
             return $result;
         }
 
         $chargeMode         = (int)$response->getChargeMode();
 
-        if ($chargeMode !== CheckoutApi_ChargePayment_Helper_Data::CREDIT_CARD_CHARGE_MODE_3D) {
+        if ($chargeMode !== CheckoutApi_ChargePayment_Helper_Data::CREDIT_CARD_CHARGE_MODE_3D
+            && $chargeMode !== CheckoutApi_ChargePayment_Helper_Data::CREDIT_CARD_CHARGE_MODE_LP ) {
             return $result;
         }
 
@@ -467,6 +482,17 @@ class CheckoutApi_ChargePayment_Model_Webhook
         $isAuto             = $isAuto == CheckoutApi_Client_Constant::AUTOCAPUTURE_AUTH ? false : true;
 
         $order = Mage::getModel('sales/order')->loadByIncrementId($orderIncrementId);
+
+        $isCurrentCurrency  = $session->getIsUseCurrentCurrency();
+        $price              = $isCurrentCurrency ? $order->getGrandTotal() : $order->getBaseGrandTotal();
+        $priceCode          = $isCurrentCurrency ? $this->getCurrencyCode() : Mage::app()->getStore()->getBaseCurrencyCode();
+
+        $toValidate = array(
+            'currency' => $priceCode,
+            'value'    =>  $Api->valueToDecimal($price, $priceCode),
+        );
+
+        $validateRequest = $Api->validateRequest($toValidate,$response);
 
         if (!$order->getId()) {
             return $result;
@@ -482,10 +508,12 @@ class CheckoutApi_ChargePayment_Model_Webhook
             return $result;
         }
 
-        $storedToken = $order->getPayment()->getAdditionalInformation('payment_token');
+        if($chargeMode === CheckoutApi_ChargePayment_Helper_Data::CREDIT_CARD_CHARGE_MODE_3D){
+            $storedToken = $order->getPayment()->getAdditionalInformation('payment_token');
 
-        if ($storedToken !== $responseToken) {
-            return $result;
+            if ($storedToken !== $responseToken) {
+                return $result;
+            }
         }
 
         $payment    = $order->getPayment();
@@ -515,12 +543,32 @@ class CheckoutApi_ChargePayment_Model_Webhook
 
             $history = $order->addStatusHistoryComment($message, false);
 
-            $order->setStatus($session->getNewOrderStatus());
+            if($chargeMode === CheckoutApi_ChargePayment_Helper_Data::CREDIT_CARD_CHARGE_MODE_LP){
+
+                if($validateRequest['status'] != 1 ){
+                    $order->setState('payment_review');
+                    $order->setStatus('fraud');
+                    $order->addStatusHistoryComment('Suspected fraud - Please verify amount and quantity.', false);
+                } else {
+                    $order->setStatus('pending');
+                }
+
+            } else {
+                $order->setStatus('pending');
+            }
+
             $order->save();
 
-            Mage::getModel('chargepayment/customerCard')->saveCard($payment, $response);
-            Mage::getSingleton('checkout/cart')->truncate();
-            Mage::getSingleton('checkout/cart')->save();
+            if($chargeMode === CheckoutApi_ChargePayment_Helper_Data::CREDIT_CARD_CHARGE_MODE_3D){
+                Mage::getModel('chargepayment/customerCard')->saveCard($payment, $response);
+            }
+
+            $cart = Mage::getModel('checkout/cart');
+
+            Mage::helper('chargepayment')->restoreStockItemsQty($cart);
+
+            $cart->truncate()->save();
+
         } catch (Mage_Core_Exception $e) {
             Mage::log($e->getMessage(), null, self::LOG_FILE);
             return $result;

@@ -13,7 +13,6 @@ class CheckoutApi_ChargePayment_Model_Adminhtml_System_Config_Source_PaymentMode
      * @return array
      *
      * @version
-     *
      */
     public function toOptionArray()
     {

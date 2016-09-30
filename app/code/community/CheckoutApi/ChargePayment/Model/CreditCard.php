@@ -18,6 +18,17 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
     const TRANSACTION_INDICATOR_REGULAR     = 1;
 
     /**
+     * Redirect URL
+     *
+     * @return mixed
+     *
+     * @version 20160516
+     */
+    public function getCheckoutRedirectUrl() {
+        return false;
+    }
+
+    /**
      * Redirect URL after order place
      *
      * @return mixed
@@ -141,11 +152,11 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
      * @version 20151006
      */
     public function authorize(Varien_Object $payment, $amount) {
-        // does not create charge on checkout.com if amount is 0
+		// does not create charge on checkout.com if amount is 0
         if (empty($amount)) {
             return $this;
         }
-
+		
         $isDebug            = $this->isDebug();
         $autoCapture        = $this->_isAutoCapture();
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
@@ -168,6 +179,14 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
             Mage::throwException($errorMessage);
         }
 
+        $priceCode          = $isCurrentCurrency ? $order->getOrderCurrencyCode() : $order->getBaseCurrencyCode();
+        $toValidate = array(
+            'currency' => $priceCode,
+            'value'    =>  $Api->valueToDecimal($isCurrentCurrency ? $order->getGrandTotal() : $order->getBaseGrandTotal(), $priceCode),
+        );
+
+        $validateRequest = $Api->validateRequest($toValidate,$result);
+
         if($result->isValid()) {
             if ($this->_responseValidation($result)) {
                 /* Save Customer Credit Cart */
@@ -177,8 +196,10 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
 
                 /* is 3D payment */
                 if ($redirectUrl && $entityId) {
-                    $payment->setAdditionalInformation('payment_token', $entityId);
-                    $payment->setAdditionalInformation('payment_token_url', $redirectUrl);
+                    $payment
+                        ->setAdditionalInformation('payment_token', $entityId)
+                        ->setAdditionalInformation('payment_token_url', $redirectUrl)
+                        ->setAdditionalInformation('use_current_currency', $isCurrentCurrency);
 
                     $session->addPaymentToken($entityId);
                     $session
@@ -196,6 +217,10 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
                     $payment->setAdditionalInformation('use_current_currency', $isCurrentCurrency);
 
                     if ($autoCapture) {
+                        if($validateRequest['status']!== 1 && (int)$result->getResponseCode() !== CheckoutApi_ChargePayment_Model_Checkout::CHECKOUT_API_RESPONSE_CODE_APPROVED ){
+                            $order->addStatusHistoryComment('Suspected fraud - Please verify amount and quantity.', false);
+                            $payment->setIsFraudDetected(true);
+                        }
                         $payment->setIsTransactionPending(true);
                     }
 
@@ -318,7 +343,7 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
 
         $config['autoCapTime']  = self::AUTO_CAPTURE_TIME;
         $config['autoCapture']  = $autoCapture ? CheckoutApi_Client_Constant::AUTOCAPUTURE_CAPTURE : CheckoutApi_Client_Constant::AUTOCAPUTURE_AUTH;
-        $config['chargeMode']   = $this->getChargeMode();
+        $config['chargeMode']   = $this->getIs3D();
 
         $email                  = Mage::helper('chargepayment')->getCustomerEmail();
         $email                  = !empty($email) ? $email : $order->getCustomerEmail();
@@ -505,5 +530,16 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
      */
     public function getChargeMode() {
         return CheckoutApi_ChargePayment_Helper_Data::CREDIT_CARD_CHARGE_MODE_NOT_3D;
+    }
+
+    /**
+     * Return true if is 3D
+     *
+     * @return bool
+     *
+     * @version 20160202
+     */
+    public function getIs3D() {
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'is_3d');
     }
 }

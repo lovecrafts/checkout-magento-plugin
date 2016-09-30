@@ -1,7 +1,7 @@
 <config>
     <modules>
         <CheckoutApi_ChargePayment>
-            <version>2.2.4</version>
+            <version>2.2.6</version>
         </CheckoutApi_ChargePayment>
     </modules>
     <global>
@@ -28,11 +28,6 @@
             <chargepayment>
                 <class>CheckoutApi_ChargePayment_Block</class>
             </chargepayment>
-            <checkout>
-                <rewrite>
-                    <cart_totals>CheckoutApi_ChargePayment_Block_Cart_Totals</cart_totals>
-                </rewrite>
-            </checkout>
         </blocks>
         <resources>
             <chargepayment_setup>
@@ -117,10 +112,13 @@
                 <is_3d>1</is_3d>
                 <timeout>60</timeout>
                 <theme_color>#00b660</theme_color>
+                <widget_color>#333</widget_color>
                 <form_button_color>#00b660</form_button_color>
                 <form_button_color_label>#ffffff</form_button_color_label>
                 <overlay_shade>dark</overlay_shade>
                 <overlay_opacity>0.8</overlay_opacity>
+                <show_mobile_icons>0</show_mobile_icons>
+                <widget_icon_size>small</widget_icon_size>
                 <payment_mode>mixed</payment_mode>
             </checkoutapijs>
             <checkoutapikit>
@@ -135,6 +133,16 @@
                 <is_3d>1</is_3d>
                 <timeout>60</timeout>
             </checkoutapikit>
+            <checkoutapihosted>
+                <active>0</active>
+                <title>Checkout.com (Hosted JS Solution)</title>
+                <model>chargepayment/Hosted</model>
+                <current_currency>0</current_currency>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <mode>sandbox</mode>
+                <is_3d>1</is_3d>
+            </checkoutapihosted>
         </payment>
     </default>
     <adminhtml>

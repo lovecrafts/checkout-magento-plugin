@@ -146,6 +146,17 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiJs  extends Mage_Payment_B
     }
 
     /**
+     * Return color for widgetColor param
+     *
+     * @return mixed
+     *
+     * @version 20160203
+     */
+    public function getWidgetColor() {
+        return Mage::helper('chargepayment')->getConfigData($this->_paymentCode, 'widget_color');
+    }
+
+    /**
      * Return color for formButtonColor param
      *
      * @return mixed
@@ -190,6 +201,28 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiJs  extends Mage_Payment_B
     }
 
     /**
+     * Return bool for showMobileIcons param
+     *
+     * @return mixed
+     *
+     * @version 20160203
+     */
+    public function isShowMobileIcons() {
+        return Mage::helper('chargepayment')->getConfigData($this->_paymentCode, 'show_mobile_icons');
+    }
+
+    /**
+     * Return size for widgetIconSize param
+     *
+     * @return mixed
+     *
+     * @version 20160203
+     */
+    public function getWidgetIconSize() {
+        return Mage::helper('chargepayment')->getConfigData($this->_paymentCode, 'widget_icon_size');
+    }
+
+    /**
      * Return card form mode
      *
      * @return string
@@ -229,14 +262,5 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiJs  extends Mage_Payment_B
      */
     public function getJsPath() {
         return Mage::helper('chargepayment')->getJsPath();
-    }
-
-    /**
-     * Return js file path
-     *
-     * @return string
-     */
-    public function getCheckoutJsPath() {
-        return Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_JS) . 'checkout_api/checkout.js';
     }
 }
