@@ -170,11 +170,10 @@ abstract class CheckoutApi_ChargePayment_Model_Checkout extends Mage_Payment_Mod
         }
 
         $transactionId  = $payment->getParentTransactionId();
-        $autoCapture    = $this->_isAutoCapture();
         $isDebug        = $this->isDebug();
 
         /* if parent transaction id is empty its authorize and capture */
-        if (empty($transactionId) && $autoCapture) {
+        if (empty($transactionId)) {
             $this->authorize($payment, $amount);
 
             return $this;

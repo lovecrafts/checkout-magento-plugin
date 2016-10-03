@@ -120,6 +120,8 @@
                 <show_mobile_icons>0</show_mobile_icons>
                 <widget_icon_size>small</widget_icon_size>
                 <payment_mode>mixed</payment_mode>
+                <payment_action>authorize</payment_action>
+                <autoCapTime>0</autoCapTime>
             </checkoutapijs>
             <checkoutapikit>
                 <active>0</active>
