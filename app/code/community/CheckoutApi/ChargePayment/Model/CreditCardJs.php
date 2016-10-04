@@ -304,7 +304,6 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         $config['postedParam']['trackId']   = $payment->getOrder()->getIncrementId();
         $config['postedParam']['cardToken'] = $cardToken;
 
-        $autoCapture    = $this->_isAutoCapture();
         $result         = $Api->createCharge($config);
 
         if (is_object($result) && method_exists($result, 'toArray')) {
@@ -348,13 +347,13 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
                     $payment->setIsTransactionClosed(0);
                     $payment->setAdditionalInformation('use_current_currency', $isCurrentCurrency);
 
-                    if ($autoCapture) {
-                        if($validateRequest['status']!== 1 && (int)$result->getResponseCode() !== CheckoutApi_ChargePayment_Model_Checkout::CHECKOUT_API_RESPONSE_CODE_APPROVED ){
-                            $order->addStatusHistoryComment('Suspected fraud - Please verify amount and quantity.', false);
-                            $payment->setIsFraudDetected(true);
-                        }
+                    if($validateRequest['status']!== 1 && (int)$result->getResponseCode() !== CheckoutApi_ChargePayment_Model_Checkout::CHECKOUT_API_RESPONSE_CODE_APPROVED ){
+                        $order->addStatusHistoryComment('Suspected fraud - Please verify amount and quantity.', false);
+                        $payment->setIsFraudDetected(true);
+                    } else {
                         $payment->setIsTransactionPending(true);
                     }
+
                     $session->setIs3d(false);
                 }
             }

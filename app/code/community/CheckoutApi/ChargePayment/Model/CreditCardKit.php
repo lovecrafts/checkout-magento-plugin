@@ -172,7 +172,6 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
         $config['postedParam']['trackId']   = $payment->getOrder()->getIncrementId();
         $config['postedParam']['cardToken'] = $cardToken;
 
-        $autoCapture    = $this->_isAutoCapture();
         $result         = $Api->createCharge($config);
 
         if (is_object($result) && method_exists($result, 'toArray')) {
@@ -219,13 +218,12 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
                     $payment->setIsTransactionClosed(0);
                     $payment->setAdditionalInformation('use_current_currency', $isCurrentCurrency);
 
-                    if ($autoCapture) {
-                        if($validateRequest['status']!== 1 && (int)$result->getResponseCode() !== CheckoutApi_ChargePayment_Model_Checkout::CHECKOUT_API_RESPONSE_CODE_APPROVED ){
-                            $order->addStatusHistoryComment('Suspected fraud - Please verify amount and quantity.', false);
-                            $payment->setIsFraudDetected(true);
-                        }
 
-                        $payment->setIsTransactionPending(true);
+                    if($validateRequest['status']!== 1 && (int)$result->getResponseCode() !== CheckoutApi_ChargePayment_Model_Checkout::CHECKOUT_API_RESPONSE_CODE_APPROVED ){
+                        $order->addStatusHistoryComment('Suspected fraud - Please verify amount and quantity.', false);
+                        $payment->setIsFraudDetected(true);
+                    } else {
+                        $payment->setState('pending');
                     }
 
                     $session->setIs3d(false);
@@ -343,11 +341,23 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
             )
         );
 
-        $autoCapture = $this->_isAutoCapture();
+        $autoCapture = 'n';
 
-        $config['postedParam']['autoCapture']  = $autoCapture ? CheckoutApi_Client_Constant::AUTOCAPUTURE_CAPTURE : CheckoutApi_Client_Constant::AUTOCAPUTURE_AUTH;;
-        $config['postedParam']['autoCapTime']  = self::AUTO_CAPTURE_TIME;
+        if ($this->getAutoCapture() ==1){
+            $autoCapture = 'y';
+        }
+
+        $config['postedParam']['autoCapture']  = $autoCapture;
+        $config['postedParam']['autoCapTime']  = $this->getAutoCapTime();
 
         return $config;
+    }
+
+    public function getAutoCapTime(){
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'autoCapTime');
+    }
+
+    public function getAutoCapture(){
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'autoCapture');
     }
 }

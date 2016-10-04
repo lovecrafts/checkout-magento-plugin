@@ -23,6 +23,10 @@ abstract class CheckoutApi_ChargePayment_Model_Checkout extends Mage_Payment_Mod
     protected $_canOrder        = true;
     protected $_canSaveCc       = false;
 
+    public function getConfigPaymentAction() {
+        return 'authorize';
+    }
+
     /**
      * Redirect URL
      *
@@ -156,6 +160,7 @@ abstract class CheckoutApi_ChargePayment_Model_Checkout extends Mage_Payment_Mod
      *
      * @version 20160204
      */
+
     public function capture(Varien_Object $payment, $amount) {
         $isCapture  = $payment->getChargeIsCaptured();
 
@@ -234,6 +239,8 @@ abstract class CheckoutApi_ChargePayment_Model_Checkout extends Mage_Payment_Mod
 
         return $this;
     }
+
+
 
     /**
      * Return array for capture charge

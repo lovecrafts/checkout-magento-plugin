@@ -158,7 +158,6 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
         }
 		
         $isDebug            = $this->isDebug();
-        $autoCapture        = $this->_isAutoCapture();
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
 
         $Api        = CheckoutApi_Api::getApi(array('mode'=>$this->getEndpointMode()));
@@ -216,13 +215,13 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
                     $payment->setIsTransactionClosed(0);
                     $payment->setAdditionalInformation('use_current_currency', $isCurrentCurrency);
 
-                    if ($autoCapture) {
                         if($validateRequest['status']!== 1 && (int)$result->getResponseCode() !== CheckoutApi_ChargePayment_Model_Checkout::CHECKOUT_API_RESPONSE_CODE_APPROVED ){
                             $order->addStatusHistoryComment('Suspected fraud - Please verify amount and quantity.', false);
                             $payment->setIsFraudDetected(true);
+                        } else {
+                            $payment->setState('pending');
                         }
-                        $payment->setIsTransactionPending(true);
-                    }
+
 
                     $session->setIs3d(false);
                 }
@@ -341,8 +340,18 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
 
         /* END: Prepare data */
 
-        $config['autoCapTime']  = self::AUTO_CAPTURE_TIME;
-        $config['autoCapture']  = $autoCapture ? CheckoutApi_Client_Constant::AUTOCAPUTURE_CAPTURE : CheckoutApi_Client_Constant::AUTOCAPUTURE_AUTH;
+        $autoCapture = 'n';
+
+        if ($this->getAutoCapture() ==1){
+            $autoCapture = 'y';
+        }
+
+        $config['postedParam']['autoCapture']  = $autoCapture;
+        $config['postedParam']['autoCapTime']  = $this->getAutoCapTime();
+
+
+        $config['autoCapTime']  = $this->getAutoCapTime();
+        $config['autoCapture'] = $autoCapture;
         $config['chargeMode']   = $this->getIs3D();
 
         $email                  = Mage::helper('chargepayment')->getCustomerEmail();
@@ -541,5 +550,13 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
      */
     public function getIs3D() {
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'is_3d');
+    }
+
+    public function getAutoCapTime(){
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'autoCapTime');
+    }
+
+    public function getAutoCapture(){
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'autoCapture');
     }
 }
