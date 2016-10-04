@@ -21,7 +21,7 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
     const CREDIT_CARD_CHARGE_MODE_NOT_3D    = 1;
     const CREDIT_CARD_CHARGE_MODE_3D        = 2;
     const CREDIT_CARD_CHARGE_MODE_LP        = 3;
-    const PAYMENT_ACTION_AUTHORIZE_CAPTURE  = 'authorize_capture';
+    const PAYMENT_ACTION_AUTHORIZE_CAPTURE  = 'y';
     const API_MODE_LIVE                     = 'live';
     const API_MODE_SANDBOX                  = 'sandbox';
 
@@ -52,8 +52,7 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
      *
      * @version 20160202
      */
-    public function 
-    getJsPath() {
+    public function getJsPath() {
         $mode   = (string)$this->getConfigData(self::CODE_CREDIT_CARD_JS, 'mode');
         $jsUrl  = $mode === self::API_MODE_LIVE ? self::JS_PATH_CARD_TOKEN_LIVE : self::JS_PATH_CARD_TOKEN;
 

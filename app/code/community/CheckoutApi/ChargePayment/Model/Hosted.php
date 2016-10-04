@@ -244,7 +244,6 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
         return $this;
     }
 
-
     /**
      * Return endpoint mode for payment
      *
@@ -359,8 +358,14 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
             )
         );
 
-        $config['postedParam']['autoCapture']  = $autoCapture ? CheckoutApi_Client_Constant::AUTOCAPUTURE_CAPTURE : CheckoutApi_Client_Constant::AUTOCAPUTURE_AUTH;;
-        $config['postedParam']['autoCapTime']  = CheckoutApi_ChargePayment_Model_Checkout::AUTO_CAPTURE_TIME;
+        $autoCapture = 'n';
+
+        if ($this->getAutoCapture() ==1){
+            $autoCapture = 'y';
+        }
+
+        $config['postedParam']['autoCapture']  = $autoCapture;
+        $config['postedParam']['autoCapTime']  = $this->getAutoCapTime();
 
         return $config;
     }
@@ -907,4 +912,12 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'publickey_web');
     }
 
+
+    public function getAutoCapTime(){
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'autoCapTime');
+    }
+
+    public function getAutoCapture(){
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'autoCapture');
+    }
 }

@@ -97,9 +97,9 @@ checkoutApi.prototype = {
         var self = this;
 
         if (this.agreementIsValid()) {
-            CKOAPIKITJS.configure(window.CKOConfigKit);
+            CheckoutKit.configure(window.CKOConfigKit);
 
-            CKOAPIKITJS.createCardToken({
+            CheckoutKit.createCardToken({
                     number: $$('.cardNumber')[0].value,
                     name : $$('.chName')[0].value,
                     expiryMonth: $$('.expiryMonth')[0].value,

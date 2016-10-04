@@ -51,7 +51,7 @@
 
                             var script = document.createElement('script');
                             script.type = "text/javascript";
-                            script.src = '<?php echo $this->getJsPath();?>';
+                            script.src = '<?php echo $this->getHostedJsPath();?>';
                             script.async = true;
                             document.head.appendChild(script);
                         } else {
