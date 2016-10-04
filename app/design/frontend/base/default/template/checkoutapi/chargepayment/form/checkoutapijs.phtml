@@ -82,6 +82,9 @@
 						window.CKOConfig = {
 							namespace: 'CKOAPIJS',
 							ready: function() {
+                                if (typeof CKOAPIJS == 'undefined') {
+                                    return false;
+                                }
                                 delete window.CKOConfig;
 
 								CKOAPIJS.render(window.checkoutIntegrationCurrentConfig);
