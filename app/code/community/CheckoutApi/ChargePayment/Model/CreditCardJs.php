@@ -222,10 +222,11 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
      */
     public function authorize(Varien_Object $payment, $amount) {
 		// does not create charge on checkout.com if amount is 0
+
         if (empty($amount)) {
             return $this;
         }
-		
+
         $requestData        = Mage::app()->getRequest()->getParam('payment');
         $session            = Mage::getSingleton('chargepayment/session_quote');
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
@@ -401,6 +402,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         $amountCents        = $amount;
         $chargeMode         = $this->getIs3D();
 
+
         $street = Mage::helper('customer/address')
             ->convertStreetLines($shippingAddress->getStreet(), 2);
 
@@ -473,13 +475,18 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
                 'lib_version'       => CheckoutApi_Client_Constant::LIB_VERSION,
                 'integration_type'  => 'JS',
                 'time'              => Mage::getModel('core/date')->date('Y-m-d H:i:s')
-            )
+            ),
+
         );
 
-        $autoCapture = $this->_isAutoCapture();
+        $autoCapture = 'n';
 
-        $config['postedParam']['autoCapture']  = $autoCapture ? CheckoutApi_Client_Constant::AUTOCAPUTURE_CAPTURE : CheckoutApi_Client_Constant::AUTOCAPUTURE_AUTH;;
-        $config['postedParam']['autoCapTime']  = self::AUTO_CAPTURE_TIME;
+        if ($this->getAutoCapture() ==1){
+            $autoCapture = 'y';
+        }
+
+        $config['postedParam']['autoCapture']  = $autoCapture;
+        $config['postedParam']['autoCapTime']  = $this->getAutoCapTime();
 
         return $config;
     }
@@ -496,5 +503,13 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
 
         return $paymentMode === self::PAYMENT_MODE_MIXED
             || $paymentMode === self::PAYMENT_MODE_LOCAL_PAYMENT ? true : false;
+    }
+
+    public function getAutoCapTime(){
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'autoCapTime');
+    }
+
+    public function getAutoCapture(){
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'autoCapture');
     }
 }
