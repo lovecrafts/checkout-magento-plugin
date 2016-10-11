@@ -114,7 +114,47 @@ class CheckoutApi_ChargePayment_Model_Session_Quote extends Mage_Core_Model_Sess
      * @version 20160426
      */
     public function isCheckoutLocalPaymentTokenExist($paymentToken) {
-        $paymentTokens  = $this->getCheckoutLocalPaymentTokens();
+        $result = false;
+
+        if(!is_null($paymentToken)){
+            $Api = CheckoutApi_Api::getApi(array('mode' => Mage::getModel('chargepayment/hosted')->getEndpointMode()));
+
+            $verifyParams   = array('paymentToken' => $paymentToken,
+                'authorization' => $this->getSecretKey()
+            );
+
+            $data = $Api->verifyChargePaymentToken($verifyParams);
+
+            if($data->getChargeMode() === 3){
+                $result = true;
+            }
+        }
+
+
+        return $result;
+    }
+
+    /**
+     * Add Payment Token to session
+     *
+     * @param $paymentToken
+     */
+    public function addPaymentToken($paymentToken) {
+        $paymentTokens = $this->getPaymentTokens();
+        $paymentTokens = !$paymentTokens ? array() : $paymentTokens;
+
+        $paymentTokens[] = strtolower($paymentToken);
+        $this->setPaymentTokens($paymentTokens);
+    }
+
+    /**
+     * Return if Payment Token is in session.
+     *
+     * @param $paymentToken
+     * @return bool
+     */
+    public function isPaymentTokenExist($paymentToken) {
+        $paymentTokens  = $this->getPaymentTokens();
         $result         = false;
 
         if (!is_array($paymentTokens)) {
