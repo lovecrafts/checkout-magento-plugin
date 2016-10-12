@@ -2,11 +2,9 @@
 /**
  * Payment Info Block for CheckoutApiJs, $_infoBlockType
  *
- * Class CheckoutApi_ChargePayment_Block_Info_CheckoutApiJs
- *
- * @version 20160203
+ * Class CheckoutApi_ChargePayment_Block_Info_CheckoutApiHosted
  */
-class CheckoutApi_ChargePayment_Block_Info_CheckoutApiJs  extends Mage_Payment_Block_Info_Cc
+class CheckoutApi_ChargePayment_Block_Info_CheckoutApiHosted  extends Mage_Payment_Block_Info_Cc
 {
     /**
      * Removed cart type
