@@ -129,6 +129,30 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         }
     }
 
+     /**
+     * Fail page
+     *
+     * @url checkout/url
+     *
+     * @version 20161012
+     */
+    public function failAction(){
+        $session        = Mage::getSingleton('chargepayment/session_quote');
+        $redirectUrl    = Mage::helper('checkout/url')->getCheckoutUrl();
+
+        Mage::getSingleton('core/session')->addError('Please check your payment details and try again. Thank you');
+
+        if(!is_null($session->LastOrderIncrementId)){
+            $order = Mage::getModel('sales/order')->loadByIncrementId($session->LastOrderIncrementId);
+            $order->setStatus('canceled');
+            $order->setState('canceled');
+            $order->addStatusHistoryComment('Order has been cancelled.');
+            $order->save();
+        }
+
+        return $this->_redirectUrl($redirectUrl);
+    }
+
     /**
      * Local Payment Complete Page
      *
