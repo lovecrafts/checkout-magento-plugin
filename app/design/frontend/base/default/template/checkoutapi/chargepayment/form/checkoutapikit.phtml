@@ -9,6 +9,23 @@
 <?php $isDebug      = $this->getDebugMode();?>
 <?php if ($isActive):?>
     <ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>" style="display:none;">
+
+        <?php if($this->isCustomerLogged()): ?>
+            <?php $cardList = $this->getCustomerCardList();?>
+            <?php if(!empty($cardList)): ?>
+                <?php foreach($cardList as $index => $card):?>
+                    <li>
+                        <input class="checkoutapi-saved-card validate-one-required-by-name" type="radio" id="card-<?php echo $index;?>" value="<?php echo $card['value'];?>" name="payment[customer_card]"/>
+                        <label for="card-<?php echo $index;?>"><?php echo $card['type'] . ' ' . $card['title'];?></label>
+                    </li>
+                <?php endforeach;?>
+                <li>
+                    <input id="checkoutapi-new-card" class="validate-one-required-by-name" type="radio" name="payment[customer_card]" value="new_card"/>
+                    <label for="checkoutapi-new-card">Use New Card</label>
+                </li>
+            <?php endif;?>
+        <?php endif;?>
+
         <li>
             <form class="card-form" method="POST" action="<?php echo Mage::helper('core/url')->getCurrentUrl()?>">
                 <input type="hidden" id="cko-kit-card-token" name="payment[checkout_kit_card_token]" value=""/>
@@ -65,6 +82,24 @@
             </script>
         </li>
     </ul>
+
+    <?php if (!empty($cardList)):?>
+        <script type="application/javascript">
+            hideNewCard();
+
+            $$('.checkoutapi-saved-card').invoke('observe', 'change', hideNewCard);
+            $('checkoutapi-new-card').observe('change', showNewCard);
+
+            function hideNewCard() {
+                $$('.checkout-kit-card-block').each(Element.hide);
+            }
+
+            function showNewCard() {
+                $$('.checkout-kit-card-block').each(Element.show);
+            }
+        </script>
+    <?php endif;?>
+
 <?php else :?>
     <ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>" style="display:none;">
         <li><?php echo $this->__('Selected Payment Type is not allowed.') ?></li>
