@@ -17,6 +17,70 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
 
     const RENDER_MODE           = 2;
 
+    public function assignData($data)
+    {
+        if (!($data instanceof Varien_Object)) {
+            $data = new Varien_Object($data);
+        }
+        $info   = $this->getInfoInstance()
+            ->setCheckoutApiCardId('');
+
+        $result = $this->_getSavedCartDataFromPost($data);
+
+        if (!empty($result)) {
+            $info->setCcType($result['cc_type']);
+            $info->setCheckoutApiCardId($result['checkout_api_card_id']);
+        }
+
+        return $this;
+    }
+
+    protected function _getSavedCartDataFromPost($data) {
+
+        $savedCard  = $data->getCustomerCard();
+
+        /* If non saved card */
+        if (empty($savedCard) || $savedCard === 'new_card') {
+            return array();
+        }
+
+        $customerId = $this->getCustomerId();
+
+        /* If user not logged */
+        if (empty($customerId)) {
+            return array();
+        }
+
+        $cardModel  = Mage::getModel('chargepayment/customerCard');
+        $collection = $cardModel->getCustomerCardList($customerId);
+
+        /* If user not have saved cards */
+        if (!$collection->count()) {
+            return array();
+        }
+
+        $trueData       = false;
+        $customerCard   = array();
+
+        foreach($collection as $entity) {
+            $secret = $cardModel->getCardSecret($entity->getId(), $entity->getCardNumber(), $entity->getCardType());
+
+            if ($savedCard === $secret) {
+                $trueData = true;
+                $customerCard = $entity;
+                break;
+            }
+        }
+
+        if (!$trueData) {
+            Mage::throwException(Mage::helper('chargepayment')->__('Please check your card data.'));
+        }
+
+        $result['checkout_api_card_id'] = $customerCard->getCardId();
+
+        return $result;
+    }
+
     /**
      * Redirect URL
      *
@@ -158,8 +222,12 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
         $isDebug        = $this->isDebug();
 
         if (is_null($cardToken)) {
-            Mage::throwException(Mage::helper('chargepayment')->__('Authorize action is not available.'));
-            Mage::log('Empty Card Token', null, $this->_code.'.log');
+            $checkoutApiCardId = $payment->getCheckoutApiCardId();
+
+            if(is_null($checkoutApiCardId)){
+                Mage::throwException(Mage::helper('chargepayment')->__('Authorize action is not available.'));
+                Mage::log('Empty Card Token or cardId', null, $this->_code.'.log');
+            }
         }
 
         $price              = $isCurrentCurrency ? $order->getGrandTotal() : $order->getBaseGrandTotal();
@@ -170,7 +238,14 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
         $config = $this->_getCharge($amount);
 
         $config['postedParam']['trackId']   = $payment->getOrder()->getIncrementId();
-        $config['postedParam']['cardToken'] = $cardToken;
+
+        if(isset($cardToken)){
+            $config['postedParam']['cardToken'] = $cardToken;
+        }
+
+        if(isset($checkoutApiCardId)){
+            $config['postedParam']['cardId'] = $checkoutApiCardId;
+        }
 
         $result         = $Api->createCharge($config);
 
@@ -214,6 +289,9 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
                         ->setNewOrderStatus($this->getNewOrderStatus())
                     ;
                 } else {
+
+                    Mage::getModel('chargepayment/customerCard')->saveCard($payment, $result);
+
                     $payment->setTransactionId($entityId);
                     $payment->setIsTransactionClosed(0);
                     $payment->setAdditionalInformation('use_current_currency', $isCurrentCurrency);
@@ -359,5 +437,15 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
 
     public function getAutoCapture(){
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'autoCapture');
+    }
+
+    public function getCustomerId() {
+        if (Mage::app()->getStore()->isAdmin()) {
+            $customerId = Mage::getSingleton('adminhtml/session_quote')->getCustomerId();
+        } else {
+            $customerId = Mage::getModel('checkout/cart')->getQuote()->getCustomerId();
+        }
+
+        return $customerId ? $customerId : false;
     }
 }
