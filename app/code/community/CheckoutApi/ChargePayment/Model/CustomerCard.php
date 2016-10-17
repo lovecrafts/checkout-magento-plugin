@@ -25,8 +25,25 @@ class CheckoutApi_ChargePayment_Model_CustomerCard extends Mage_Core_Model_Abstr
      * @version 20151026
      */
     public function saveCard(Varien_Object $payment, $response) {
-        $customerId = Mage::getModel('chargepayment/creditCard')->getCustomerId();
-        $last4      = $payment->getCcLast4();
+
+        $integrationType = $response->getMetadata()['integration_type'];
+
+        if($integrationType == 'JS'){
+            $customerId = Mage::getModel('chargepayment/creditCardJs')->getCustomerId();
+            $last4 = $response->getCard()->getLast4();
+        } elseif($integrationType == 'API'){
+            $customerId = Mage::getModel('chargepayment/creditCard')->getCustomerId();
+            $last4      = $payment->getCcLast4();
+        }elseif($integrationType == 'KIT'){
+            $customerId = Mage::getModel('chargepayment/creditCardKit')->getCustomerId();
+            $last4 = $response->getCard()->getLast4();
+        }
+
+        if (empty($customerId)){
+            // SOAP mobile
+            $customerId = $payment->getData('cc_owner');
+        }
+
         $cardId     = $response->getCard()->getId();
         $cardType   = $response->getCard()->getPaymentMethod();
 
