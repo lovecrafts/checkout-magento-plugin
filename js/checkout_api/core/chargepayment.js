@@ -83,11 +83,23 @@ checkoutApi.prototype = {
     },
     checkoutApiFrame: function() {
         if (this.agreementIsValid()) {
-            CKOAPIJS.open();
 
-            if (CKOAPIJS.isMobile()) {
-                $('checkout-api-js-hover').show();
+            if(jQuery('#checkoutapi-new-card').length > 0){
+                if(jQuery('#checkoutapi-new-card').prop("checked")== true){
+                    CKOAPIJS.open();
+                    if (CKOAPIJS.isMobile()) {
+                        $('checkout-api-js-hover').show();
+                    }
+                } else {
+                    this.saveOrderSubmit();
+                }
+            } else {
+                CKOAPIJS.open();
+                if (CKOAPIJS.isMobile()) {
+                    $('checkout-api-js-hover').show();
+                }
             }
+
         } else {
             alert('Please agree to all the terms and conditions before placing the order.');
             return;
@@ -96,9 +108,7 @@ checkoutApi.prototype = {
     checkoutKit: function() {
         var self = this;
 
-        if (this.agreementIsValid()) {
-            CheckoutKit.configure(window.CKOConfigKit);
-
+        var createCToken = ( function () {
             CheckoutKit.createCardToken({
                     number: $$('.cardNumber')[0].value,
                     name : $$('.chName')[0].value,
@@ -121,6 +131,21 @@ checkoutApi.prototype = {
                     }
                 }
             );
+        });
+        
+        if (this.agreementIsValid()) {
+            CheckoutKit.configure(window.CKOConfigKit);
+
+            if(jQuery('#checkoutapi-new-card').length > 0){
+                if(jQuery('#checkoutapi-new-card').prop("checked")== true ){
+                    createCToken();
+                } else{
+                    self.saveOrderSubmit();
+                }
+            } else{
+                createCToken();
+            }
+
         } else {
             alert('Please agree to all the terms and conditions before placing the order.');
             return;

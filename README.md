@@ -9,6 +9,8 @@ Url: example.com/chargepayment/api/webhook/
 
 Redirect Url
 ========
-Url: example.com/chargepayment/api/callback/
+Success Url: example.com/chargepayment/api/callback/
+
+Fail Url: example.com/chargepayment/api/fail/
 
 

@@ -10,6 +10,24 @@
     <?php $tokenResult = $this->getPaymentTokenResult(); ?>
 	<?php if (!empty($tokenResult)): ?>
 		<ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>" style="display:none;">
+
+            <?php if($this->isCustomerLogged()): ?>
+                <?php $cardList = $this->getCustomerCardList();?>
+                <?php if(!empty($cardList)): ?>
+                    <?php foreach($cardList as $index => $card):?>
+                        <li>
+                            <input class="checkoutapi-saved-card validate-one-required-by-name" type="radio" id="card-<?php echo $index;?>" value="<?php echo $card['value'];?>" name="payment[customer_card]"/>
+                            <label for="card-<?php echo $index;?>"><?php echo $card['type'] . ' ' . $card['title'];?></label>
+                        </li>
+                    <?php endforeach;?>
+                    <li>
+                        <input id="checkoutapi-new-card" class="validate-one-required-by-name" type="radio" name="payment[customer_card]" value="new_card"/>
+                        <label for="checkoutapi-new-card">Use New Card</label>
+                    </li>
+                <?php endif;?>
+            <?php endif;?>
+
+
 			<?php if ($tokenResult['success']):?>
 			<li>
 				<input type="hidden" id="cko-card-token" name="payment[checkout_card_token]" value=""/>
@@ -107,6 +125,24 @@
 				<li><?php echo $this->__($tokenResult['message']) ?></li>
 			<?php endif?>
 		</ul>
+
+        <?php if (!empty($cardList)):?>
+            <script type="application/javascript">
+                hideNewCard();
+
+                $$('.checkoutapi-saved-card').invoke('observe', 'change', hideNewCard);
+                $('checkoutapi-new-card').observe('change', showNewCard);
+
+                function hideNewCard() {
+                    $$('.checkoutapi-li').each(Element.hide);
+                }
+
+                function showNewCard() {
+                    $$('.checkoutapi-li').each(Element.show);
+                }
+            </script>
+        <?php endif;?>
+
 	<?php else:?>
         <script type="text/javascript">
             window.checkoutIntegrationTotalValue = 0;
