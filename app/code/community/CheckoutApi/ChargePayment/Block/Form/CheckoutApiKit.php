@@ -82,37 +82,4 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiKit  extends Mage_Payment_
     public function getKitJsPath() {
         return Mage::helper('chargepayment')->getKitJsPath();
     }
-
-    public function isCustomerLogged() {
-
-        return Mage::getModel('chargepayment/creditCardJs')->getCustomerId();
-    }
-
-    /*
-     * return customer's saved cards
-     * */
-    public function getCustomerCardList() {
-        $result         = array();
-
-        $customerId     = Mage::getModel('chargepayment/creditCardJs')->getCustomerId();
-
-        if (empty($customerId)) {
-            return $result;
-        }
-
-        $cardModel      = Mage::getModel('chargepayment/customerCard');
-        $collection     = $cardModel->getCustomerCardList($customerId);
-
-        if (!$collection->count()) {
-            return $result;
-        }
-
-        foreach($collection as $index => $card) {
-            $result[$index]['title']    = sprintf('xxxx-%s', $card->getCardNumber());
-            $result[$index]['value']    = $cardModel->getCardSecret($card->getId(), $card->getCardNumber(), $card->getCardType());
-            $result[$index]['type']     = $card->getCardType();
-        }
-
-        return $result;
-    }
 }

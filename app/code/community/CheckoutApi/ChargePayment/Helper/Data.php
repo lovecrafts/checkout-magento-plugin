@@ -14,7 +14,7 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
     const JS_PATH_CARD_TOKEN                = 'https://cdn.checkout.com/sandbox/js/checkout.js';
     const JS_PATH_CARD_TOKEN_LIVE           = 'https://cdn.checkout.com/js/checkout.js';
     const JS_PATH_CHECKOUT_KIT_LIVE         = 'https://cdn.checkout.com/js/checkoutkit.js';
-    const JS_PATH_CHECKOUT_KIT              = 'https://cdn.checkout.com/sandbox/js/checkoutkit.js';
+    const JS_PATH_CHECKOUT_KIT              = 'https://sandbox.checkout.com/js/checkoutkit.js';
     const REDIRECT_PAYMENT_URL              = 'https://secure.checkout.com/sandbox/payment/';
     const REDIRECT_PAYMENT_URL_LIVE         = 'https://secure.checkout.com/payment/';
 
