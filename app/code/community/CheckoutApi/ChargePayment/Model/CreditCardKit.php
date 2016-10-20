@@ -348,6 +348,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
         $currencyDesc       = $isCurrentCurrency ? $this->getCurrencyCode() : Mage::app()->getStore()->getBaseCurrencyCode();
         $amountCents        = $amount;
         $chargeMode         = $this->getIs3D();
+        $shippingCost       = $this->_getQuote()->getShippingAddress()->getShippingAmount();
 
         $street = Mage::helper('customer/address')
             ->convertStreetLines($shippingAddress->getStreet(), 2);
@@ -391,6 +392,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
                 'price'      => $productPrice,
                 'quantity'   => $item->getQty(),
                 'image'      => $productImage != 'no_selection' && !is_null($productImage) ? Mage::helper('catalog/image')->init($product , 'image')->__toString() : '',
+                'shippingCost' => $shippingCost
             );
         }
 

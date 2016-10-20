@@ -279,6 +279,8 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
         $currencyDesc       = $isCurrentCurrency ? Mage::app()->getStore()->getCurrentCurrencyCode() : Mage::app()->getStore()->getBaseCurrencyCode();
         $amountCents        = $amount;
         $chargeMode         = $this->getIs3D();
+        $shippingCost       = $this->_getQuote()->getShippingAddress()->getShippingAmount();
+
 
         $street = Mage::helper('customer/address')
             ->convertStreetLines($billingAddress->getStreet(), 2);
@@ -330,6 +332,7 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
                 'price'      => $productPrice,
                 'quantity'   => $item->getQty(),
                 'image'      => $productImage != 'no_selection' && !is_null($productImage) ? Mage::helper('catalog/image')->init($product , 'image')->__toString() : '',
+                'shippingCost' => $shippingCost,
             );
         }
 
@@ -608,6 +611,7 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
                 'price'      => $productPrice,
                 'quantity'   => $isRefund ? (int)$item->getQtyRefunded() : (int)$item->getQty(),
                 'image'      => $productImage != 'no_selection' && !is_null($productImage) ? Mage::helper('catalog/image')->init($product , 'image')->__toString() : '',
+
             );
         }
 
@@ -919,5 +923,13 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
 
     public function getAutoCapture(){
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'autoCapture');
+    }
+
+    public function getSecretKey() {
+        return  Mage::helper('chargepayment')->getConfigData($this->_code, 'secretkey');
+    }
+
+    public function getMode() {
+        return  Mage::helper('chargepayment')->getConfigData($this->_code, 'mode');
     }
 }
