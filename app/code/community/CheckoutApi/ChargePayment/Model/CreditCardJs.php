@@ -242,6 +242,29 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
     }
 
     /**
+     * Get Secret Key
+     *
+     * @return mixed
+     *
+     * @version 20161910
+     */
+    public function getSecretKey() {
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'secretkey');
+    }
+
+    /**
+     * Get Endpoint Mode
+     *
+     * @return mixed
+     *
+     * @version 20161910
+     */
+    public function getMode() {
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'mode');
+    }
+
+
+    /**
      * Return true if is 3D
      *
      * @return bool
@@ -480,11 +503,12 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         $quote              = $this->_getQuote($quoteId);
 
         $billingAddress     = $quote->getBillingAddress();
-        $shippingAddress    = $quote->getBillingAddress();
+        $shippingAddress    = $quote->getShippingAddress();
         $orderedItems       = $quote->getAllItems();
         $currencyDesc       = $isCurrentCurrency ? $this->getCurrencyCode() : Mage::app()->getStore()->getBaseCurrencyCode();
         $amountCents        = $amount;
         $chargeMode         = $this->getIs3D();
+        $shippingCost       = $quote->getShippingAddress()->getShippingAmount();
 
 
         $street = Mage::helper('customer/address')
@@ -534,6 +558,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
                 'price'      => $productPrice,
                 'quantity'   => $item->getQty(),
                 'image'      => $productImage != 'no_selection' && !is_null($productImage) ? Mage::helper('catalog/image')->init($product , 'image')->__toString() : '',
+                'shippingCost' => $shippingCost
             );
         }
 

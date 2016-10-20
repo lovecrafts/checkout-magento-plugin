@@ -116,20 +116,42 @@ class CheckoutApi_ChargePayment_Model_Session_Quote extends Mage_Core_Model_Sess
     public function isCheckoutLocalPaymentTokenExist($paymentToken) {
         $result = false;
 
+        $mode =  Mage::getModel('chargepayment/creditCardJs')->getMode();
+        $secretKey = Mage::getModel('chargepayment/creditCardJs')->getSecretKey();
+
+        if(empty($secretKey) && empty($mode)){
+            $secretKey = Mage::getModel('chargepayment/hosted')->getSecretKey();
+            $mode = Mage::getModel('chargepayment/hosted')->getMode();
+        }
+
         if(!is_null($paymentToken)){
-            $Api = CheckoutApi_Api::getApi(array('mode' => Mage::getModel('chargepayment/hosted')->getEndpointMode()));
+            $Api = CheckoutApi_Api::getApi(array('mode' =>$mode ));
 
             $verifyParams   = array('paymentToken' => $paymentToken,
-                'authorization' => $this->getSecretKey()
+                'authorization' => $secretKey
             );
 
             $data = $Api->verifyChargePaymentToken($verifyParams);
 
-            if($data->getChargeMode() === 3){
+
+            if($data->getResponseCode() == 10000 && $data->getChargeMode() === 3){
+                $session        = Mage::getSingleton('chargepayment/session_quote');
+                $order = Mage::getModel('sales/order')->loadByIncrementId($session->last_order_increment_id);
+                $amount = $data->getValue();
+                $currencyCode = $data->getCurrency();
+
+                $amountCent = $Api->decimalToValue($amount, $currencyCode);
+
+                $message = Mage::helper('sales')->__('Capturing amount of %s is pending approval on gateway.', $currencyCode.''.$amountCent);
+
+                $order->addStatusHistoryComment($message);
+                $order->setStatus('pending');
+                $order->setState('new');
+                $order->save();
+
                 $result = true;
             }
         }
-
 
         return $result;
     }
