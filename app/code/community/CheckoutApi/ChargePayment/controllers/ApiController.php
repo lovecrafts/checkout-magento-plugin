@@ -97,12 +97,13 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         $modelWebhook   = Mage::getModel('chargepayment/webhook');
 
         if ($responseToken) {
-            $result = $modelWebhook->authorizeByPaymentToken($responseToken);
 
             if ($isLocalPayment) {
                 $this->_redirect('chargepayment/api/complete', array('_query' => 'token=' . $responseToken));
                 return;
             }
+
+            $result = $modelWebhook->authorizeByPaymentToken($responseToken);
 
             if ($result['is_admin'] === false) {
                 $redirectUrl    = 'checkout/onepage/success';
@@ -129,7 +130,7 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         }
     }
 
-     /**
+    /**
      * Fail page
      *
      * @url checkout/url
