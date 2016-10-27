@@ -173,7 +173,11 @@ abstract class CheckoutApi_Client_Adapter_Abstract extends CheckoutApi_Lib_Objec
      * Return request made by the adapter
      * @return  CheckoutApi_Lib_RespondObj
      */
-    abstract function request();
+    // Comment out this abstract method because it's incompatible with PHP 5.3.
+    // In the previous PHP version, abstract method will be inherit to the child 
+    // class and there is a conflict when being implemented.
+    // 
+    // abstract function request();
 
 
 }
