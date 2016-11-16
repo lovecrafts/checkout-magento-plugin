@@ -43,7 +43,7 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
             ->setPaymentRedirectUrl(false);
 
         if ($is3d && $is3dUrl) {
-            $this->restoreQuoteSession();
+            Mage::helper('chargepayment')->setOrderPendingPayment();
 
             return $is3dUrl;
         }

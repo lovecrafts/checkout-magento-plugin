@@ -126,6 +126,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         $lpUrl      = $session->getLpRedirectUrl();
         $is3d       = $session->getIs3d();
         $is3dUrl    = $session->getPaymentRedirectUrl();
+        $helper     = Mage::helper('chargepayment');
 
         $session
             ->setIsLocalPayment(false)
@@ -134,13 +135,13 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
             ->setPaymentRedirectUrl(false);
 
         if ($isLocal) {
-            $this->restoreQuoteSession();
+            $helper->setOrderPendingPayment();
 
             return $lpUrl;
         }
 
         if ($is3d && $is3dUrl) {
-            $this->restoreQuoteSession();
+            $helper->setOrderPendingPayment();
 
             return $is3dUrl;
         }
