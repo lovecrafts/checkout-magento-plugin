@@ -126,7 +126,7 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
                     $this->_redirectUrl($redirectUrl);
                     return;
                 }
-
+                $order->sendNewOrderEmail();
                 $this->_redirect($redirectUrl);
             }
 
