@@ -149,10 +149,14 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
 
         if(!is_null($session->LastOrderIncrementId)){
             $order = Mage::getModel('sales/order')->loadByIncrementId($session->LastOrderIncrementId);
+            $order->cancel();
             $order->setStatus('canceled');
             $order->setState('canceled');
             $order->addStatusHistoryComment('Order has been cancelled.');
             $order->save();
+
+            $helper             = Mage::helper('chargepayment');
+            $helper->restoreQuoteSession($order);
         }
 
         return $this->_redirectUrl($redirectUrl);
