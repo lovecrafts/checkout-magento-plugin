@@ -564,9 +564,6 @@ class CheckoutApi_ChargePayment_Model_Webhook
             }
 
             $cart = Mage::getModel('checkout/cart');
-
-            Mage::helper('chargepayment')->restoreStockItemsQty($cart);
-
             $cart->truncate()->save();
 
         } catch (Mage_Core_Exception $e) {

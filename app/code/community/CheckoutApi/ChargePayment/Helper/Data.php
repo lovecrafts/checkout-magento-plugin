@@ -128,28 +128,44 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * Restore stock items qty for restored session
+     * Restore quote
      *
-     * @param Mage_Checkout_Model_Cart $cart
-     * @return bool
+     * @return $this
+     *
+     * @version 20161110
      */
-    public function restoreStockItemsQty(Mage_Checkout_Model_Cart $cart) {
-        foreach($cart->getItems() as $item) {
-            if ($item->getHasChildren()) {
-                continue;
-            }
+    public function restoreQuoteSession(Mage_Sales_Model_Order $order) {
+        $quoteId    = $order->getQuoteId();
+        $quote      = Mage::getModel('sales/quote')->load($quoteId);
 
-            $quantity       = $item->getQty();
-            $productSku     = $item->getSku();
-            $product        = Mage::getModel('catalog/product')->loadByAttribute('sku', $productSku);
+        if ($quote->getId()) {
+            $quote->setIsActive(1)
+                ->setReservedOrderId(NULL)
+                ->save();
 
-            if($product) {
-                $stock = Mage::getModel('cataloginventory/stock_item')->loadByProduct($product);
-                $stock->setQty($stock->getQty() + $quantity);
-                $stock->save();
-            }
+            Mage::getSingleton('checkout/session')->replaceQuote($quote);
         }
 
-        return true;
+        return $this;
+    }
+
+    /**
+     * Set order status to STATE_PENDING_PAYMENT
+     *
+     * @return $this
+     *
+     * @version 20161110
+     */
+    public function setOrderPendingPayment() {
+        $order      = Mage::registry('charge_payment_order');
+        $session    = Mage::getSingleton('chargepayment/session_quote');
+
+        $session->setLastOrderIncrementId($order->getIncrementId());
+        $session->addCheckoutOrderIncrementId($order->getIncrementId());
+
+        $order->setStatus(Mage_Sales_Model_Order::STATE_PENDING_PAYMENT);
+        $order->save();
+
+        return $this;
     }
 }
