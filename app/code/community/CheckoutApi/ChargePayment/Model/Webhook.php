@@ -60,6 +60,7 @@ class CheckoutApi_ChargePayment_Model_Webhook
         $order      = $modelOrder->loadByIncrementId($trackId);
         $orderId    = $order->getId();
         $qty        = $order->getData('total_qty_ordered');
+        $chargeMode = $response->message->chargeMode;
 
         if (!$orderId || empty($qty)) {
             Mage::log("Cannot create an invoice. Order - {$trackId}", null, self::LOG_FILE);
@@ -90,7 +91,7 @@ class CheckoutApi_ChargePayment_Model_Webhook
 
         $collectionCount = $transactionCollection->count();
 
-        if (!$collectionCount) {
+        if (!$collectionCount && $chargeMode !== 3) {
             Mage::log("Cannot create an invoice. Order - {$trackId}. Empty transactions.", null, self::LOG_FILE);
             return false;
         }
