@@ -26,7 +26,11 @@ class CheckoutApi_ChargePayment_Model_CustomerCard extends Mage_Core_Model_Abstr
      */
     public function saveCard(Varien_Object $payment, $response) {
 
-        $integrationType = $response->getMetadata()['integration_type'];
+        // use local variable to get metadata before use
+        // due to $response->getMetadata()['integration_type'] 
+        // is not compatible to PHP 5.3 or before.
+        $_metadata = $response->getMetadata();
+        $integrationType = $_metadata['integration_type'];
 
         if($integrationType == 'JS'){
             $customerId = Mage::getModel('chargepayment/creditCardJs')->getCustomerId();

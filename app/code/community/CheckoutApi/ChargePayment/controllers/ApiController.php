@@ -95,6 +95,7 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         $isLocalPayment = $session->isCheckoutLocalPaymentTokenExist($responseToken);
 
         $modelWebhook   = Mage::getModel('chargepayment/webhook');
+        $helper         = Mage::helper('chargepayment');
 
         if ($responseToken) {
 
@@ -117,12 +118,15 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
                         $order->cancel();
                         $order->addStatusHistoryComment('Order has been cancelled.');
                         $order->save();
+
+                        /* Restore quote session */
+                        $helper->restoreQuoteSession($order);
                     }
 
                     $this->_redirectUrl($redirectUrl);
                     return;
                 }
-
+                $order->sendNewOrderEmail();
                 $this->_redirect($redirectUrl);
             }
 
@@ -145,10 +149,14 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
 
         if(!is_null($session->LastOrderIncrementId)){
             $order = Mage::getModel('sales/order')->loadByIncrementId($session->LastOrderIncrementId);
+            $order->cancel();
             $order->setStatus('canceled');
             $order->setState('canceled');
             $order->addStatusHistoryComment('Order has been cancelled.');
             $order->save();
+
+            $helper             = Mage::helper('chargepayment');
+            $helper->restoreQuoteSession($order);
         }
 
         return $this->_redirectUrl($redirectUrl);
@@ -183,7 +191,6 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         Mage::getSingleton('checkout/session')->clear();
 
         $cart = Mage::getModel('checkout/cart');
-        Mage::helper('chargepayment')->restoreStockItemsQty($cart);
         $cart->truncate()->save();
 
         $session->removeCheckoutLocalPaymentToken($responseToken);
@@ -206,6 +213,7 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         $cardToken          = (string)$this->getRequest()->getParam('cko-card-token');
         $orderIncrementId   = (string)$this->getRequest()->getParam('cko-context-id');
         $order              = Mage::getModel('sales/order')->loadByIncrementId($orderIncrementId);
+        $helper             = Mage::helper('chargepayment');
 
         if (!$order->getId()) {
             $this->norouteAction();
@@ -218,20 +226,25 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
             $order->cancel();
             $order->addStatusHistoryComment('Order has been cancelled.');
             $order->save();
+
+            /* Restore quote session */
+            $helper->restoreQuoteSession($order);
+
             $this->_redirectUrl($result['redirect']);
             return;
         }
 
         $hostedModel    = Mage::getModel('chargepayment/hosted');
 
-        $result = $hostedModel->authorizeByCardToken($order, $cardToken);
-        $session = Mage::getSingleton('chargepayment/session_quote');
+        $result         = $hostedModel->authorizeByCardToken($order, $cardToken);
+        $session        = Mage::getSingleton('chargepayment/session_quote');
 
         switch($result['status']) {
             case 'success':
                 $session
                     ->setHostedPaymentRedirect(NULL)
                     ->setHostedPaymentParams(NULL)
+                    ->setHostedPaymentConfig(NULL)
                     ->setSecretKey(NULL);
 
                 $this->_redirect($result['redirect']);
@@ -239,6 +252,7 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
             case '3d':
                 $session
                     ->setHostedPaymentRedirect(NULL)
+                    ->setHostedPaymentConfig(NULL)
                     ->setHostedPaymentParams(NULL);
 
                 $this->_redirectUrl($result['redirect']);
@@ -249,6 +263,10 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
                 $order->cancel();
                 $order->addStatusHistoryComment('Order has been cancelled.');
                 $order->save();
+
+                /* Restore quote session */
+                $helper->restoreQuoteSession($order);
+
                 $this->_redirectUrl($result['redirect']);
                 break;
         }

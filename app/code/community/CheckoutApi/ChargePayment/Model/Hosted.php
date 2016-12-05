@@ -41,36 +41,12 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
         $redirectUrl    = $session->getHostedPaymentRedirect();
 
         if ($redirectUrl) {
-            $this->restoreQuoteSession();
+            Mage::helper('chargepayment')->setOrderPendingPayment();
 
             return $redirectUrl;
         }
 
         return false;
-    }
-
-    /**
-     * Restore session for 3d
-     */
-    public function restoreQuoteSession() {
-        $order      = Mage::registry('charge_payment_order');
-        $quoteId    = $order->getQuoteId();
-        $session    = Mage::getSingleton('chargepayment/session_quote');
-
-        $session->setLastOrderIncrementId($order->getIncrementId());
-        $session->addCheckoutOrderIncrementId($order->getIncrementId());
-
-        $order->setStatus(Mage_Sales_Model_Order::STATE_PENDING_PAYMENT);
-        $order->save();
-
-        $quote = Mage::getModel('sales/quote')->load($quoteId);
-
-        if ($quote->getId()) {
-            $quote->setIsActive(1)
-                ->setReservedOrderId(NULL)
-                ->save();
-            Mage::getSingleton('checkout/session')->replaceQuote($quote);
-        }
     }
 
     /**
@@ -239,6 +215,7 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
         $session
             ->setHostedPaymentRedirect($baseUrl)
             ->setHostedPaymentParams($params)
+            ->setHostedPaymentConfig($config)
             ->setSecretKey($this->_getSecretKey());
 
         return $this;
@@ -659,7 +636,7 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
      * @return array
      * @throws Exception
      */
-    public function authorizeByCardToken(Mage_Sales_Model_Order $order, $cardToken, $payment) {
+    public function authorizeByCardToken(Mage_Sales_Model_Order $order, $cardToken) {
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
         $autoCapture        = $this->_isAutoCapture();
         $session            = Mage::getSingleton('chargepayment/session_quote');
@@ -670,7 +647,7 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
 
         $Api    = CheckoutApi_Api::getApi(array('mode' => $this->getEndpointMode()));
         $amount = $Api->valueToDecimal($price, $priceCode);
-        $config = $this->_getCharge($amount, $autoCapture);
+        $config = $session->getHostedPaymentConfig();
 
         $config['postedParam']['trackId']   = $order->getIncrementId();
         $config['postedParam']['cardToken'] = $cardToken;
@@ -753,9 +730,6 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
             $order->save();
 
             $cart = Mage::getSingleton('checkout/cart');
-
-            Mage::helper('chargepayment')->restoreStockItemsQty($cart);
-
             $cart->truncate()->save();
 
             $session->setIs3d(false);
