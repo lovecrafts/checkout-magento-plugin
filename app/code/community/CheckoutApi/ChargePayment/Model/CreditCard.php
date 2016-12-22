@@ -348,6 +348,14 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
             $autoCapture = 'y';
         }
 
+        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+            $ip = $_SERVER['HTTP_CLIENT_IP'];
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        } else {
+            $ip = $_SERVER['REMOTE_ADDR'];
+        }
+
         $config['postedParam']['autoCapture']  = $autoCapture;
         $config['postedParam']['autoCapTime']  = $this->getAutoCapTime();
 
@@ -365,7 +373,7 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
         $config['currency']             = $currencyDesc;
         $config['trackId']              = $orderId;
         $config['transactionIndicator'] = self::TRANSACTION_INDICATOR_REGULAR;
-        $config['customerIp']           = Mage::helper('core/http')->getRemoteAddr();
+        $config['customerIp']           = $ip;
 
         /* Charge with Card ID if it set */
         $checkoutApiCardId = $payment->getCheckoutApiCardId();

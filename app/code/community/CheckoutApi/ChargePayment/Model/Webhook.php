@@ -47,6 +47,19 @@ class CheckoutApi_ChargePayment_Model_Webhook
     }
 
     /**
+     * For authorise order
+     *
+     * @param $response
+     * @return bool
+     *
+     * @version 20161212
+    */
+    public function authoriseOrder($response){
+        return true;
+    }
+
+
+    /**
      * For capture order
      *
      * @param $response

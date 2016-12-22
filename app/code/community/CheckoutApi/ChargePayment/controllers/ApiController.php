@@ -60,6 +60,9 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         }
 
         switch ($eventType) {
+            case CheckoutApi_ChargePayment_Model_Webhook::EVENT_TYPE_CHARGE_SUCCEEDED:
+                $result = $modelWebhook->authoriseOrder($data);
+                break;
             case CheckoutApi_ChargePayment_Model_Webhook::EVENT_TYPE_CHARGE_CAPTURED:
                 $result = $modelWebhook->captureOrder($data);
                 break;
@@ -123,10 +126,10 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
                         $helper->restoreQuoteSession($order);
                     }
 
+                    $order->sendNewOrderEmail();
                     $this->_redirectUrl($redirectUrl);
                     return;
                 }
-                $order->sendNewOrderEmail();
                 $this->_redirect($redirectUrl);
             }
 
