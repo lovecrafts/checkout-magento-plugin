@@ -736,7 +736,8 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
             }
 
             $order->save();
-
+            $order->sendNewOrderEmail();
+            
             $cart = Mage::getSingleton('checkout/cart');
             $cart->truncate()->save();
 
