@@ -657,6 +657,11 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
         $amount = $Api->valueToDecimal($price, $priceCode);
         $config = $session->getHostedPaymentConfig();
 
+        if(empty($config)){
+            Mage::log('Empty config', null, $this->_code.'.log');
+            return false;
+        }
+
         $config['postedParam']['trackId']   = $order->getIncrementId();
         $config['postedParam']['cardToken'] = $cardToken;
 
