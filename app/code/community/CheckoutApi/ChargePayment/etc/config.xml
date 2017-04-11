@@ -101,6 +101,7 @@
                 <current_currency>0</current_currency>
                 <payment_action>authorize</payment_action>
                 <autoCapTime>0</autoCapTime>
+                <saveCard>0</saveCard>
             </checkoutapicard>
             <checkoutapijs>
                 <active>0</active>
@@ -124,6 +125,7 @@
                 <payment_mode>mixed</payment_mode>
                 <payment_action>authorize</payment_action>
                 <autoCapTime>0</autoCapTime>
+                <saveCard>0</saveCard>
             </checkoutapijs>
             <checkoutapikit>
                 <active>0</active>
@@ -138,6 +140,7 @@
                 <timeout>60</timeout>
                 <payment_action>authorize</payment_action>
                 <autoCapTime>0</autoCapTime>
+                <saveCard>0</saveCard>
             </checkoutapikit>
             <checkoutapihosted>
                 <active>0</active>
@@ -150,6 +153,8 @@
                 <is_3d>1</is_3d>
                 <payment_action>authorize</payment_action>
                 <autoCapTime>0</autoCapTime>
+                <theme_color>#00b660</theme_color>
+                <saveCard>0</saveCard>
             </checkoutapihosted>
         </payment>
     </default>

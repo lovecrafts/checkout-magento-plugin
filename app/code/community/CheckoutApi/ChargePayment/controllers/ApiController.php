@@ -108,6 +108,7 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
             }
 
             $result = $modelWebhook->authorizeByPaymentToken($responseToken);
+            $order = Mage::getModel('sales/order')->loadByIncrementId($result['order_increment_id']);
 
             if ($result['is_admin'] === false) {
                 $redirectUrl    = 'checkout/onepage/success';
@@ -117,7 +118,6 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
                     Mage::getSingleton('core/session')->addError('Please check you card details and try again. Thank you');
 
                     if(!is_null($result['order_increment_id'])){
-                        $order = Mage::getModel('sales/order')->loadByIncrementId($result['order_increment_id']);
                         $order->cancel();
                         $order->addStatusHistoryComment('Order has been cancelled.');
                         $order->save();
@@ -126,10 +126,11 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
                         $helper->restoreQuoteSession($order);
                     }
 
-                    $order->sendNewOrderEmail();
                     $this->_redirectUrl($redirectUrl);
                     return;
                 }
+
+                $order->sendNewOrderEmail();
                 $this->_redirect($redirectUrl);
             }
 
@@ -214,7 +215,17 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
      */
     public function hostedAction() {
         $cardToken          = (string)$this->getRequest()->getParam('cko-card-token');
+
+        if(!$cardToken){
+            $cardToken = Mage::getSingleton('core/session')->getHostedCardId();
+        }
+
         $orderIncrementId   = (string)$this->getRequest()->getParam('cko-context-id');
+
+        if(!$orderIncrementId){
+            $orderIncrementId = Mage::getSingleton('checkout/session')->getLastRealOrderId();
+        }
+
         $order              = Mage::getModel('sales/order')->loadByIncrementId($orderIncrementId);
         $helper             = Mage::helper('chargepayment');
 
@@ -249,8 +260,11 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
                     ->setHostedPaymentParams(NULL)
                     ->setHostedPaymentConfig(NULL)
                     ->setSecretKey(NULL);
-
+                    
+                Mage::getSingleton('core/session')->unsHostedCardId();
+                
                 $this->_redirect($result['redirect']);
+
                 break;
             case '3d':
                 $session
@@ -273,7 +287,7 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
                 break;
             default:
                 Mage::getSingleton('core/session')->addError('Something went wrong. Kindly contact us for more details.');
-                /* Restore quote session */
+                // /* Restore quote session */
                 $helper->restoreQuoteSession($order);
 
                 $this->_redirectUrl(Mage::helper('checkout/url')->getCheckoutUrl());
@@ -301,5 +315,6 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
 
         $this->loadLayout();
         $this->renderLayout();
+
     }
 }

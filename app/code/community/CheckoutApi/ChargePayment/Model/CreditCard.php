@@ -77,7 +77,8 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
             ->setCcSsIssue($data->getCcSsIssue())
             ->setCcSsStartMonth($data->getCcSsStartMonth())
             ->setCcSsStartYear($data->getCcSsStartYear())
-            ->setCheckoutApiCardId('');
+            ->setCheckoutApiCardId('')
+            ->setPoNumber($data->getSaveCardCheck());
 
         $result = $this->_getSavedCartDataFromPost($data);
 
@@ -87,6 +88,9 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
             $info->setCheckoutApiCardId($result['checkout_api_card_id']);
         }
 
+
+
+        
         return $this;
     }
 
@@ -159,6 +163,7 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
 		
         $isDebug            = $this->isDebug();
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
+
 
         $Api        = CheckoutApi_Api::getApi(array('mode'=>$this->getEndpointMode()));
         $order      = $payment->getOrder();
@@ -378,6 +383,7 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
         /* Charge with Card ID if it set */
         $checkoutApiCardId = $payment->getCheckoutApiCardId();
 
+
         if (!empty($checkoutApiCardId)) {
             $config['cardId'] = $checkoutApiCardId;
         } else {
@@ -439,6 +445,8 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
         $savedCard  = $data->getCustomerCard();
         $card       = $data->getCcNumber();
 
+       
+
         if (empty($savedCard) && empty($card)) {
             Mage::throwException(Mage::helper('chargepayment')->__('Please check your card data.'));
         }
@@ -483,6 +491,7 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
         $result['cc_number']            = $customerCard->getCardNumber();
         $result['cc_type']              = $customerCard->getCardType();
         $result['checkout_api_card_id'] = $customerCard->getCardId();
+        $result['save_card_check'] = $data->getSaveCardCheck();
 
         return $result;
     }
@@ -569,4 +578,9 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
     public function getAutoCapture(){
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'autoCapture');
     }
+
+     public function getSaveCardSetting(){
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'saveCard');
+    }
+
 }
