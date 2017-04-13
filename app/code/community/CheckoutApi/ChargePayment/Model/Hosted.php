@@ -13,7 +13,7 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
 
     const PAYMENT_MODE_MIXED            = 'mixed';
     const PAYMENT_MODE_CARD             = 'cards';
-    const PAYMENT_MODE_LOCAL_PAYMENT    = 'localpayment';
+    const PAYMENT_MODE_LOCAL_PAYMENT    = 'localpayments';
 
     protected $_formBlockType = 'chargepayment/form_checkoutApiHosted';
     protected $_infoBlockType = 'chargepayment/info_checkoutApiHosted';
@@ -31,6 +31,25 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
     protected $_canUseInternal          = false;
     protected $_canUseForMultishipping  = false;
 
+
+    public function assignData($data){
+        if (!($data instanceof Varien_Object)) {
+            $data = new Varien_Object($data);
+        }
+        $info   = $this->getInfoInstance()
+            ->setCheckoutApiCardId('')
+            ->setPoNumber($data->getSaveCardCheck());
+
+        $result = $this->_getSavedCartDataFromPost($data);
+
+        if (!empty($result)) {
+            $cardId = $result['checkout_api_card_id'];
+            Mage::getSingleton('core/session')->setHostedCardId($cardId);
+        }
+
+        return $this;
+    }
+
     /**
      * Redirect URL after order place
      *
@@ -40,13 +59,67 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
         $session        = Mage::getSingleton('chargepayment/session_quote');
         $redirectUrl    = $session->getHostedPaymentRedirect();
 
-        if ($redirectUrl) {
-            Mage::helper('chargepayment')->setOrderPendingPayment();
+        $getParam = Mage::app()->getRequest()->getParams();
+        $isNewCard = $getParam['payment']['customer_card'];
+        $redirect = Mage::getModel('core/url')->getUrl('chargepayment/api/hosted/');
 
+        if(is_null($isNewCard)){
             return $redirectUrl;
         }
 
-        return false;
+        if ($redirectUrl && $isNewCard == 'new_card') {
+            Mage::helper('chargepayment')->setOrderPendingPayment();
+            return $redirectUrl;
+        }
+
+        return $redirect;
+    }
+
+    protected function _getSavedCartDataFromPost($data) {
+
+        $savedCard  = $data->getCustomerCard();
+
+
+        /* If non saved card */
+        if (empty($savedCard) || $savedCard === 'new_card') {
+            return array();
+        }
+
+        $customerId = $this->getCustomerId();
+
+        /* If user not logged */
+        if (empty($customerId)) {
+            return array();
+        }
+
+        $cardModel  = Mage::getModel('chargepayment/customerCard');
+        $collection = $cardModel->getCustomerCardList($customerId);
+
+        /* If user not have saved cards */
+        if (!$collection->count()) {
+            return array();
+        }
+
+        $trueData       = false;
+        $customerCard   = array();
+
+        foreach($collection as $entity) {
+            $secret = $cardModel->getCardSecret($entity->getId(), $entity->getCardNumber(), $entity->getCardType());
+
+            if ($savedCard === $secret) {
+                $trueData = true;
+                $customerCard = $entity;
+                break;
+            }
+        }
+
+        if (!$trueData) {
+            Mage::throwException(Mage::helper('chargepayment')->__('Please check your card data.'));
+        }
+
+        $result['checkout_api_card_id'] = $customerCard->getCardId();
+
+        return $result;
     }
 
     /**
@@ -193,7 +266,10 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
      * @param $paymentToken
      * @return $this
      */
-    protected function _buildRedirectData($config, $paymentToken) {
+    protected function _buildRedirectData($config, $paymentToken) { 
+
+        $isUseCurrencyCode = $this->useCurrencyCode() ? 'true' : 'false';
+
         $params = array(
             'publicKey'         => $this->getPublicKey(),
             'paymentToken'      => $paymentToken,
@@ -206,7 +282,13 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
             'redirectUrl'       => Mage::getModel('core/url')->getUrl('chargepayment/api/hosted/'),
             'cancelUrl'         => Mage::helper('checkout/url')->getCheckoutUrl(),
             'contextId'         => $config['postedParam']['trackId'],
-            'billingDetails'    => $config['postedParam']['billingDetails']
+            'billingDetails'    => $config['postedParam']['billingDetails'],
+            'useCurrencyCode'   => $isUseCurrencyCode,
+            'logoUrl'           => $this->getlogoUrl(),
+            'themeColor'        => $this->getThemeColor(),
+            'iconColor'         => $this->getIconColor(),
+            'title'             => $this->getFormTitle(),
+            'theme'             => 'standard'
         );
 
         $baseUrl = Mage::getModel('core/url')->getUrl('chargepayment/api/redirect/');
@@ -415,7 +497,7 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
      *
      * @return mixed
      */
-    public function getPublicKey() {
+    public function getPublicKey() { 
         return  Mage::helper('chargepayment')->getConfigData($this->_code, 'publickey');
     }
 
@@ -427,8 +509,53 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
     public function getPaymentMode() {
         $paymentMode = Mage::helper('chargepayment')->getConfigData($this->_code, 'payment_mode');
 
-        return $paymentMode === self::PAYMENT_MODE_MIXED
-        || $paymentMode === self::PAYMENT_MODE_LOCAL_PAYMENT ? true : self::PAYMENT_MODE_CARD;
+        return $paymentMode;
+    }
+
+    /**
+     * Return Logo url
+     *
+     * @return mixed
+     */
+    public function getLogoUrl() { 
+        return  Mage::helper('chargepayment')->getConfigData($this->_code, 'logo_url');
+    }
+
+    /**
+     * Return Theme color
+     *
+     * @return mixed
+     */
+    public function getThemeColor() { 
+        return  Mage::helper('chargepayment')->getConfigData($this->_code, 'theme_color');
+    }
+
+    /**
+     * Return Use currency code
+     *
+     * @return mixed
+     */
+    public function useCurrencyCode() { 
+        return  Mage::helper('chargepayment')->getConfigData($this->_code, 'use_currency_code');
+    }
+
+    /**
+     * Return Form title
+     *
+     * @return mixed
+     */
+    public function getFormTitle() { 
+        return  Mage::helper('chargepayment')->getConfigData($this->_code, 'form_title');
+    }
+
+
+    /**
+     * Return Icon color
+     *
+     * @return mixed
+     */
+    public function getIconColor() { 
+        return  Mage::helper('chargepayment')->getConfigData($this->_code, 'icon_color');
     }
 
     /**
@@ -646,7 +773,7 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
      */
     public function authorizeByCardToken(Mage_Sales_Model_Order $order, $cardToken) {
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
-        $autoCapture        = $this->_isAutoCapture();
+        $autoCapture        = $this->getAutoCapture();
         $session            = Mage::getSingleton('chargepayment/session_quote');
         $result             = array('status' => 'error', 'redirect' => Mage::helper('checkout/url')->getCheckoutUrl());
 
@@ -662,8 +789,14 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
             return false;
         }
 
+        if (preg_match('/card_tok/',$cardToken)){
+             $config['postedParam']['cardToken'] = $cardToken;
+        } else {
+             $config['postedParam']['cardId'] = $cardToken;
+        }
+
         $config['postedParam']['trackId']   = $order->getIncrementId();
-        $config['postedParam']['cardToken'] = $cardToken;
+       
 
         $response = $Api->createCharge($config);
 
@@ -709,6 +842,9 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
 
             $result = array('status' => '3d', 'redirect' => $redirectUrl);
         } else {
+
+        Mage::getModel('chargepayment/customerCard')->saveCard($payment, $response);
+
             $payment
                 ->setTransactionId($entityId)
                 ->setCurrencyCode($order->getBaseCurrencyCode())
@@ -919,5 +1055,19 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
 
     public function getMode() {
         return  Mage::helper('chargepayment')->getConfigData($this->_code, 'mode');
+    }
+
+    public function getCustomerId() { 
+        if (Mage::app()->getStore()->isAdmin()) {
+            $customerId = Mage::getSingleton('adminhtml/session_quote')->getCustomerId();
+        } else {
+            $customerId = Mage::getModel('checkout/cart')->getQuote()->getCustomerId();
+        }
+
+        return $customerId ? $customerId : false;
+    }
+
+    public function getSaveCardSetting(){
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'saveCard');
     }
 }

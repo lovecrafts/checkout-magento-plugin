@@ -26,7 +26,7 @@ class CheckoutApi_ChargePayment_Block_Hosted_Redirect  extends Mage_Core_Block_T
      *
      * @return mixed
      */
-    public function getPostParams() {
+    public function getPostParams() { 
         return $this->_session->getHostedPaymentParams();
     }
 

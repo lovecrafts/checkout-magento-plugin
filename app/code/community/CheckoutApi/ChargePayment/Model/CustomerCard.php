@@ -29,6 +29,7 @@ class CheckoutApi_ChargePayment_Model_CustomerCard extends Mage_Core_Model_Abstr
         // use local variable to get metadata before use
         // due to $response->getMetadata()['integration_type'] 
         // is not compatible to PHP 5.3 or before.
+
         $_metadata = $response->getMetadata();
         $integrationType = $_metadata['integration_type'];
 
@@ -41,6 +42,9 @@ class CheckoutApi_ChargePayment_Model_CustomerCard extends Mage_Core_Model_Abstr
         }elseif($integrationType == 'KIT'){
             $customerId = Mage::getModel('chargepayment/creditCardKit')->getCustomerId();
             $last4 = $response->getCard()->getLast4();
+        }elseif($integrationType == 'HOSTED'){
+            $customerId = Mage::getSingleton('customer/session')->getId();
+            $last4 = $response->getCard()->getLast4();
         }
 
         if (empty($customerId)){
@@ -50,13 +54,23 @@ class CheckoutApi_ChargePayment_Model_CustomerCard extends Mage_Core_Model_Abstr
 
         $cardId     = $response->getCard()->getId();
         $cardType   = $response->getCard()->getPaymentMethod();
-
+        $saveCardCheck = $payment->getPoNumber();
+        
         if (empty($customerId) || empty($last4) || empty($cardId) || empty($cardType)) {
             return false;
         }
 
         /* If already added */
-        if ($this->_isAddedCard($customerId, $cardId, $cardType)) {
+        if ($this->_isAddedCard($customerId, $cardId, $cardType)) { 
+
+            if($this->_isSaveCardCheck($customerId, $cardId,$saveCardCheck) == 0){
+                $resource = Mage::getSingleton('core/resource');
+                $readConnection = $resource->getConnection('core_read');
+                $table = $resource->getTableName('chargepayment_cards');
+                $writeConnection = $resource->getConnection('core_write');
+                $query = "UPDATE {$table} SET save_card = 1 WHERE card_id = '{$cardId}'";
+                $writeConnection->query($query);
+            }
             return false;
         }
 
@@ -65,6 +79,7 @@ class CheckoutApi_ChargePayment_Model_CustomerCard extends Mage_Core_Model_Abstr
             $this->setCardId($cardId);
             $this->setCardNumber($last4);
             $this->setCardType($cardType);
+            $this->setSaveCard($saveCardCheck);
 
             $this->save();
         } catch (Exception $e) {
@@ -72,6 +87,19 @@ class CheckoutApi_ChargePayment_Model_CustomerCard extends Mage_Core_Model_Abstr
         }
 
         return true;
+    }
+
+    /**
+    * Check save card check
+    *
+    */
+    protected function _isSaveCardCheck($customerId, $cardId, $saveCardCheck){
+        $collection = $this->getCollection();
+        $collection->addFieldToFilter('customer_id', $customerId);
+        $collection->addFieldToFilter('card_id',$cardId);
+        $collection->addFieldToFilter('save_card',$saveCardCheck);
+
+        return $collection->count();
     }
 
     /**

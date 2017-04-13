@@ -100,4 +100,46 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiHosted  extends Mage_Payme
     public function getHostedJsPath() {
         return Mage::helper('chargepayment')->getHostedJsPath();
     }
+
+    public function isCustomerLogged() {
+
+        return Mage::getModel('chargepayment/hosted')->getCustomerId();
+    }
+
+    public function getCustomerCardList() {
+        $result         = array();
+
+        $customerId     = Mage::getModel('chargepayment/hosted')->getCustomerId();
+
+        if (empty($customerId)) {
+            return $result;
+        }
+
+        $cardModel      = Mage::getModel('chargepayment/customerCard');
+        $collection     = $cardModel->getCustomerCardList($customerId);
+
+        if (!$collection->count()) {
+            return $result;
+        }
+
+        foreach($collection as $index => $card) {
+            
+            if($card->getSaveCard() == ''){
+              continue;
+            }
+            
+            $result[$index]['title']    = sprintf('xxxx-%s', $card->getCardNumber());
+            $result[$index]['value']    = $cardModel->getCardSecret($card->getId(), $card->getCardNumber(), $card->getCardType());
+            $result[$index]['type']     = $card->getCardType();
+        }
+        return $result;
+    }
+
+    /**
+    * Get Save Card setting from config
+    *
+    **/
+    public function isSaveCard(){
+        return Mage::getModel('chargepayment/hosted')->getSaveCardSetting();
+    }
 }

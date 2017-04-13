@@ -1,6 +1,6 @@
 var checkoutApi = Class.create();
 checkoutApi.prototype = {
-    initialize : function(methodCode, controller, saveOrderUrl, baseSaveOrderUrl) {
+    initialize : function(methodCode, controller, saveOrderUrl, baseSaveOrderUrl) {console.log(1);
         this.code               = methodCode;
         this.controller         = controller;
         this.saveOrderUrl       = saveOrderUrl;
@@ -8,9 +8,10 @@ checkoutApi.prototype = {
         this.phpMethodCode      = 'checkoutapicard';
         this.jsMethodCode       = 'checkoutapijs';
         this.kitMethodCode      = 'checkoutapikit';
+        this.hostedMethodCode      = 'hosted';
         this.preparePayment();
     },
-    preparePayment: function() {
+    preparePayment: function() { 
         switch (this.controller) {
             case 'onepage':
                 this.prepareSubmit();
@@ -83,9 +84,8 @@ checkoutApi.prototype = {
     },
     checkoutApiFrame: function() {
         if (this.agreementIsValid()) {
-
-            if(jQuery('#checkoutapi-new-card').length > 0){
-                if(jQuery('#checkoutapi-new-card').prop("checked")== true){
+            if($('checkoutapi-new-card')){
+                if($('checkoutapi-new-card').checked){
                     CKOAPIJS.open();
                     if (CKOAPIJS.isMobile()) {
                         $('checkout-api-js-hover').show();
@@ -99,7 +99,6 @@ checkoutApi.prototype = {
                     $('checkout-api-js-hover').show();
                 }
             }
-
         } else {
             alert('Please agree to all the terms and conditions before placing the order.');
             return;

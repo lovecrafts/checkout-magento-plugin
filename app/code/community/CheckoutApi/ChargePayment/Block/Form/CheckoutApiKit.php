@@ -108,11 +108,24 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiKit  extends Mage_Payment_
         }
 
         foreach($collection as $index => $card) {
+
+            if($card->getSaveCard() == ''){
+              continue;
+            }
+
             $result[$index]['title']    = sprintf('xxxx-%s', $card->getCardNumber());
             $result[$index]['value']    = $cardModel->getCardSecret($card->getId(), $card->getCardNumber(), $card->getCardType());
             $result[$index]['type']     = $card->getCardType();
         }
 
         return $result;
+    }
+
+    /**
+    * Get Save Card setting from config
+    *
+    **/
+    public function isSaveCard(){
+        return Mage::getModel('chargepayment/creditCardKit')->getSaveCardSetting();
     }
 }

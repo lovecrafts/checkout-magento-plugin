@@ -23,7 +23,8 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
             $data = new Varien_Object($data);
         }
         $info   = $this->getInfoInstance()
-            ->setCheckoutApiCardId('');
+            ->setCheckoutApiCardId('')
+            ->setPoNumber($data->getSaveCardCheck());
 
         $result = $this->_getSavedCartDataFromPost($data);
 
@@ -457,5 +458,9 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
         }
 
         return $customerId ? $customerId : false;
+    }
+
+    public function getSaveCardSetting(){
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'saveCard');
     }
 }

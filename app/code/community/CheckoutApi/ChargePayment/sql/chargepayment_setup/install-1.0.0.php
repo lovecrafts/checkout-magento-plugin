@@ -24,7 +24,10 @@ $table = $installer->getConnection()
     ), 'Short Customer Credit Card Number')
     ->addColumn('card_type', Varien_Db_Ddl_Table::TYPE_TEXT, '20', array(
         'nullable'  => false,
-    ), 'Credit Card Type');
+    ), 'Credit Card Type')
+    ->addColumn('save_card', Varien_Db_Ddl_Table::TYPE_TEXT, '1', array(
+        'nullable'  => false,
+    ), 'Save card');
 
 $table->addIndex(
     $installer->getIdxName(
@@ -33,6 +36,7 @@ $table->addIndex(
             'customer_id',
             'card_id',
             'card_type',
+            'save_card',
         ),
         Varien_Db_Adapter_Interface::INDEX_TYPE_UNIQUE
     ),
@@ -40,6 +44,7 @@ $table->addIndex(
         'customer_id',
         'card_id',
         'card_type',
+        'save_card',
     ),
     array('type' => Varien_Db_Adapter_Interface::INDEX_TYPE_UNIQUE));
 
