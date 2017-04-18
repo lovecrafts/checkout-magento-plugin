@@ -19,8 +19,8 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
     const CARD_FORM_MODE        = 'cardTokenisation';
 
     const PAYMENT_MODE_MIXED            = 'mixed';
-    const PAYMENT_MODE_CARD             = 'card';
-    const PAYMENT_MODE_LOCAL_PAYMENT    = 'localpayment';
+    const PAYMENT_MODE_CARD             = 'cards';
+    const PAYMENT_MODE_LOCAL_PAYMENT    = 'localpayments';
 
     public function assignData($data)
     {
@@ -28,7 +28,8 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
             $data = new Varien_Object($data);
         }
         $info   = $this->getInfoInstance()
-            ->setCheckoutApiCardId('');
+            ->setCheckoutApiCardId('')
+            ->setPoNumber($data->getSaveCardCheck());
 
         $result = $this->_getSavedCartDataFromPost($data);
 
@@ -566,6 +567,14 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         $config                     = array();
         $config['authorization']    = $secretKey;
 
+        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+            $ip = $_SERVER['HTTP_CLIENT_IP'];
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        } else {
+            $ip = $_SERVER['REMOTE_ADDR'];
+        }
+
         $config['postedParam'] = array (
             'trackId'           => NULL,
             'customerName'      => $billingAddress->getName(),
@@ -576,7 +585,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
             'billingDetails'    => $billingAddressConfig,
             'shippingDetails'   => $shippingAddressConfig,
             'products'          => $products,
-            'customerIp'        => Mage::helper('core/http')->getRemoteAddr(),
+            'customerIp'        => $ip,
             'metadata'          => array(
                 'server'            => Mage::helper('core/http')->getHttpUserAgent(),
                 'quoteId'           => $quote->getId(),
@@ -623,7 +632,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'autoCapture');
     }
 
-    public function getCustomerId() {
+    public function getCustomerId() { 
         if (Mage::app()->getStore()->isAdmin()) {
             $customerId = Mage::getSingleton('adminhtml/session_quote')->getCustomerId();
         } else {
@@ -631,5 +640,9 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         }
 
         return $customerId ? $customerId : false;
+    }
+
+    public function getSaveCardSetting(){
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'saveCard');
     }
 }

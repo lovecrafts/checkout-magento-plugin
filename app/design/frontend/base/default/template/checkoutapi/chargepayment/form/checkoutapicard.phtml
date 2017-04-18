@@ -9,7 +9,7 @@
 <?php $isVisibleCcType = $this->isVisibleCcType();?>
 <?php if ($isActive):?>
     <ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>" style="display:none;">
-        <?php if($this->isCustomerLogged()): ?>
+        <?php if($this->isCustomerLogged() && $this->isSaveCard()): ?>
             <?php $cardList = $this->getCustomerCardList();?>
             <?php if(!empty($cardList)): ?>
                 <?php foreach($cardList as $index => $card):?>
@@ -85,6 +85,12 @@
                 <a class="cvv-what-is-this" href="#"><?php echo $this->__('What is this?') ?></a>
             </div>
         </li>
+         <li class="checkoutapi-save-card-check">
+            <label for="<?php echo $this->getMethodCode() ?>_save_card_check"><?php echo $this->__('Save card for future payments. ') ?></label>
+            <input type="checkbox" name="payment[save_card_check]" id="<?php echo $this->getMethodCode() ?>_save_card_check" value='1'>           
+        </li>
+
+
     </ul>
     <?php if (!empty($cardList)):?>
         <script type="application/javascript">
@@ -100,6 +106,11 @@
             function showNewCard() {
                 $$('.checkoutapi-li').each(Element.show);
             }
+        </script>
+    <?php endif;?>
+    <?php if(!$this->isCustomerLogged() || !$this->isSaveCard()):?>
+        <script type="application/javascript">
+            $$('.checkoutapi-save-card-check').each(Element.hide);
         </script>
     <?php endif;?>
 <?php else :?>

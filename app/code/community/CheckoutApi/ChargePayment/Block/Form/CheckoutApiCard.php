@@ -60,14 +60,21 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiCard  extends Mage_Payment
             return $result;
         }
 
+
         $cardModel      = Mage::getModel('chargepayment/customerCard');
         $collection     = $cardModel->getCustomerCardList($customerId);
+
 
         if (!$collection->count()) {
             return $result;
         }
 
         foreach($collection as $index => $card) {
+
+            if($card->getSaveCard() == ''){
+              continue;
+            }
+
             $result[$index]['title']    = sprintf('xxxx-%s', $card->getCardNumber());
             $result[$index]['value']    = $cardModel->getCardSecret($card->getId(), $card->getCardNumber(), $card->getCardType());
             $result[$index]['type']     = $card->getCardType();
@@ -85,5 +92,14 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiCard  extends Mage_Payment
      */
     public function isVisibleCcType() {
         return Mage::getModel('chargepayment/creditCard')->getIsVisibleCcType();
+    }
+
+
+    /**
+    * Get Save Card setting from config
+    *
+    **/
+    public function isSaveCard(){
+        return Mage::getModel('chargepayment/creditCard')->getSaveCardSetting();
     }
 }

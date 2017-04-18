@@ -23,7 +23,8 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
             $data = new Varien_Object($data);
         }
         $info   = $this->getInfoInstance()
-            ->setCheckoutApiCardId('');
+            ->setCheckoutApiCardId('')
+            ->setPoNumber($data->getSaveCardCheck());
 
         $result = $this->_getSavedCartDataFromPost($data);
 
@@ -399,6 +400,14 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
         $config                     = array();
         $config['authorization']    = $secretKey;
 
+        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+            $ip = $_SERVER['HTTP_CLIENT_IP'];
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        } else {
+            $ip = $_SERVER['REMOTE_ADDR'];
+        }
+
         $config['postedParam'] = array (
             'trackId'           => NULL,
             'customerName'      => $billingAddress->getName(),
@@ -409,7 +418,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
             'billingDetails'    => $billingAddressConfig,
             'shippingDetails'   => $shippingAddressConfig,
             'products'          => $products,
-            'customerIp'        => Mage::helper('core/http')->getRemoteAddr(),
+            'customerIp'        => $ip,
             'metadata'          => array(
                 'server'  => Mage::helper('core/http')->getHttpUserAgent(),
                 'quoteId' => $this->_getQuote()->getId(),
@@ -449,5 +458,9 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
         }
 
         return $customerId ? $customerId : false;
+    }
+
+    public function getSaveCardSetting(){
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'saveCard');
     }
 }
