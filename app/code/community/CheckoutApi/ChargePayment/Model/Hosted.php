@@ -60,7 +60,13 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
         $redirectUrl    = $session->getHostedPaymentRedirect();
 
         $getParam = Mage::app()->getRequest()->getParams();
-        $isNewCard = $getParam['payment']['customer_card'];
+
+        if(isset($getParam['payment']['customer_card'])){
+            $isNewCard = $getParam['payment']['customer_card'];
+        } else {
+            $isNewCard = 'new_card';
+        }
+
         $redirect = Mage::getModel('core/url')->getUrl('chargepayment/api/hosted/');
 
         if(is_null($isNewCard)){

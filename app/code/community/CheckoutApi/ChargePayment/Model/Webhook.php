@@ -523,10 +523,6 @@ class CheckoutApi_ChargePayment_Model_Webhook
             $result['is_admin'] = true;
         }
 
-        if (!$session->isCheckoutOrderIncrementIdExist($orderIncrementId)) {
-            return $result;
-        }
-
         if($chargeMode === CheckoutApi_ChargePayment_Helper_Data::CREDIT_CARD_CHARGE_MODE_3D){
             $storedToken = $order->getPayment()->getAdditionalInformation('payment_token');
 

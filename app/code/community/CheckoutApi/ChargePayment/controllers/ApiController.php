@@ -149,10 +149,16 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         $session        = Mage::getSingleton('chargepayment/session_quote');
         $redirectUrl    = Mage::helper('checkout/url')->getCheckoutUrl();
 
+        $lastOrderIncrementId = $session->LastOrderIncrementId;
+
+        if(is_null($LastOrderIncrementId)){
+             $lastOrderIncrementId = Mage::getSingleton('checkout/session')->getLastRealOrderId();
+        }
+
         Mage::getSingleton('core/session')->addError('Please check your payment details and try again. Thank you');
 
-        if(!is_null($session->LastOrderIncrementId)){
-            $order = Mage::getModel('sales/order')->loadByIncrementId($session->LastOrderIncrementId);
+        if(!is_null($lastOrderIncrementId)){
+            $order = Mage::getModel('sales/order')->loadByIncrementId($lastOrderIncrementId);
             $order->cancel();
             $order->setStatus('canceled');
             $order->setState('canceled');
