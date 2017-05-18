@@ -535,6 +535,9 @@ class CheckoutApi_ChargePayment_Model_Webhook
         $amount     = $order->getBaseGrandTotal();
 
         try {
+
+            Mage::getModel('chargepayment/customerCard')->saveCard($payment, $response);
+
             $payment
                 ->setTransactionId($transactionId)
                 ->setCurrencyCode($order->getBaseCurrencyCode())

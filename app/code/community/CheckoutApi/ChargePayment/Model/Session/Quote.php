@@ -122,6 +122,8 @@ class CheckoutApi_ChargePayment_Model_Session_Quote extends Mage_Core_Model_Sess
         if(empty($secretKey) && empty($mode)){
             $secretKey = Mage::getModel('chargepayment/hosted')->getSecretKey();
             $mode = Mage::getModel('chargepayment/hosted')->getMode();
+        } else {
+            return $result;
         }
 
         if(!is_null($paymentToken)){
