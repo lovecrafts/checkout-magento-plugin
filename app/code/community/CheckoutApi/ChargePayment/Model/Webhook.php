@@ -285,7 +285,7 @@ class CheckoutApi_ChargePayment_Model_Webhook
      *
      * @version 20151130
      */
-    public function voidOrder($response) {
+    public function voidOrder($response) { 
         $trackId    = (string)$response->message->trackId;
         $modelOrder = Mage::getModel('sales/order');
         $order      = $modelOrder->loadByIncrementId($trackId);
@@ -353,16 +353,16 @@ class CheckoutApi_ChargePayment_Model_Webhook
         }
 
         try {
+
             $payment
                 ->setTransactionId($transactionId)
                 ->setCurrencyCode($order->getBaseCurrencyCode())
                 ->setPreparedMessage((string)$response->message->description)
                 ->setParentTransactionId($parentTransactionId)
                 ->setShouldCloseParentTransaction(true)
-                ->setIsTransactionClosed(1)
-                ->registerVoidNotification()
-            ;
-
+                ->setIsTransactionClosed(true)
+                ;
+            
             $isCancelledOrderCard   = Mage::getModel('chargepayment/creditCard')->getVoidStatus();
             $isCancelledOrderJs     = Mage::getModel('chargepayment/creditCardJs')->getVoidStatus();
             $isCancelledOrderKit    = Mage::getModel('chargepayment/creditCardKit')->getVoidStatus();
@@ -534,59 +534,59 @@ class CheckoutApi_ChargePayment_Model_Webhook
         $payment    = $order->getPayment();
         $amount     = $order->getBaseGrandTotal();
 
-        try {
+        if($order->getStatus() == 'pending_payment'){
+            try {
+                Mage::getModel('chargepayment/customerCard')->saveCard($payment, $response);
 
-            Mage::getModel('chargepayment/customerCard')->saveCard($payment, $response);
+                $payment
+                    ->setTransactionId($transactionId)
+                    ->setCurrencyCode($order->getBaseCurrencyCode())
+                    ->setPreparedMessage((string)$response->getDescription())
+                    ->setIsTransactionClosed(0)
+                    ->setShouldCloseParentTransaction(false)
+                    ->setBaseAmountAuthorized($amount)
+                ;
 
-            $payment
-                ->setTransactionId($transactionId)
-                ->setCurrencyCode($order->getBaseCurrencyCode())
-                ->setPreparedMessage((string)$response->getDescription())
-                ->setIsTransactionClosed(0)
-                ->setShouldCloseParentTransaction(false)
-                ->setBaseAmountAuthorized($amount)
-            ;
+                if ($isAuto) {
+                    $message = Mage::helper('sales')->__('Capturing amount of %s is pending approval on gateway.', $this->_formatPrice($order, $amount));
 
-            if ($isAuto) {
-                $message = Mage::helper('sales')->__('Capturing amount of %s is pending approval on gateway.', $this->_formatPrice($order, $amount));
-
-                $payment->setIsTransactionPending(true);
-                $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_CAPTURE, null, false , '');
-            } else {
-                $message = Mage::helper('sales')->__('Authorized amount of %s.', $this->_formatPrice($order, $amount));
-                $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH, null, false , '');
-            }
-
-            $message .= ' ' . Mage::helper('sales')->__('Transaction ID: "%s".', $transactionId);
-
-            $history = $order->addStatusHistoryComment($message, false);
-
-            if($chargeMode === CheckoutApi_ChargePayment_Helper_Data::CREDIT_CARD_CHARGE_MODE_LP){
-
-                if($validateRequest['status'] != 1 ){
-                    $order->setState('payment_review');
-                    $order->setStatus('fraud');
-                    $order->addStatusHistoryComment('Suspected fraud - Please verify amount and quantity.', false);
+                    $payment->setIsTransactionPending(true);
+                    $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_CAPTURE, null, false , '');
                 } else {
-                    $order->setStatus('pending');
+                    $message = Mage::helper('sales')->__('Authorized amount of %s.', $this->_formatPrice($order, $amount));
+                    $payment->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH, null, false , '');
                 }
 
-            } else {
-                $order->setStatus('pending');
+                $message .= ' ' . Mage::helper('sales')->__('Transaction ID: "%s".', $transactionId);
+
+                $history = $order->addStatusHistoryComment($message, false);
+
+                if($chargeMode === CheckoutApi_ChargePayment_Helper_Data::CREDIT_CARD_CHARGE_MODE_LP){
+                        $order->setStatus('pending');
+                } else { 
+
+                     if($validateRequest['status'] !== 1 && (int)$response->getResponseCode() !== CheckoutApi_ChargePayment_Model_Checkout::CHECKOUT_API_RESPONSE_CODE_APPROVED){
+                        $order->setState('payment_review');
+                        $order->setStatus('fraud');
+                        $order->addStatusHistoryComment('Suspected fraud - Please verify amount and quantity.', false);
+                    } else { 
+                        $order->setStatus('pending');
+                    }
+                }
+
+                $order->save();
+
+                if($chargeMode === CheckoutApi_ChargePayment_Helper_Data::CREDIT_CARD_CHARGE_MODE_3D){
+                    Mage::getModel('chargepayment/customerCard')->saveCard($payment, $response);
+                }
+
+                $cart = Mage::getModel('checkout/cart');
+                $cart->truncate()->save();
+
+            } catch (Mage_Core_Exception $e) {
+                Mage::log($e->getMessage(), null, self::LOG_FILE);
+                return $result;
             }
-
-            $order->save();
-
-            if($chargeMode === CheckoutApi_ChargePayment_Helper_Data::CREDIT_CARD_CHARGE_MODE_3D){
-                Mage::getModel('chargepayment/customerCard')->saveCard($payment, $response);
-            }
-
-            $cart = Mage::getModel('checkout/cart');
-            $cart->truncate()->save();
-
-        } catch (Mage_Core_Exception $e) {
-            Mage::log($e->getMessage(), null, self::LOG_FILE);
-            return $result;
         }
 
         $session->removeCheckoutOrderIncrementId($orderIncrementId);
