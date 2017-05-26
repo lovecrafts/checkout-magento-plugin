@@ -457,6 +457,10 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
             $customerId = Mage::getModel('checkout/cart')->getQuote()->getCustomerId();
         }
 
+        if(is_null($customerId)){
+            $customerId = Mage::getSingleton('customer/session')->getCustomer()->getId();
+        }
+
         return $customerId ? $customerId : false;
     }
 
