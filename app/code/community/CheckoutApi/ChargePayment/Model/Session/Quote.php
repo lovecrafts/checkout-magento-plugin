@@ -116,13 +116,27 @@ class CheckoutApi_ChargePayment_Model_Session_Quote extends Mage_Core_Model_Sess
     public function isCheckoutLocalPaymentTokenExist($paymentToken) {
         $result = false;
 
-        $modeCreditCardJs =  Mage::getModel('chargepayment/creditCardJs')->getMode();
-        $secretKeyCreditCardJs = Mage::getModel('chargepayment/creditCardJs')->getSecretKey();
-        $secretKeyHosted = Mage::getModel('chargepayment/hosted')->getSecretKey();
-        $modeHosted = Mage::getModel('chargepayment/hosted')->getMode();
+        $session  = Mage::getSingleton('checkout/session');
+        $quote_id = $session->getQuoteId();
 
-        $secretKey = $secretKeyCreditCardJs ?: $secretKeyHosted;
-        $mode = $modeCreditCardJs ?: $modeHosted;
+        if(is_null($quote_id)){ 
+            $secretKey = Mage::getModel('chargepayment/hosted')->getSecretKey();
+            $mode = Mage::getModel('chargepayment/hosted')->getMode();
+        }else {
+            $quote = Mage::getModel('sales/quote')->load($quote_id);
+            $paymentcode = $quote->getPayment()->getMethodInstance()->getCode();
+
+            if($paymentcode == 'checkoutapijs'){
+                $mode =  Mage::getModel('chargepayment/creditCardJs')->getMode();
+                $secretKey = Mage::getModel('chargepayment/creditCardJs')->getSecretKey();
+            } elseif($paymentcode == 'checkoutapikit'){
+                $secretKey = Mage::getModel('chargepayment/creditCardKit')->getSecretKey();
+                $mode = Mage::getModel('chargepayment/creditCardKit')->getMode();
+            } elseif($paymentcode =='checkoutapicard') {
+                $secretKey = Mage::getModel('chargepayment/creditCard')->getSecretKey();
+                $mode = Mage::getModel('chargepayment/creditCard')->getMode();
+            }
+        }
 
         if(empty($secretKey) || empty($mode)){ 
             return $result;
@@ -137,7 +151,7 @@ class CheckoutApi_ChargePayment_Model_Session_Quote extends Mage_Core_Model_Sess
 
             $data = $Api->verifyChargePaymentToken($verifyParams);
 
-            if($data->getResponseCode() == 10000 && $data->getChargeMode() === 3){
+            if($data->getResponseCode() == 10000 || $data->getResponseCode() == 10100 || $data->getChargeMode() === 3){
                 $session        = Mage::getSingleton('chargepayment/session_quote');
                 $order = Mage::getModel('sales/order')->loadByIncrementId($session->last_order_increment_id);
 

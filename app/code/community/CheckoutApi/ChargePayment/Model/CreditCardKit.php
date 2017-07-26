@@ -467,4 +467,14 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
     public function getSaveCardSetting(){
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'saveCard');
     }
+
+    
+    public function getSecretKey() {
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'secretkey');
+    }
+
+   
+    public function getMode() {
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'mode');
+    }
 }
