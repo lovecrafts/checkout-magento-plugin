@@ -35,16 +35,20 @@ class CheckoutApi_ChargePayment_Model_CustomerCard extends Mage_Core_Model_Abstr
 
         if($integrationType == 'JS'){
             $customerId = Mage::getModel('chargepayment/creditCardJs')->getCustomerId();
-            $last4 = $response->getCard()->getLast4();
+            $last4      = $response->getCard()->getLast4();
+            $bin        = $response->getCard()->getBin();
         } elseif($integrationType == 'API'){
             $customerId = Mage::getModel('chargepayment/creditCard')->getCustomerId();
             $last4      = $payment->getCcLast4();
+            $bin        = $response->getCard()->getBin();
         }elseif($integrationType == 'KIT'){
             $customerId = Mage::getModel('chargepayment/creditCardKit')->getCustomerId();
-            $last4 = $response->getCard()->getLast4();
+            $last4      = $response->getCard()->getLast4();
+            $bin        = $response->getCard()->getBin();            
         }elseif($integrationType == 'HOSTED'){
             $customerId = Mage::getSingleton('customer/session')->getId();
-            $last4 = $response->getCard()->getLast4();
+            $last4      = $response->getCard()->getLast4();
+            $bin        = $response->getCard()->getBin();
         }
 
         if (empty($customerId)){
@@ -80,6 +84,7 @@ class CheckoutApi_ChargePayment_Model_CustomerCard extends Mage_Core_Model_Abstr
             $this->setCardNumber($last4);
             $this->setCardType($cardType);
             $this->setSaveCard($saveCardCheck);
+            $this->setBin($bin);
 
             $this->save();
         } catch (Exception $e) {
