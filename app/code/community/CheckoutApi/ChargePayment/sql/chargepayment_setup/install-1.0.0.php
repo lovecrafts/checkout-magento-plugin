@@ -19,7 +19,7 @@ $table = $installer->getConnection()
     ->addColumn('card_id', Varien_Db_Ddl_Table::TYPE_TEXT, '100', array(
         'nullable'  => false,
     ), 'Card ID from Checkout API')
-    ->addColumn('bin', Varien_Db_Ddl_Table::TYPE_CHAR, '6', array(
+    ->addColumn('bin', Varien_Db_Ddl_Table::TYPE_CHAR, '7', array(
         'nullable'  => false,
     ), 'Customer Credit Card Bin Number')
     ->addColumn('card_number', Varien_Db_Ddl_Table::TYPE_CHAR, '4', array(
