@@ -31,6 +31,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
         if (!empty($result)) {
             $info->setCcType($result['cc_type']);
             $info->setCheckoutApiCardId($result['checkout_api_card_id']);
+            $info->setCcCid($result['cc_id']);
         }
 
         return $this;
@@ -78,6 +79,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
         }
 
         $result['checkout_api_card_id'] = $customerCard->getCardId();
+        $result['cc_id']                = $data->getCcId();
 
         return $result;
     }
@@ -246,6 +248,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
 
         if(isset($checkoutApiCardId)){
             $config['postedParam']['cardId'] = $checkoutApiCardId;
+            $config['postedParam']['cvv']    = $payment->getCcCid();
         }
 
         $result         = $Api->createCharge($config);
@@ -477,4 +480,9 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
     public function getMode() {
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'mode');
     }
+
+    public function getCvvVerification() {
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'cvvVerification');
+    }
+
 }

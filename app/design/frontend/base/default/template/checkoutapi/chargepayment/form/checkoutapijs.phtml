@@ -20,6 +20,18 @@
                             <label for="card-<?php echo $index;?>"><?php echo $card['type'] . ' ' . $card['title'];?></label>
                         </li>
                     <?php endforeach;?>
+                    <?php if($this->cvvVerification()):?>
+                        <div class="cvvVerification">
+                            <label class="required" for="<?php echo $this->getMethodCode() ?>_cc_cid"><em>*</em><?php echo $this->__('Card Verification Number') ?></label>
+                            <div class="input-box">
+                                <div class="v-fix">
+                                    <input type="text" value="" name="payment[cc_id]" id="<?php echo $this->getMethodCode() ?>_cc_id" class="input-text cvv required-entry validate-cc-cvn" title="Card Verification Number" pattern="\d*" autocomplete="off" value="<?php echo $this->getCcid();?>">
+                                </div>
+                                <a class="cvv-what-is-this" href="#"><?php echo $this->__('What is this?') ?></a>
+                            </div>
+                        </div>
+
+                    <?php endif;?>
                     <li>
                         <input id="checkoutapi-new-card" class="validate-one-required-by-name" type="radio" name="payment[customer_card]" value="new_card"/>
                         <label for="checkoutapi-new-card">Use New Card</label>
@@ -140,10 +152,12 @@
 
                 function hideNewCard() {
                     $$('.checkoutapi-li').each(Element.hide);
+                    $$('.checkoutapi-save-card-check').each(Element.hide);
                 }
 
                 function showNewCard() {
                     $$('.checkoutapi-li').each(Element.show);
+                	$$('.checkoutapi-save-card-check').each(Element.show);
                 }
             </script>
         <?php endif;?>
@@ -157,6 +171,22 @@
             window.checkoutIntegrationTotalValue = 0;
         </script>
 	<?php endif;?>
+	<?php if($this->cvvVerification()):?>
+        <script type="application/javascript">
+            hideCvvVerification();
+
+            $$('.checkoutapi-saved-card').invoke('observe', 'change', showCvvVerification);
+            $('checkoutapi-new-card').observe('change', hideCvvVerification);
+
+            function hideCvvVerification() {
+                $$('.cvvVerification').each(Element.hide);
+            }
+
+            function showCvvVerification() {
+                $$('.cvvVerification').each(Element.show);
+            }
+        </script>
+    <?php endif;?>
 <?php else :?>
     <ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>" style="display:none;">
         <li><?php echo $this->__('Selected Payment Type is not allowed.') ?></li>

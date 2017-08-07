@@ -86,10 +86,8 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
             $info->setCcLast4($result['cc_number']);
             $info->setCcType($result['cc_type']);
             $info->setCheckoutApiCardId($result['checkout_api_card_id']);
+            $info->setCcCid($result['cc_id']);
         }
-
-
-
         
         return $this;
     }
@@ -131,7 +129,6 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
         } else {
             $billingCountry     = $paymentInfo->getQuote()->getBillingAddress()->getCountryId();
             $billingTelephone   = $paymentInfo->getQuote()->getBillingAddress()->getTelephone();
-            //$shippingTelephone  = $paymentInfo->getQuote()->getShippingAddress()->getTelephone();
 
              if(!empty($paymentInfo->getQuote()->getShippingAddress())){ ;
                 $shippingTelephone  = $paymentInfo->getQuote()->getShippingAddress()->getTelephone();
@@ -382,8 +379,10 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
         $checkoutApiCardId = $payment->getCheckoutApiCardId();
 
 
+
         if (!empty($checkoutApiCardId)) {
             $config['cardId'] = $checkoutApiCardId;
+            $config ['cvv'] = $payment->getCcCid();
         } else {
             $config['card'] = array(
                 'name'              => $payment->getCcOwner(),
@@ -462,8 +461,6 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
         $savedCard  = $data->getCustomerCard();
         $card       = $data->getCcNumber();
 
-       
-
         if (empty($savedCard) && empty($card)) {
             Mage::throwException(Mage::helper('chargepayment')->__('Please check your card data.'));
         }
@@ -508,7 +505,8 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
         $result['cc_number']            = $customerCard->getCardNumber();
         $result['cc_type']              = $customerCard->getCardType();
         $result['checkout_api_card_id'] = $customerCard->getCardId();
-        $result['save_card_check'] = $data->getSaveCardCheck();
+        $result['save_card_check']      = $data->getSaveCardCheck();
+        $result['cc_id']                = $data->getCcId();
 
         return $result;
     }
@@ -607,10 +605,13 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
     public function getSecretKey() {
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'secretkey');
     }
-
    
     public function getMode() {
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'mode');
+    }
+
+    public function getCvvVerification() {
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'cvvVerification');
     }
 
 }
