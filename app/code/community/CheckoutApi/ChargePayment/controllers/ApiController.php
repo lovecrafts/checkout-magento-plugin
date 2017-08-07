@@ -235,6 +235,7 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         $order              = Mage::getModel('sales/order')->loadByIncrementId($orderIncrementId);
         $helper             = Mage::helper('chargepayment');
 
+
         if (!$order->getId()) {
             $this->norouteAction();
             return;
@@ -265,7 +266,8 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
                     ->setHostedPaymentRedirect(NULL)
                     ->setHostedPaymentParams(NULL)
                     ->setHostedPaymentConfig(NULL)
-                    ->setSecretKey(NULL);
+                    ->setSecretKey(NULL)
+                    ->setCcId(NULL);
                     
                 Mage::getSingleton('core/session')->unsHostedCardId();
                 
@@ -276,7 +278,8 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
                 $session
                     ->setHostedPaymentRedirect(NULL)
                     ->setHostedPaymentConfig(NULL)
-                    ->setHostedPaymentParams(NULL);
+                    ->setHostedPaymentParams(NULL)
+                    ->setCcId(NULL);;
 
                 $this->_redirectUrl($result['redirect']);
                 break;

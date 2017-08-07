@@ -142,4 +142,12 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiHosted  extends Mage_Payme
     public function isSaveCard(){
         return Mage::getModel('chargepayment/hosted')->getSaveCardSetting();
     }
+
+    /**
+    * Get Cvv verification setting from config
+    *
+    **/
+    public function cvvVerification(){
+        return Mage::getModel('chargepayment/creditCardKit')->getCvvVerification();
+    }
 }
