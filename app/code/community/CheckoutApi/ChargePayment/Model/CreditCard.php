@@ -122,15 +122,18 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
         if ($paymentInfo instanceof Mage_Sales_Model_Order_Payment) {
             $billingCountry     = $paymentInfo->getOrder()->getBillingAddress()->getCountryId();
             $billingTelephone   = $paymentInfo->getOrder()->getBillingAddress()->getTelephone();
+            $verifyShipping     = $paymentInfo->getOrder()->getShippingAddress()? true : false;
 
-            if(!empty($paymentInfo->getOrder()->getShippingAddress())){ 
+            if($verifyShipping){
                 $shippingTelephone  = $paymentInfo->getOrder()->getShippingAddress()->getTelephone();
             }
+            
         } else {
             $billingCountry     = $paymentInfo->getQuote()->getBillingAddress()->getCountryId();
             $billingTelephone   = $paymentInfo->getQuote()->getBillingAddress()->getTelephone();
+            $verifyShipping     = $paymentInfo->getQuote()->getShippingAddress()? true : false;
 
-             if(!empty($paymentInfo->getQuote()->getShippingAddress())){ ;
+            if($verifyShipping){ 
                 $shippingTelephone  = $paymentInfo->getQuote()->getShippingAddress()->getTelephone();
             }
         }
