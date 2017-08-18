@@ -216,7 +216,8 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
                     $payment
                         ->setAdditionalInformation('payment_token', $entityId)
                         ->setAdditionalInformation('payment_token_url', $redirectUrl)
-                        ->setAdditionalInformation('use_current_currency', $isCurrentCurrency);
+                        ->setAdditionalInformation('use_current_currency', $isCurrentCurrency)
+                        ->setTransactionId($entityId);
 
                     $session->addPaymentToken($entityId);
                     $session

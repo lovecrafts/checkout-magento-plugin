@@ -443,6 +443,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
                 if ($redirectUrl && $entityId) {
                     $payment->setAdditionalInformation('payment_token', $entityId);
                     $payment->setAdditionalInformation('payment_token_url', $redirectUrl);
+                    $payment->setTransactionId($entityId);
 
                     $session->addPaymentToken($entityId);
                     $session
