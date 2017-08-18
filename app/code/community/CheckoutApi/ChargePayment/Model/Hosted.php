@@ -840,7 +840,8 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
             $payment
                 ->setAdditionalInformation('payment_token', $entityId)
                 ->setAdditionalInformation('payment_token_url', $redirectUrl)
-                ->setAdditionalInformation('use_current_currency', $isCurrentCurrency);
+                ->setAdditionalInformation('use_current_currency', $isCurrentCurrency)
+                ->setTransactionId($entityId);
             $payment->save();
             $order->save();
 
