@@ -5,6 +5,19 @@
  * @version 20160502
  */
 ?>
+<script>
+
+
+    var script = document.createElement('script');
+    script.type = "text/javascript";
+    script.src = '<?php echo $this->getKitJsPath();?>';
+    script.async = true;
+    script.setAttribute("data-namespace","CheckoutKit");
+    document.head.appendChild(script);
+</script>
+
+
+
 <?php $isActive     = $this->isActive();?>
 <?php $isDebug      = $this->getDebugMode();?>
 <?php if ($isActive):?>
@@ -19,18 +32,6 @@
                         <label for="card-<?php echo $index;?>"><?php echo $card['type'] . ' ' . $card['title'];?></label>
                     </li>
                 <?php endforeach;?>
-                <?php if($this->cvvVerification()):?>
-                        <div class="cvvVerification">
-                            <label class="required" for="<?php echo $this->getMethodCode() ?>_cc_cid"><em>*</em><?php echo $this->__('Card Verification Number') ?></label>
-                            <div class="input-box">
-                                <div class="v-fix">
-                                    <input type="text" value="" name="payment[cc_id]" id="<?php echo $this->getMethodCode() ?>_cc_id" class="input-text cvv required-entry validate-cc-cvn" title="Card Verification Number" pattern="\d*" autocomplete="off" value="<?php echo $this->getCcid();?>">
-                                </div>
-                                <a class="cvv-what-is-this" href="#"><?php echo $this->__('What is this?') ?></a>
-                            </div>
-                        </div>
-
-                <?php endif;?>
                 <li>
                     <input id="checkoutapi-new-card" class="validate-one-required-by-name" type="radio" name="payment[customer_card]" value="new_card"/>
                     <label for="checkoutapi-new-card">Use New Card</label>
@@ -54,15 +55,40 @@
                     <input class="input-text expiryYear required-entry validate-length maximum-length-2 minimum-length-2 validate-digits" type="text" placeholder="YY" maxlength="2" name="payment[checkout_kit_year]">
                 </div>
                 <div class="checkout-kit-card-block">
-                    <input class="chCvv input-text cvv required-entry" name="payment[checkout_kit_cvv]" type="text" placeholder="CVV">
+                    <input class="chCvv input-text cvv required-entry" name="payment[checkout_kit_cvv]" type="text" placeholder="CVV" onblur="createCardToken()"  onkeydown="createCardToken()" onkeyup="createCardToken()" onmouseout="createCardToken()">
                 </div>
                 <div class="checkout-kit-card-block save-card-check">
                     <label for="<?php echo $this->getMethodCode() ?>_save_card_check"><?php echo $this->__('Save card for future payments. ') ?></label>
-                    <input type="checkbox" name="payment[save_card_check]" id="<?php echo $this->getMethodCode() ?>_save_card_check" value='1'>           
+                    <input type="checkbox" name="payment[save_card_check]" id="<?php echo $this->getMethodCode() ?>_save_card_check" value='1'>
                 </div>
+
+                <script> function createCardToken(){
+
+                        if(document.getElementsByName("payment[checkout_kit_cvv]")[0].value.length >=3 && document.getElementsByName("payment[checkout_kit_card_token]")[0].value.length == 0) {
+
+
+                            CheckoutKit.createCardToken({
+                                    "number": document.getElementsByName("payment[checkout_kit_number]")[0].value,
+                                    "expiryMonth": document.getElementsByName("payment[checkout_kit_month]")[0].value,
+                                    "expiryYear": document.getElementsByName("payment[checkout_kit_year]")[0].value,
+                                    "cvv": document.getElementsByName("payment[checkout_kit_cvv]")[0].value
+                                },
+                                function (data) {
+                                    if (data.type != "error") {
+                                        document.getElementsByName("payment[checkout_kit_card_token]")[0].value = data.id;
+                                        console.log(data);
+
+                                    }
+                                }
+                            );
+                        }
+
+
+                    }</script>
+
             </form>
 
-            
+
             <script type="text/javascript">
                 //TODO: Use namespace other than CheckoutKit as soon as gateway supports separate CKOConfig for JS and Kit.
                 //This is to avoid namespace conflicts if merchant enables another extension using CheckoutKit as a namespace.
@@ -77,6 +103,11 @@
 
                 window.checkoutKitIntegrationIsReady = window.checkoutKitIntegrationIsReady || false;
                 if (!window.checkoutKitIntegrationIsReady) {
+                    var script = document.createElement('script');
+                    script.type = "text/javascript";
+                    script.src = '<?php echo $this->getKitJsPath();?>';
+                    script.async = true;
+                    document.head.appendChild(script);
 
                     script.onload = function () {
                         if (typeof CheckoutKit == 'undefined') {
@@ -85,18 +116,14 @@
 
                         CheckoutKit.configure(window.CKOConfigKit);
                         window.checkoutKitIntegrationIsReady = true;
-                    }
+                    };
 
-                    var script = document.createElement('script');
-                    script.type = "text/javascript";
-                    script.src = '<?php echo $this->getKitJsPath();?>';
-                    script.async = true;
-                    document.head.appendChild(script);
+
                 } else {
                     CheckoutKit.configure(window.CKOConfigKit);
                 }
-				
-				window.checkoutIntegrationScriptKitAdded = true;
+
+                window.checkoutIntegrationScriptKitAdded = true;
             </script>
         </li>
     </ul>
@@ -110,12 +137,10 @@
 
             function hideNewCard() {
                 $$('.checkout-kit-card-block').each(Element.hide);
-                $$('.checkoutapi-save-card-check').each(Element.hide);
             }
 
             function showNewCard() {
                 $$('.checkout-kit-card-block').each(Element.show);
-                $$('.checkoutapi-save-card-check').each(Element.show);
             }
         </script>
     <?php endif;?>
@@ -124,22 +149,7 @@
             $$('.save-card-check').each(Element.hide);
         </script>
     <?php endif;?>
-    <?php if($this->cvvVerification()):?>
-        <script type="application/javascript">
-            hideCvvVerification();
 
-            $$('.checkoutapi-saved-card').invoke('observe', 'change', showCvvVerification);
-            $('checkoutapi-new-card').observe('change', hideCvvVerification);
-
-            function hideCvvVerification() {
-                $$('.cvvVerification').each(Element.hide);
-            }
-
-            function showCvvVerification() {
-                $$('.cvvVerification').each(Element.show);
-            }
-        </script>
-    <?php endif;?>
 <?php else :?>
     <ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>" style="display:none;">
         <li><?php echo $this->__('Selected Payment Type is not allowed.') ?></li>
