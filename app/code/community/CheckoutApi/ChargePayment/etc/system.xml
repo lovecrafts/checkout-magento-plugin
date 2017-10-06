@@ -19,7 +19,7 @@
                             <sort_order>1</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </active>
                         <title translate="label">
                             <label>Title</label>
@@ -37,7 +37,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>3</sort_order>
                             <comment>
                                 <![CDATA[Only used for requests from the merchant server to the Checkout API]]>
@@ -51,7 +51,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>4</sort_order>
                             <comment>
                                 <![CDATA[Used for webhooks from Checkout API]]>
@@ -67,7 +67,7 @@
                             <sort_order>5</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -79,7 +79,7 @@
                             <sort_order>6</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -91,7 +91,7 @@
                             <sort_order>7</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -103,7 +103,7 @@
                             <sort_order>8</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -115,7 +115,7 @@
                             <sort_order>12</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -125,7 +125,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>13</sort_order>
                             <depends>
                                 <active>1</active>
@@ -140,7 +140,7 @@
                             <source_model>adminhtml/system_config_source_payment_allspecificcountries</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>10</sort_order>
                             <depends>
                                 <active>1</active>
@@ -153,7 +153,7 @@
                             <source_model>adminhtml/system_config_source_country</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <allowspecific>1</allowspecific>
                             </depends>
@@ -165,7 +165,7 @@
                             <sort_order>12</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -177,7 +177,7 @@
                             <sort_order>13</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -192,7 +192,7 @@
                             <sort_order>14</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -204,7 +204,7 @@
                             <sort_order>15</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -219,7 +219,7 @@
                             <sort_order>16</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                                 <saveCard>1</saveCard>
@@ -245,7 +245,7 @@
                             <sort_order>1</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </active>
                         <title translate="label">
                             <label>Title</label>
@@ -263,7 +263,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>3</sort_order>
                             <comment>
                                 <![CDATA[Only used for requests from the merchant server to the Checkout API]]>
@@ -277,7 +277,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>4</sort_order>
                             <comment>
                                 <![CDATA[Used for webhooks from Checkout API]]>
@@ -291,7 +291,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>5</sort_order>
                             <comment>
                                 <![CDATA[Used for JS Checkout API]]>
@@ -307,7 +307,7 @@
                             <sort_order>6</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -319,7 +319,7 @@
                             <sort_order>7</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -331,7 +331,7 @@
                             <sort_order>8</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -342,7 +342,7 @@
                             <source_model>adminhtml/system_config_source_payment_allspecificcountries</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>10</sort_order>
                             <depends>
                                 <active>1</active>
@@ -355,7 +355,7 @@
                             <source_model>adminhtml/system_config_source_country</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <allowspecific>1</allowspecific>
                             </depends>
@@ -367,7 +367,7 @@
                             <sort_order>12</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -379,7 +379,7 @@
                             <sort_order>13</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -394,7 +394,7 @@
                             <sort_order>14</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -406,7 +406,7 @@
                             <sort_order>12</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -416,7 +416,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>13</sort_order>
                             <depends>
                                 <active>1</active>
@@ -430,7 +430,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>15</sort_order>
                             <depends>
                                 <active>1</active>
@@ -445,7 +445,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>16</sort_order>
                             <depends>
                                 <active>1</active>
@@ -459,7 +459,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>17</sort_order>
                             <depends>
                                 <active>1</active>
@@ -475,7 +475,7 @@
                             <sort_order>18</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -489,7 +489,7 @@
                             <sort_order>19</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -503,7 +503,7 @@
                             <sort_order>20</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -517,7 +517,7 @@
                             <sort_order>21</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -531,7 +531,7 @@
                             <sort_order>22</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -546,7 +546,7 @@
                             <sort_order>23</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -557,7 +557,7 @@
                             <sort_order>24</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -572,7 +572,7 @@
                             <sort_order>25</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -587,7 +587,7 @@
                             <sort_order>26</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -602,7 +602,7 @@
                             <sort_order>27</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -617,7 +617,7 @@
                             <sort_order>28</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -632,7 +632,7 @@
                             <sort_order>29</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                                 <saveCard>1</saveCard>
@@ -658,7 +658,7 @@
                             <sort_order>1</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </active>
                         <title translate="label">
                             <label>Title</label>
@@ -676,7 +676,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>3</sort_order>
                             <comment>
                                 <![CDATA[Only used for requests from the merchant server to the Checkout API]]>
@@ -690,7 +690,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>4</sort_order>
                             <comment>
                                 <![CDATA[Used for webhooks from Checkout API]]>
@@ -704,7 +704,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>5</sort_order>
                             <comment>
                                 <![CDATA[Used for JS Checkout API]]>
@@ -720,7 +720,7 @@
                             <sort_order>5</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -732,7 +732,7 @@
                             <sort_order>6</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -744,7 +744,7 @@
                             <sort_order>7</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -756,7 +756,7 @@
                             <sort_order>12</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -766,7 +766,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>13</sort_order>
                             <depends>
                                 <active>1</active>
@@ -781,7 +781,7 @@
                             <source_model>adminhtml/system_config_source_payment_allspecificcountries</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>11</sort_order>
                             <depends>
                                 <active>1</active>
@@ -794,7 +794,7 @@
                             <source_model>adminhtml/system_config_source_country</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <allowspecific>1</allowspecific>
                             </depends>
@@ -806,7 +806,7 @@
                             <sort_order>13</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -818,7 +818,7 @@
                             <sort_order>14</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -833,7 +833,7 @@
                             <sort_order>14</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -843,7 +843,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>15</sort_order>
                             <depends>
                                 <active>1</active>
@@ -860,7 +860,7 @@
                             <sort_order>16</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -875,7 +875,7 @@
                             <sort_order>17</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                                 <saveCard>1</saveCard>
@@ -901,7 +901,7 @@
                             <sort_order>1</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                         </active>
                         <title translate="label">
                             <label>Title</label>
@@ -919,7 +919,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>3</sort_order>
                             <comment>
                                 <![CDATA[Only used for requests from the merchant server to the Checkout API]]>
@@ -933,7 +933,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>4</sort_order>
                             <comment>
                                 <![CDATA[Used for webhooks from Checkout API]]>
@@ -947,7 +947,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>5</sort_order>
                             <comment>
                                 <![CDATA[Used for JS Checkout API]]>
@@ -963,7 +963,7 @@
                             <sort_order>6</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -975,7 +975,7 @@
                             <sort_order>7</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -987,7 +987,7 @@
                             <sort_order>8</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -999,7 +999,7 @@
                             <sort_order>12</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -1009,7 +1009,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>13</sort_order>
                             <depends>
                                 <active>1</active>
@@ -1024,7 +1024,7 @@
                             <source_model>adminhtml/system_config_source_payment_allspecificcountries</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>10</sort_order>
                             <depends>
                                 <active>1</active>
@@ -1037,7 +1037,7 @@
                             <source_model>adminhtml/system_config_source_country</source_model>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <allowspecific>1</allowspecific>
                             </depends>
@@ -1049,7 +1049,7 @@
                             <sort_order>12</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -1061,7 +1061,7 @@
                             <sort_order>13</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -1076,7 +1076,7 @@
                             <sort_order>14</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -1088,7 +1088,7 @@
                             <sort_order>15</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -1101,7 +1101,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>16</sort_order>
                             <depends>
                                 <active>1</active>
@@ -1115,7 +1115,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>17</sort_order>
                             <depends>
                                 <active>1</active>
@@ -1131,7 +1131,7 @@
                             <sort_order>18</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -1145,7 +1145,7 @@
                             <sort_order>19</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -1158,7 +1158,7 @@
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <sort_order>20</sort_order>
                             <depends>
                                 <active>1</active>
@@ -1174,7 +1174,7 @@
                             <sort_order>21</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -1189,7 +1189,7 @@
                             <sort_order>22</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
+                            <show_in_store>1</show_in_store>
                             <depends>
                                 <active>1</active>
                                 <saveCard>1</saveCard>
