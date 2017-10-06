@@ -151,6 +151,10 @@ class CheckoutApi_ChargePayment_Model_Session_Quote extends Mage_Core_Model_Sess
 
             $data = $Api->verifyChargePaymentToken($verifyParams);
 
+            if ((int)$data->getChargeMode() == 2){
+                return $result;
+            }
+
             if($data->getResponseCode() == 10000 || $data->getResponseCode() == 10100 || $data->getChargeMode() === 3){
                 $session        = Mage::getSingleton('chargepayment/session_quote');
                 $order = Mage::getModel('sales/order')->loadByIncrementId($session->last_order_increment_id);

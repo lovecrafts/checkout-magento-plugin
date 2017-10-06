@@ -52,6 +52,7 @@ document.observe('dom:loaded', function(){
                     }, function(response){
                         if (response.type === 'error') {
                             alert('Your payment was not completed. Please check you card details and try again or contact customer support.');
+                            $('checkout-api-js-hover').hide();
                             return;
                         }
 
@@ -64,6 +65,7 @@ document.observe('dom:loaded', function(){
                             $('checkout-api-js-hover').hide();
                         } else {
                             alert('Your payment was not completed. Please check you card details and try again or contact customer support.');
+                            $('checkout-api-js-hover').hide();
                             return;
                         }
                     }
