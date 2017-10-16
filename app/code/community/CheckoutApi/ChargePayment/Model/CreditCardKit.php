@@ -283,7 +283,8 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
                         ->setAdditionalInformation('payment_token', $entityId)
                         ->setAdditionalInformation('payment_token_url', $redirectUrl)
                         ->setAdditionalInformation('use_current_currency', $isCurrentCurrency)
-                        ->setTransactionId($entityId);
+                        ->setTransactionId($entityId)
+                        ->setIsTransactionPending(true);
 
                     $session->addPaymentToken($entityId);
                     $session

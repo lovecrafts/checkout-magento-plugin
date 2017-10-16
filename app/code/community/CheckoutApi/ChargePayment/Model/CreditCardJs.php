@@ -444,6 +444,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
                     $payment->setAdditionalInformation('payment_token', $entityId);
                     $payment->setAdditionalInformation('payment_token_url', $redirectUrl);
                     $payment->setTransactionId($entityId);
+                    $payment->setIsTransactionPending(true);
 
                     $session->addPaymentToken($entityId);
                     $session
