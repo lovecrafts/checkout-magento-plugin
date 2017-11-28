@@ -8,7 +8,8 @@ checkoutApi.prototype = {
         this.phpMethodCode      = 'checkoutapicard';
         this.jsMethodCode       = 'checkoutapijs';
         this.kitMethodCode      = 'checkoutapikit';
-        this.hostedMethodCode      = 'hosted';
+        this.hostedMethodCode   = 'hosted';
+        this.embeddedMethodCode = 'checkoutapiembedded';
         this.preparePayment();
     },
     preparePayment: function() { 
@@ -40,6 +41,11 @@ checkoutApi.prototype = {
             case this.kitMethodCode:
                 button.observe('click', function() {
                     this.checkoutKit();
+                }.bind(this));
+                break;
+            case this.embeddedMethodCode:
+                button.observe('click', function() {
+                    this.checkoutEmbeded();
                 }.bind(this));
                 break;
         }
@@ -170,5 +176,22 @@ checkoutApi.prototype = {
             alert('Please agree to all the terms and conditions before placing the order.');
             return;
         }
+    },
+    checkoutEmbeded: function(){
+        if (this.agreementIsValid()) {
+            if($('checkoutapi-new-card')){
+                if($('checkoutapi-new-card').checked){
+                    if (Frames.isCardValid()) Frames.submitCard();
+                } else {
+                    this.saveOrderSubmit();
+                }
+            } else {
+                if (Frames.isCardValid()) Frames.submitCard();
+            }
+        } else {
+            alert('Please agree to all the terms and conditions before placing the order.');
+            return;
+        }
+
     }
 };

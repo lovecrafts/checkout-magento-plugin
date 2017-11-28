@@ -10,6 +10,9 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
     const CODE_CREDIT_CARD_JS               = 'checkoutapijs';
     const CODE_CREDIT_CARD_KIT              = 'checkoutapikit';
     const CODE_CREDIT_CARD_HOSTED           = 'checkoutapihosted';
+    const CODE_CREDIT_CARD_EMBEDDED         = 'checkoutapiembedded';
+    const EMBEDDED_THEME_STANDARD           = 'standard';
+    const EMBEDDED_THEME_SIMPLE             = 'simple';
 
     const JS_PATH_CARD_TOKEN                = 'https://cdn.checkout.com/sandbox/js/checkout.js';
     const JS_PATH_CARD_TOKEN_LIVE           = 'https://cdn.checkout.com/js/checkout.js';
@@ -17,6 +20,8 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
     const JS_PATH_CHECKOUT_KIT              = 'https://cdn.checkout.com/sandbox/js/checkoutkit.js';
     const REDIRECT_PAYMENT_URL              = 'https://secure.checkout.com/sandbox/payment/';
     const REDIRECT_PAYMENT_URL_LIVE         = 'https://secure.checkout.com/payment/';
+    const EMBEDDED_PAYMENT_URL              = 'https://cdn.checkout.com/js/frames.js';
+    const EMBEDDED_PAYMENT_URL_LIVE         = 'https://cdn.checkout.com/js/frames.js';
 
     const CREDIT_CARD_CHARGE_MODE_NOT_3D    = 1;
     const CREDIT_CARD_CHARGE_MODE_3D        = 2;
@@ -81,6 +86,20 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
     public function getHostedJsPath() {
         $mode   = (string)$this->getConfigData(self::CODE_CREDIT_CARD_HOSTED, 'mode');
         $jsUrl  = $mode === self::API_MODE_LIVE ? self::JS_PATH_CARD_TOKEN_LIVE : self::JS_PATH_CARD_TOKEN;
+
+        return $jsUrl;
+    }
+
+    /**
+     * Return Js Path for Checkout Embedded
+     *
+     * @return string
+     *
+     * @version 20160202
+     */
+    public function getEmbeddedJsPath() {
+        $mode   = (string)$this->getConfigData(self::CODE_CREDIT_CARD_EMBEDDED, 'mode');
+        $jsUrl  = $mode === self::API_MODE_LIVE ? self::EMBEDDED_PAYMENT_URL_LIVE : self::EMBEDDED_PAYMENT_URL;
 
         return $jsUrl;
     }

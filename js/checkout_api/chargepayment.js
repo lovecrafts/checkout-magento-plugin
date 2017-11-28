@@ -14,6 +14,9 @@ document.observe('dom:loaded', function(){
         case 'checkoutapikit':
             checkoutKit();
             break;
+        // case 'checkoutapiembedded':
+        //     checkoutJs();
+        //     break;
     }
 
     function checkoutJs() {
