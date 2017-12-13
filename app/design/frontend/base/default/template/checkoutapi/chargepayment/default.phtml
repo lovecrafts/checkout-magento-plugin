@@ -5,7 +5,7 @@
  * @version 20160203
  */
 ?>
-<?php
+<?php 
     $overlay            = $this->getOverlayShade();
     $overlayColor       = $overlay === 'dark' ? '#000' : '#fff';
     $opacity            = $this->getOverlayOpacity();
@@ -14,11 +14,13 @@
     $checkoutApiMethod  = $session->getJsCheckoutApiParams();
 
     $session->setJsCheckoutApiParams(array());
+
 ?>
 <?php if(!empty($checkoutApiMethod)): ?>
     <script type="text/javascript">
         window.jsCheckoutApi = {
             method:         '<?php echo $checkoutApiMethod['method'] ?>',
+            controllerName: '<?php echo $checkoutApiMethod['controllerName'] ?>',
             kit_number:     '<?php echo !empty($checkoutApiMethod['kit_number']) ? $checkoutApiMethod['kit_number'] : '' ?>',
             kit_name:       '<?php echo !empty($checkoutApiMethod['kit_name']) ? $checkoutApiMethod['kit_name'] : '' ?>',
             kit_month:      '<?php echo !empty($checkoutApiMethod['kit_month']) ?$checkoutApiMethod['kit_month'] : '' ?>',

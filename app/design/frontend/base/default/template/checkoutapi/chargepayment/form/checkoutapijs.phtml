@@ -33,7 +33,7 @@
 
                     <?php endif;?>
                     <li>
-                        <input id="checkoutapi-new-card" class="validate-one-required-by-name" type="radio" name="payment[customer_card]" value="new_card"/>
+                        <input id="checkoutapi-new-card" class="checkoutapi-new-card validate-one-required-by-name" type="radio" name="payment[customer_card]" value="new_card"/>
                         <label for="checkoutapi-new-card">Use New Card</label>
                     </li>
                 <?php endif;?>
@@ -96,6 +96,7 @@
 							window.checkoutApiSubmitOrder();
 						},
 						cardTokenised: function(event){
+
 							if (document.getElementById('cko-card-token').value.length === 0 || document.getElementById('cko-card-token').value != event.data.cardToken) {
 								document.getElementById('cko-card-token').value = event.data.cardToken;
 								if ($('checkout-api-js-hover') !== null && $('checkout-api-js-hover').length > 0) {
@@ -104,30 +105,33 @@
 
 								window.checkoutApiSubmitOrder();
 							}
-						}
+						},
+                        widgetRendered: function(){
+                            jQuery('#cko-widget').css("display","inline-table");
+                        }
                     };
 				
 					window.checkoutIntegrationIsReady = window.checkoutIntegrationIsReady || false;
 					if (!window.checkoutIntegrationIsReady) {
-						window.CKOConfig = {
-							namespace: 'CKOAPIJS',
-							ready: function() {
-                                if (typeof CKOAPIJS == 'undefined') {
-                                    return false;
-                                }
-                                delete window.CKOConfig;
+    						window.CKOConfig = {
+    							namespace: 'CKOAPIJS',
+    							ready: function() { console.log('ready');
+                                    if (typeof CKOAPIJS == 'undefined') {
+                                        return false;
+                                    }
+                                    delete window.CKOConfig;
 
-								CKOAPIJS.render(window.checkoutIntegrationCurrentConfig);
+    								CKOAPIJS.render(window.checkoutIntegrationCurrentConfig);
 
-								window.checkoutIntegrationIsReady = true;
-							}
-						};
+    								window.checkoutIntegrationIsReady = true;
+    							}
+    						};
 
-						var script = document.createElement('script');
-                        script.type = "text/javascript";
-						script.src = '<?php echo $this->getJsPath();?>';
-						script.async = true;
-						document.head.appendChild(script);
+    						var script = document.createElement('script');
+                            script.type = "text/javascript";
+    						script.src = '<?php echo $this->getJsPath();?>';
+    						script.async = true;
+    						document.head.appendChild(script);
 					} else {
 						CKOAPIJS.render(window.checkoutIntegrationCurrentConfig);
 					}
@@ -148,7 +152,7 @@
                 hideNewCard();
 
                 $$('.checkoutapi-saved-card').invoke('observe', 'change', hideNewCard);
-                $('checkoutapi-new-card').observe('change', showNewCard);
+                $$('.checkoutapi-new-card').invoke('observe', 'change', showNewCard);
 
                 function hideNewCard() {
                     $$('.checkoutapi-li').each(Element.hide);
@@ -176,7 +180,7 @@
             hideCvvVerification();
 
             $$('.checkoutapi-saved-card').invoke('observe', 'change', showCvvVerification);
-            $('checkoutapi-new-card').observe('change', hideCvvVerification);
+            $$('.checkoutapi-new-card').invoke('observe', 'change', hideCvvVerification);
 
             function hideCvvVerification() {
                 $$('.cvvVerification').each(Element.hide);
@@ -187,6 +191,77 @@
             }
         </script>
     <?php endif;?>
+
+    <script type="text/javascript">
+        var controllerName = window.jsCheckoutApi.controllerName;
+        if(controllerName == 'index'){
+            jQuery('.onestepcheckout-place-order a').hide();
+            jQuery('#btncheckoutapipayment').hide();
+
+            if($( "p_method_checkoutapijs" ).checked){
+                jQuery('#btncheckoutapipayment').show();
+                jQuery('.onestepcheckout-place-order a').hide();
+
+                jQuery('.payment-methods input:radio').change(function() {
+                   if($( "p_method_checkoutapijs" ).checked){
+                            jQuery('#btncheckoutapipayment').show();
+                            jQuery('.onestepcheckout-place-order a').hide();    
+
+                        } else {
+                            jQuery('#btncheckoutapipayment').hide();
+                            jQuery('.onestepcheckout-place-order a').show();
+                    }
+                });
+            } else{
+                
+                jQuery('.onestepcheckout-place-order a').show();
+                jQuery('.payment-methods input:radio').change(function() {
+                   if($( "p_method_checkoutapijs" ).checked){
+                            jQuery('#btncheckoutapipayment').show();
+                            jQuery('.onestepcheckout-place-order a').hide();    
+
+                    } else {
+                        jQuery('#btncheckoutapipayment').hide();
+                        jQuery('.onestepcheckout-place-order a').show();
+                    }
+                });
+
+            }
+
+            $$('#btncheckoutapipayment').invoke('observe', 'click', btncheckoutapipayment);
+
+            function btncheckoutapipayment(){
+                Event.stop();
+                var already_placing_order = false;
+
+               // First validate the form
+                var form = new VarienForm('onestepcheckout-form');
+
+                if(!form.validator.validate())  {
+                    Event.stop();
+                }
+                else{
+                    if($('checkoutapi-new-card')){
+                        if($('checkoutapi-new-card').checked){
+                            CKOAPIJS.open();
+                            if (CKOAPIJS.isMobile()) {
+                                $('checkout-api-js-hover').show();
+                            }
+                        } else {
+                            window.checkoutApiSubmitOrder();
+                        }
+                    } else {
+                        CKOAPIJS.open();
+                        if (CKOAPIJS.isMobile()) {
+                            $('checkout-api-js-hover').show();
+                        }
+                    }
+                }
+            
+            }
+        }
+    </script>
+
 <?php else :?>
     <ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>" style="display:none;">
         <li><?php echo $this->__('Selected Payment Type is not allowed.') ?></li>
