@@ -1,36 +1,189 @@
-document.observe('dom:loaded', function(){
+document.observe('dom:loaded', function(){ console.log('dom:loaded');
     if (!window.hasOwnProperty('jsCheckoutApi')) {
         return false;
     }
-
+    
     var method = window.jsCheckoutApi.method;
 
     switch (method) {
-        case 'checkoutapicard':
-            break;
         case 'checkoutapijs':
             checkoutJs();
             break;
         case 'checkoutapikit':
             checkoutKit();
             break;
-        // case 'checkoutapiembedded':
-        //     checkoutJs();
-        //     break;
+        case 'checkoutapiembedded':
+            checkoutEmbedded();
+            break;
     }
 
     function checkoutJs() {
-        $('checkout-api-default-hover').show();
 
-        setTimeout(function(){
-            if (CKOAPIJS !== undefined) {
-                if (CKOAPIJS.isMobile()) {
-                    $('checkout-api-js-hover').show();
+        if(jQuery('#onestepcheckout-form').find('.onestepcheckout-error').length){
+            var url = window.location.href+'ajax/set_methods_separate/';
+            var update_payments = true;
+            get_separate_save_methods_function(url, update_payments)();
+        }
+
+        var controllerName = window.jsCheckoutApi.controllerName;
+        
+        if(controllerName == 'index'){
+            //Hide default OPC Place order button
+            jQuery('.onestepcheckout-place-order a').hide();
+
+            //Create Checkoutapipayment button
+            var btn = document.createElement('button');
+            var txt = document.createTextNode('Place order now');
+
+            btn.appendChild(txt);
+            btn.setAttribute('type', 'button');
+            btn.setAttribute('id', 'btncheckoutapipayment');
+            btn.setAttribute('class','large orange onestepcheckout-button');
+            
+            jQuery(".onestepcheckout-place-order").append(btn);
+            jQuery('#btncheckoutapipayment').hide();
+
+            if(jQuery('#p_method_checkoutapijs').length > 0){
+                if($( "p_method_checkoutapijs" ).checked){
+                    jQuery('#btncheckoutapipayment').show();
+                    jQuery('.onestepcheckout-place-order a').hide();
+
+                    jQuery('.payment-methods input:radio').change(function() {
+                       if($( "p_method_checkoutapijs" ).checked){
+                                jQuery('#btncheckoutapipayment').show();
+                                jQuery('.onestepcheckout-place-order a').hide();    
+
+                            } else {
+                                jQuery('#btncheckoutapipayment').hide();
+                                jQuery('.onestepcheckout-place-order a').show();
+                        }
+                    });
+                } else{
+                    
+                    jQuery('.onestepcheckout-place-order a').show();
+                    jQuery('.payment-methods input:radio').change(function() {
+                       if($( "p_method_checkoutapijs" ).checked){
+                                jQuery('#btncheckoutapipayment').show();
+                                jQuery('.onestepcheckout-place-order a').hide();    
+
+                        } else {
+                            jQuery('#btncheckoutapipayment').hide();
+                            jQuery('.onestepcheckout-place-order a').show();
+                        }
+                    });
+
                 }
 
-                CKOAPIJS.open();
+                $('btncheckoutapipayment').observe('click', function(e){
+                    Event.stop(e);
+                    var already_placing_order = false;
+
+                   // First validate the form
+                    var form = new VarienForm('onestepcheckout-form');
+
+                    if(!form.validator.validate())  {
+                        Event.stop(e);
+                    }
+                    else    {
+
+                        if($('checkoutapi-new-card')){
+                            if($('checkoutapi-new-card').checked){
+                                CKOAPIJS.open();
+                                if (CKOAPIJS.isMobile()) { 
+                                    $('checkout-api-js-hover').show();
+                                }
+                            } else {
+                                window.checkoutApiSubmitOrder();
+                            }
+                        } else {
+                            CKOAPIJS.open();
+                            if (CKOAPIJS.isMobile()) {
+                                $('checkout-api-js-hover').show();
+                            }
+                        }
+                        
+                    }
+                });
             }
-        }, 2000);
+        }
+    }
+
+
+    function checkoutEmbedded(){ 
+        var controllerName = window.jsCheckoutApi.controllerName;
+        
+        if(controllerName == 'index'){
+            //Hide default OPC Place order button
+            //jQuery('.onestepcheckout-place-order a').hide();
+
+            //Create Checkoutapipayment button
+            var btn = document.createElement('button');
+            var txt = document.createTextNode('Place order now checkout');
+
+            btn.appendChild(txt);
+            btn.setAttribute('type', 'button');
+            btn.setAttribute('id', 'btncheckoutapipayment');
+            btn.setAttribute('class','large orange onestepcheckout-button');
+            
+            jQuery(".onestepcheckout-place-order").append(btn);
+            jQuery('#btncheckoutapipayment').hide();
+
+            if(jQuery('#p_method_checkoutapiembedded').length > 0){
+                if($( "p_method_checkoutapiembedded" ).checked){
+                    jQuery('#btncheckoutapipayment').show();
+                    jQuery('.onestepcheckout-place-order a').hide();
+
+                    jQuery('.payment-methods input:radio').change(function() {
+                       if($( "p_method_checkoutapiembedded" ).checked){
+                                jQuery('#btncheckoutapipayment').show();
+                                jQuery('.onestepcheckout-place-order a').hide();    
+
+                            } else {
+                                jQuery('#btncheckoutapipayment').hide();
+                                jQuery('.onestepcheckout-place-order a').show();
+                        }
+                    });
+                } else{
+                    jQuery('.onestepcheckout-place-order a').show();
+                    jQuery('.payment-methods input:radio').change(function() {
+                       if($( "p_method_checkoutapiembedded" ).checked){
+                                jQuery('#btncheckoutapipayment').show();
+                                jQuery('.onestepcheckout-place-order a').hide();    
+
+                        } else {
+                            jQuery('#btncheckoutapipayment').hide();
+                            jQuery('.onestepcheckout-place-order a').show();
+                        }
+                    });
+                }
+
+                if(jQuery('#btncheckoutapipayment').length > 0){
+                    $('btncheckoutapipayment').observe('click', function(e){
+                        Event.stop(e);
+                        var already_placing_order = false;
+
+                       // First validate the form
+                        var form = new VarienForm('onestepcheckout-form');
+
+                        if(!form.validator.validate())  {
+                            Event.stop(e);
+                        }
+                        else{
+                           if($('checkoutapiembedded-new-card')){ 
+                                if($('checkoutapiembedded-new-card').checked){
+                                    if (Frames.isCardValid()) Frames.submitCard();
+                                } else {
+                                    window.checkoutApiSubmitOrder();
+                                }
+                            } else {
+                                 if (Frames.isCardValid()) Frames.submitCard();
+                            }
+                            
+                        }
+                    });
+                }
+            }
+        }
     }
 
     function checkoutKit() {
@@ -78,7 +231,7 @@ document.observe('dom:loaded', function(){
     }
 });
 
-window.checkoutApiSubmitOrder = function() {
+window.checkoutApiSubmitOrder = function() { 
     if  (typeof window.checkoutApiSubmitOrderCustom != 'undefined') {
         window.checkoutApiSubmitOrderCustom();
 

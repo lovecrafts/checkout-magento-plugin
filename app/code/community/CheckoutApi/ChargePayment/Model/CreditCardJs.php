@@ -95,10 +95,10 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
      * @return bool|string
      *
      */
-    public function getCheckoutRedirectUrl() {
+    public function getCheckoutRedirectUrl() { 
         $controllerName     = (string)Mage::app()->getFrontController()->getRequest()->getControllerName();
 
-        if ($controllerName === 'onepage') {
+        if ($controllerName === 'onepage' || $controllerName === 'index') {
             return false;
         }
 
@@ -311,7 +311,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
      *
      * @version 20160204
      */
-    public function authorize(Varien_Object $payment, $amount) {
+    public function authorize(Varien_Object $payment, $amount) { 
 		// does not create charge on checkout.com if amount is 0
 
         if (empty($amount)) {
@@ -319,6 +319,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         }
 
         $requestData        = Mage::app()->getRequest()->getParam('payment');
+
         $session            = Mage::getSingleton('chargepayment/session_quote');
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
         $quoteId            = null;

@@ -7,16 +7,16 @@
 ?>
 <?php $isActive = $this->isActive();?>
 <?php if ($isActive):?>
-		<ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>" style="display:none;">
+        <ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>" style="display:none;">
 
-        <p><center><img id="cko-loading" src="<?php echo $this->getSkinUrl('images/checkoutApi/load.gif');?>" style="width: 50px;"/></center></p>
+        <p><center><img id="cko-loading" src="<?php echo $this->getSkinUrl('images/checkoutApi/load.gif');?>" style="width: 50px;"/> </center></p>
 
             <?php if($this->isCustomerLogged() && $this->isSaveCard() && $this->getPaymentMode() != 'localpayments' ): ?>
                 <?php $cardList = $this->getCustomerCardList();?>
                 <?php if(!empty($cardList)): ?>
                     <?php foreach($cardList as $index => $card):?>
                         <li>
-                            <input class="checkoutapi-saved-card validate-one-required-by-name" type="radio" id="card-<?php echo $index;?>" value="<?php echo $card['value'];?>" name="payment[customer_card]"/>
+                            <input class="checkoutapiembedded-saved-card validate-one-required-by-name" type="radio" id="card-<?php echo $index;?>" value="<?php echo $card['value'];?>" name="payment[customer_card]"/>
                             <label for="card-<?php echo $index;?>"><?php echo $card['type'] . ' ' . $card['title'];?></label>
                         </li>
                     <?php endforeach;?>
@@ -33,15 +33,15 @@
 
                     <?php endif;?>
                     <li>
-                        <input id="checkoutapi-new-card" class="validate-one-required-by-name" type="radio" name="payment[customer_card]" value="new_card"/>
-                        <label for="checkoutapi-new-card">Use New Card</label>
+                        <input id="checkoutapiembedded-new-card" class="checkoutapiembedded-new-card validate-one-required-by-name" type="radio" name="payment[customer_card]" value="new_card"/>
+                        <label for="checkoutapiembedded-new-card">Use New Card</label>
                     </li>
                 <?php endif;?>
             <?php endif;?>
 
 
-			<li>
-				<input type="hidden" id="cko-card-token" name="payment[checkout_card_token]" value=""/>
+            <li>
+                <input type="hidden" id="cko-card-token" name="payment[checkout_card_token]" value=""/>
 
             <div class="frames-container">
                 <!-- frames.js -->
@@ -54,10 +54,7 @@
                             cardTokenised: function(event) {
                                 if (document.getElementById('cko-card-token').value.length === 0 || document.getElementById('cko-card-token').value != event.data.cardToken) {
                                     document.getElementById('cko-card-token').value = event.data.cardToken;
-
                                     Frames.init(window.checkout);
-
-                                    //console.log(event.data.cardToken);
                                     window.checkoutApiSubmitOrder();
                                 }
                             },
@@ -94,45 +91,45 @@
                 </script>
                 <!-- end frames.js -->
             </div>
-			</li>
-            <li class="checkoutapi-save-card-check">
+            </li>
+            <li class="checkoutapiembedded-save-card-check">
                 <label for="<?php echo $this->getMethodCode() ?>_save_card_check"><?php echo $this->__('Save card for future payments. ') ?></label>
                 <input type="checkbox" name="payment[save_card_check]" id="<?php echo $this->getMethodCode() ?>_save_card_check" value='1'>     
             </li>
             
-		</ul>
+        </ul>
             
         <?php if (!empty($cardList)):?>
             <script type="application/javascript">
                 hideNewCard();
 
-                $$('.checkoutapi-saved-card').invoke('observe', 'change', hideNewCard);
-                $('checkoutapi-new-card').observe('change', showNewCard);
+                $$('.checkoutapiembedded-saved-card').invoke('observe', 'change', hideNewCard);
+                $$('.checkoutapiembedded-new-card').invoke('observe', 'change', showNewCard);
 
                 function hideNewCard() {
-                    $$('.checkoutapi-li').each(Element.hide);
-                    $$('.checkoutapi-save-card-check').each(Element.hide);
+                    $$('.checkoutapiembedded-li').each(Element.hide);
+                    $$('.checkoutapiembedded-save-card-check').each(Element.hide);
                     jQuery('.frames-container').hide();
                 }
 
                 function showNewCard() {
-                    $$('.checkoutapi-li').each(Element.show);
-                	$$('.checkoutapi-save-card-check').each(Element.show);
+                    $$('.checkoutapiembedded-li').each(Element.show);
+                    $$('.checkoutapiembedded-save-card-check').each(Element.show);
                     jQuery('.frames-container').show();
                 }
             </script>
         <?php endif;?>
-	    <?php if(!$this->isCustomerLogged() || !$this->isSaveCard()):?>
-	        <script type="application/javascript">
-	            $$('.checkoutapi-save-card-check').each(Element.hide);
-	        </script>
-	    <?php endif;?>
+        <?php if(!$this->isCustomerLogged() || !$this->isSaveCard()):?>
+            <script type="application/javascript">
+                $$('.checkoutapiembedded-save-card-check').each(Element.hide);
+            </script>
+        <?php endif;?>
         <?php if($this->cvvVerification()):?>
         <script type="application/javascript">
             hideCvvVerification();
 
-            $$('.checkoutapi-saved-card').invoke('observe', 'change', showCvvVerification);
-            $('checkoutapi-new-card').observe('change', hideCvvVerification);
+            $$('.checkoutapiembedded-saved-card').invoke('observe', 'change', showCvvVerification);
+            $$('.checkoutapiembedded-new-card').invoke('observe', 'change', hideCvvVerification);
 
             function hideCvvVerification() {
                 $$('.cvvVerification').each(Element.hide);
@@ -143,6 +140,74 @@
             }
         </script>
     <?php endif;?>
+
+    <script type="text/javascript">
+        var controllerName = window.jsCheckoutApi.controllerName;
+        if(controllerName == 'index'){
+            jQuery('.onestepcheckout-place-order a').hide();
+            jQuery('#btncheckoutapipayment').hide();
+
+            if(jQuery('#p_method_checkoutapiembedded').length > 0){ 
+                if($( "p_method_checkoutapiembedded" ).checked){
+            
+                    jQuery('#btncheckoutapipayment').show();
+                    jQuery('.onestepcheckout-place-order a').hide();
+
+                    jQuery('.payment-methods input:radio').change(function() { console.log('change');
+                       if($( "p_method_checkoutapiembedded" ).checked){
+                                jQuery('#btncheckoutapipayment').show();
+                                jQuery('.onestepcheckout-place-order a').hide();    
+
+                            } else {
+                                jQuery('#btncheckoutapipayment').hide();
+                                jQuery('.onestepcheckout-place-order a').show();
+                        }
+                    });
+                } else{
+                    
+                    jQuery('.onestepcheckout-place-order a').show();
+                    jQuery('.payment-methods input:radio').change(function() {
+                       if($( "p_method_checkoutapiembedded" ).checked){
+                                jQuery('#btncheckoutapipayment').show();
+                                jQuery('.onestepcheckout-place-order a').hide();    
+
+                        } else {
+                            jQuery('#btncheckoutapipayment').hide();
+                            jQuery('.onestepcheckout-place-order a').show();
+                        }
+                    });
+
+                }
+
+                $$('#btncheckoutapipayment').invoke('observe', 'click', btncheckoutapipayment);
+                
+                function btncheckoutapipayment(){
+                    event.preventDefault();
+
+                   // First validate the form
+                    var form = new VarienForm('onestepcheckout-form');
+
+                    if(!form.validator.validate())  {
+                       event.preventDefault();
+                    }
+                    else{
+
+                       if($('checkoutapiembedded-new-card')){
+                            if($('checkoutapiembedded-new-card').checked){
+                                if (Frames.isCardValid()) Frames.submitCard();
+                            } else {
+                                window.checkoutApiSubmitOrder();
+                            }
+                        } else {
+                            if (Frames.isCardValid()) Frames.submitCard();
+                        }
+                    }
+                }
+            }
+        }
+
+    </script>
+
 <?php else :?>
     <ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>" style="display:none;">
         <li><?php echo $this->__('Selected Payment Type is not allowed.') ?></li>

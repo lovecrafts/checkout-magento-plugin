@@ -1,6 +1,6 @@
 var checkoutApi = Class.create();
 checkoutApi.prototype = {
-    initialize : function(methodCode, controller, saveOrderUrl, baseSaveOrderUrl) {console.log(1);
+    initialize : function(methodCode, controller, saveOrderUrl, baseSaveOrderUrl) {
         this.code               = methodCode;
         this.controller         = controller;
         this.saveOrderUrl       = saveOrderUrl;
@@ -179,8 +179,8 @@ checkoutApi.prototype = {
     },
     checkoutEmbeded: function(){
         if (this.agreementIsValid()) {
-            if($('checkoutapi-new-card')){
-                if($('checkoutapi-new-card').checked){
+            if($('checkoutapiembedded-checkoutapi-new-card')){
+                if($('checkoutapiembedded-checkoutapi-new-card').checked){
                     if (Frames.isCardValid()) Frames.submitCard();
                 } else {
                     this.saveOrderSubmit();

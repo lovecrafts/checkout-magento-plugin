@@ -95,10 +95,10 @@ class CheckoutApi_ChargePayment_Model_CreditCardEmbedded extends CheckoutApi_Cha
      * @return bool|string
      *
      */
-    public function getCheckoutRedirectUrl() {
+    public function getCheckoutRedirectUrl() { 
         $controllerName     = (string)Mage::app()->getFrontController()->getRequest()->getControllerName();
 
-        if ($controllerName === 'onepage') {
+        if ($controllerName === 'onepage' || $controllerName === 'index') {
             return false;
         }
 
