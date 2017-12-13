@@ -18,6 +18,13 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiJs  extends Mage_Payment_B
     protected function _construct()
     {
         parent::_construct();
+
+        $session            = Mage::getSingleton('chargepayment/session_quote');
+
+        $params['method'] = $this->_paymentCode;
+        $params['controllerName'] = (string)Mage::app()->getFrontController()->getRequest()->getControllerName();
+        $session->setJsCheckoutApiParams($params);
+
         $this->setTemplate('checkoutapi/chargepayment/form/checkoutapijs.phtml');
     }
 

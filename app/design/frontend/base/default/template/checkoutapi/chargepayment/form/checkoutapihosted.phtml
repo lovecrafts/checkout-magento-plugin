@@ -61,29 +61,31 @@
 
                         window.checkoutHostedIntegrationIsReady = window.checkoutHostedIntegrationIsReady || false;
                         if (!window.checkoutHostedIntegrationIsReady) {
-                            window.CKOConfig = {
-                                namespace: 'CKOAPIHOSTED',
-                                ready: function () {
+                            setTimeout(function(){ 
+                                window.CKOConfig = {
+                                    namespace: 'CKOAPIHOSTED',
+                                    ready: function () {
 
-                                    if (window.checkoutHostedIntegrationIsReady) {
-                                        return false;
+                                        if (window.checkoutHostedIntegrationIsReady) {
+                                            return false;
+                                        }
+
+                                        if (typeof CKOAPIHOSTED == 'undefined') {
+                                            return false;
+                                        }
+
+                                        CKOAPIHOSTED.render(window.checkoutIntegrationHostedConfig);
+
+                                        window.checkoutHostedIntegrationIsReady = true;
                                     }
+                                };
 
-                                    if (typeof CKOAPIHOSTED == 'undefined') {
-                                        return false;
-                                    }
-
-                                    CKOAPIHOSTED.render(window.checkoutIntegrationHostedConfig);
-
-                                    window.checkoutHostedIntegrationIsReady = true;
-                                }
-                            };
-
-                            var script = document.createElement('script');
-                            script.type = "text/javascript";
-                            script.src = '<?php echo $this->getHostedJsPath();?>';
-                            script.async = true;
-                            document.head.appendChild(script);
+                                var script = document.createElement('script');
+                                script.type = "text/javascript";
+                                script.src = '<?php echo $this->getHostedJsPath();?>';
+                                script.async = true;
+                                document.head.appendChild(script);
+                            }, 3000);
                         } else {
                             CKOAPIHOSTED.render(window.checkoutIntegrationHostedConfig);
                         }

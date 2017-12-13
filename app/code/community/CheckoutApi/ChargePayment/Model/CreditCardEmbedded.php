@@ -6,13 +6,13 @@
  * Class CheckoutApi_ChargePayment_Model_CreditCardJs
  *
  */
-class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePayment_Model_Checkout
+class CheckoutApi_ChargePayment_Model_CreditCardEmbedded extends CheckoutApi_ChargePayment_Model_Checkout
 {
-    protected $_code            = CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD_JS;
+    protected $_code            = CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD_EMBEDDED;
     protected $_canUseInternal  = false;
 
-    protected $_formBlockType = 'chargepayment/form_checkoutApiJs';
-    protected $_infoBlockType = 'chargepayment/info_checkoutApiJs';
+    protected $_formBlockType = 'chargepayment/form_checkoutApiEmbedded';
+    protected $_infoBlockType = 'chargepayment/info_checkoutApiEmbedded';
 
     const RENDER_MODE           = 2;
     const RENDER_NAMESPACE      = 'CheckoutIntegration';
@@ -311,7 +311,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
      *
      * @version 20160204
      */
-    public function authorize(Varien_Object $payment, $amount) { 
+    public function authorize(Varien_Object $payment, $amount) {
 		// does not create charge on checkout.com if amount is 0
 
         if (empty($amount)) {
@@ -328,50 +328,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         /* Local Payment */
         $lpRedirectUrl  = !empty($requestData['lp_redirect_url']) ? $requestData['lp_redirect_url'] : NULL;
         $lpName         = !empty($requestData['lp_name']) ? $requestData['lp_name'] : NULL;
-        $isLocalPayment = $this->isLocalPayment();
-
-        if ($isLocalPayment && !is_null($lpRedirectUrl) && !is_null($lpName)) {
-            /* Get Current token from url */
-            $query = parse_url($lpRedirectUrl, PHP_URL_QUERY);
-            parse_str($query, $params);
-            $currentToken = $params['paymentToken'];
-
-            $Api            = CheckoutApi_Api::getApi(array('mode' => $this->getEndpointMode()));
-            $verifyParams   = array('paymentToken' => $currentToken, 'authorization' => $this->_getSecretKey());
-            $response       = $Api->verifyChargePaymentToken($verifyParams);
-
-            if (is_object($response) && method_exists($response, 'toArray')) {
-                Mage::log($response->toArray(), null, $this->_code.'.log');
-            }
-
-            if ($Api->getExceptionState()->hasError()) {
-                Mage::log($Api->getExceptionState()->getErrorMessage(), null, $this->_code.'.log');
-                Mage::log($Api->getExceptionState(), null, $this->_code.'.log');
-                $errorMessage = Mage::helper('chargepayment')->__('Your payment was not completed.'. $Api->getExceptionState()->getErrorMessage().' and try again or contact customer support.');
-                Mage::throwException($errorMessage);
-            }
-
-            if(!$response->isValid() || !$this->_responseValidation($response)) {
-                return $this;
-            }
-
-            $Api->updateTrackId($response, $payment->getOrder()->getIncrementId());
-
-            $session->addCheckoutLocalPaymentToken($currentToken);
-
-            $session
-                ->setLpRedirectUrl($lpRedirectUrl)
-                ->setIsLocalPayment(true)
-                ->setLpName($lpName);
-
-            $payment->setTransactionId($response->getId());
-            $payment->setIsTransactionClosed(0);
-            $payment->setAdditionalInformation('use_current_currency', $isCurrentCurrency);
-            $payment->setIsTransactionPending(true);
-
-            return $this;
-        }
-
+        
         /* Normal Payment */
         $cardToken = $payment->getData('cc_type');
 
@@ -445,7 +402,6 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
                     $payment->setAdditionalInformation('payment_token', $entityId);
                     $payment->setAdditionalInformation('payment_token_url', $redirectUrl);
                     $payment->setTransactionId($entityId);
-                    $payment->setIsTransactionPending(true);
 
                     $session->addPaymentToken($entityId);
                     $session
@@ -472,7 +428,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
 
                     $session->setIs3d(false);
                 }
-            }
+            } 
         } else {
             if ($isDebug) {
                 /* Authorize processing error response. */
@@ -616,26 +572,20 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         return $config;
     }
 
-    /**
-     * Return true if local payment
-     *
-     * @return bool
-     *
-     * @version 20160425
-     */
-    public function isLocalPayment() {
-        $paymentMode = Mage::helper('chargepayment')->getConfigData($this->_code, 'payment_mode');
-
-        return $paymentMode === self::PAYMENT_MODE_MIXED
-            || $paymentMode === self::PAYMENT_MODE_LOCAL_PAYMENT ? true : false;
-    }
-
     public function getAutoCapTime(){
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'autoCapTime');
     }
 
     public function getAutoCapture(){
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'autoCapture');
+    }
+
+    public function getTheme(){
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'theme');
+    }
+
+    public function getCustomCssUrl(){
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'customCss');
     }
 
     public function getCustomerId() { 
@@ -656,7 +606,8 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'saveCard');
     }
 
-    public function getCvvVerification() {
+     public function getCvvVerification() {
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'cvvVerification');
     }
+
 }

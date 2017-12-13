@@ -46,6 +46,11 @@
                     <template>checkoutapi/chargepayment/frameKit.phtml</template>
                 </action>
             </block>
+            <block name="checkoutapi.frameEmbedded" type="chargepayment/frameEmbedded" >
+                <action method="setTemplate" ifconfig="payment/checkoutapiembedded/active" >
+                    <template>checkoutapi/chargepayment/frameEmbedded.phtml</template>
+                </action>
+            </block>
         </reference>
     </checkout_onepage_review>
     <chargepayment_api_redirect>
