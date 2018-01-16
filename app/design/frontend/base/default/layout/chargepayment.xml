@@ -46,9 +46,9 @@
                     <template>checkoutapi/chargepayment/frameKit.phtml</template>
                 </action>
             </block>
-            <block name="checkoutapi.frameEmbedded" type="chargepayment/frameEmbedded" >
-                <action method="setTemplate" ifconfig="payment/checkoutapiembedded/active" >
-                    <template>checkoutapi/chargepayment/frameEmbedded.phtml</template>
+            <block name="checkoutapi.framesJs" type="chargepayment/framesJs" >
+                <action method="setTemplate" ifconfig="payment/checkoutapiframes/active" >
+                    <template>checkoutapi/chargepayment/framesJs.phtml</template>
                 </action>
             </block>
         </reference>

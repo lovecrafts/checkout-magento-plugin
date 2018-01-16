@@ -9,7 +9,7 @@ checkoutApi.prototype = {
         this.jsMethodCode       = 'checkoutapijs';
         this.kitMethodCode      = 'checkoutapikit';
         this.hostedMethodCode   = 'hosted';
-        this.embeddedMethodCode = 'checkoutapiembedded';
+        this.framesMethodCode   = 'checkoutapiframes';
         this.preparePayment();
     },
     preparePayment: function() { 
@@ -43,9 +43,9 @@ checkoutApi.prototype = {
                     this.checkoutKit();
                 }.bind(this));
                 break;
-            case this.embeddedMethodCode:
+            case this.framesMethodCode:
                 button.observe('click', function() {
-                    this.checkoutEmbeded();
+                    this.checkoutFrames();
                 }.bind(this));
                 break;
         }
@@ -177,10 +177,10 @@ checkoutApi.prototype = {
             return;
         }
     },
-    checkoutEmbeded: function(){
+    checkoutFrames: function(){
         if (this.agreementIsValid()) {
-            if($('checkoutapiembedded-checkoutapi-new-card')){
-                if($('checkoutapiembedded-checkoutapi-new-card').checked){
+            if($('checkoutapiframes-new-card')){
+                if($('checkoutapiframes-new-card').checked){
                     if (Frames.isCardValid()) Frames.submitCard();
                 } else {
                     this.saveOrderSubmit();

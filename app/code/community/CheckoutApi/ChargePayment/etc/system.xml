@@ -1200,8 +1200,8 @@
                         </cvvVerification>
                     </fields>
                 </checkoutapihosted>
-                <checkoutapiembedded>
-                    <label>Checkout.com Credit Card (Embedded solution)</label>
+                <checkoutapiframes>
+                    <label>Checkout.com Credit Card (FramesJs solution)</label>
                     <sort_order>1005</sort_order>
                     <frontend_type>text</frontend_type>
                     <show_in_default>1</show_in_default>
@@ -1471,7 +1471,7 @@
                             </comment>
                         </customCss>
                     </fields>
-                </checkoutapiembedded>
+                </checkoutapiframes>
             </groups>
         </payment>
     </sections>

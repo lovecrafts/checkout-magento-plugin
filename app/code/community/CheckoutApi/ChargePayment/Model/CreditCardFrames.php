@@ -6,13 +6,13 @@
  * Class CheckoutApi_ChargePayment_Model_CreditCardJs
  *
  */
-class CheckoutApi_ChargePayment_Model_CreditCardEmbedded extends CheckoutApi_ChargePayment_Model_Checkout
+class CheckoutApi_ChargePayment_Model_CreditCardFrames extends CheckoutApi_ChargePayment_Model_Checkout
 {
-    protected $_code            = CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD_EMBEDDED;
+    protected $_code            = CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD_FRAMES;
     protected $_canUseInternal  = false;
 
-    protected $_formBlockType = 'chargepayment/form_checkoutApiEmbedded';
-    protected $_infoBlockType = 'chargepayment/info_checkoutApiEmbedded';
+    protected $_formBlockType = 'chargepayment/form_checkoutApiFrames';
+    protected $_infoBlockType = 'chargepayment/info_checkoutApiFrames';
 
     const RENDER_MODE           = 2;
     const RENDER_NAMESPACE      = 'CheckoutIntegration';

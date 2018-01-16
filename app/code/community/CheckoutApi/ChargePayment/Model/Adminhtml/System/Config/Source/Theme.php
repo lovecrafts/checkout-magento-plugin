@@ -18,11 +18,11 @@ class CheckoutApi_ChargePayment_Model_Adminhtml_System_Config_Source_Theme
     {
         return array(
             array(
-                'value' => CheckoutApi_ChargePayment_Helper_Data::EMBEDDED_THEME_STANDARD,
+                'value' => CheckoutApi_ChargePayment_Helper_Data::FRAMES_THEME_STANDARD,
                 'label' => Mage::helper('chargepayment')->__('Standard')
             ),
             array(
-                'value' => CheckoutApi_ChargePayment_Helper_Data::EMBEDDED_THEME_SIMPLE,
+                'value' => CheckoutApi_ChargePayment_Helper_Data::FRAMES_THEME_SIMPLE,
                 'label' => Mage::helper('chargepayment')->__('Simple')
             ),
         );
