@@ -1456,20 +1456,6 @@
                                 <![CDATA[Frames display option]]>
                             </comment>
                         </theme>
-                        <customCss translate="label">
-                            <label>Custom Css Url</label>
-                            <frontend_type>text</frontend_type>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>1</show_in_website>
-                            <show_in_store>1</show_in_store>
-                            <sort_order>20</sort_order>
-                            <depends>
-                                <active>1</active>
-                            </depends>
-                            <comment>
-                                <![CDATA[Url for custom css url.]]>
-                            </comment>
-                        </customCss>
                     </fields>
                 </checkoutapiframes>
             </groups>

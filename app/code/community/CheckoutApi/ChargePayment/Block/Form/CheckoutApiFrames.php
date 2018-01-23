@@ -125,16 +125,6 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiFrames  extends Mage_Payme
         return Mage::getModel('chargepayment/creditCardFrames')->getTheme();
     }
 
-     /*
-     * Get Theme option
-     *
-     * */
-
-    public function getCustomCssUrl() {
-
-        return Mage::getModel('chargepayment/creditCardFrames')->getCustomCssUrl();
-    }
-
     /*
      * return customer's saved cards
      * */

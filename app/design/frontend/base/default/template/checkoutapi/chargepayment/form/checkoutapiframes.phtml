@@ -50,7 +50,6 @@
                             publicKey: '<?php echo $this->getPublicKey();?>',
                             containerSelector: '.frames-container',
                             theme: '<?php echo $this->getTheme();?>',
-                            themeOverride: '<?php echo $this->getCustomCssUrl(); ?>',
                             cardTokenised: function(event) {
                                 if (document.getElementById('cko-card-token').value.length === 0 || document.getElementById('cko-card-token').value != event.data.cardToken) {
                                     document.getElementById('cko-card-token').value = event.data.cardToken;

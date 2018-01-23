@@ -584,10 +584,6 @@ class CheckoutApi_ChargePayment_Model_CreditCardFrames extends CheckoutApi_Charg
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'theme');
     }
 
-    public function getCustomCssUrl(){
-        return Mage::helper('chargepayment')->getConfigData($this->_code, 'customCss');
-    }
-
     public function getCustomerId() { 
         if (Mage::app()->getStore()->isAdmin()) {
             $customerId = Mage::getSingleton('adminhtml/session_quote')->getCustomerId();
