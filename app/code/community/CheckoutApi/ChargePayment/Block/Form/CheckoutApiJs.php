@@ -241,6 +241,16 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiJs  extends Mage_Payment_B
     }
 
     /**
+     * Return localisation
+     *
+     * @return mixed
+     *
+     */
+    public function getLocalisation() {
+        return Mage::helper('chargepayment')->getConfigData($this->_paymentCode, 'localisation');
+    }
+
+    /**
      * Return controller URL
      *
      * @return string
