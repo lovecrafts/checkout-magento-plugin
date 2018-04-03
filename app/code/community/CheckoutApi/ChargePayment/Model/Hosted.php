@@ -301,7 +301,8 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
             'iconColor'         => $this->getIconColor(),
             'title'             => $this->getFormTitle(),
             'theme'             => 'standard',
-            'localisation'      => $this->getLocalisation()
+            'localisation'      => $this->getLocalisation(),
+            'subtitle'          => $this->getFormSubtitle()
         );
 
         $baseUrl = Mage::getModel('core/url')->getUrl('chargepayment/api/redirect/');
@@ -559,6 +560,15 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
      */
     public function getFormTitle() { 
         return  Mage::helper('chargepayment')->getConfigData($this->_code, 'form_title');
+    }
+
+    /**
+     * Return Form subtitle
+     *
+     * @return mixed
+     */
+    public function getFormSubtitle() { 
+        return  Mage::helper('chargepayment')->getConfigData($this->_code, 'form_subtitle');
     }
 
 

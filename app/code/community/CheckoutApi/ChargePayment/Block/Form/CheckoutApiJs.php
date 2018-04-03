@@ -153,6 +153,16 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiJs  extends Mage_Payment_B
     }
 
     /**
+     * Return subtitle for subtitle param
+     *
+     * @return mixed
+     *
+     */
+    public function getSubtitle() {
+        return Mage::helper('chargepayment')->getConfigData($this->_paymentCode, 'form_subtitle');
+    }
+
+    /**
      * Return color for widgetColor param
      *
      * @return mixed

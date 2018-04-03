@@ -497,10 +497,24 @@
                                 <![CDATA[The title of your payment form.]]>
                             </comment>
                         </form_title>
+                        <form_subtitle translate="label">
+                            <label>Subtitle</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <active>1</active>
+                            </depends>
+                            <comment>
+                                <![CDATA[The subtitle  of your payment form.]]>
+                            </comment>
+                        </form_subtitle>
                         <widget_color translate="label">
                             <label>Widget Color</label>
                             <frontend_type>text</frontend_type>
-                            <sort_order>20</sort_order>
+                            <sort_order>21</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
@@ -514,7 +528,7 @@
                         <form_button_color translate="label">
                             <label>Form Button Color</label>
                             <frontend_type>text</frontend_type>
-                            <sort_order>21</sort_order>
+                            <sort_order>22</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
@@ -528,7 +542,7 @@
                         <form_button_color_label translate="label">
                             <label>Form Button Color Label</label>
                             <frontend_type>text</frontend_type>
-                            <sort_order>22</sort_order>
+                            <sort_order>23</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
@@ -543,7 +557,7 @@
                             <label>Overlay Shade</label>
                             <frontend_type>select</frontend_type>
                             <source_model>chargepayment/adminhtml_system_config_source_overlayShade</source_model>
-                            <sort_order>23</sort_order>
+                            <sort_order>24</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
@@ -554,7 +568,7 @@
                         <overlay_opacity translate="label">
                             <label>Overlay Opacity</label>
                             <frontend_type>text</frontend_type>
-                            <sort_order>24</sort_order>
+                            <sort_order>25</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
@@ -569,7 +583,7 @@
                             <label>Show Mobile Icons</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
-                            <sort_order>25</sort_order>
+                            <sort_order>26</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
@@ -584,7 +598,7 @@
                             <label>Widget Icon Size</label>
                             <frontend_type>select</frontend_type>
                             <source_model>chargepayment/adminhtml_system_config_source_widgetIconSize</source_model>
-                            <sort_order>26</sort_order>
+                            <sort_order>27</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
@@ -599,7 +613,7 @@
                             <label>Payment Mode</label>
                             <frontend_type>select</frontend_type>
                             <source_model>chargepayment/adminhtml_system_config_source_paymentMode</source_model>
-                            <sort_order>27</sort_order>
+                            <sort_order>28</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
@@ -614,7 +628,7 @@
                             <label>Save Cards</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
-                            <sort_order>28</sort_order>
+                            <sort_order>29</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
@@ -629,7 +643,7 @@
                             <label>CVV verification</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
-                            <sort_order>29</sort_order>
+                            <sort_order>30</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
@@ -645,7 +659,7 @@
                             <label>Localisation</label>
                             <frontend_type>select</frontend_type>
                             <source_model>chargepayment/adminhtml_system_config_source_localisation</source_model>
-                            <sort_order>30</sort_order>
+                            <sort_order>31</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
@@ -1168,13 +1182,27 @@
                                 <![CDATA[The title of your payment form.]]>
                             </comment>
                         </form_title>
+                        <form_subtitle translate="label">
+                            <label>Subtitle</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <depends>
+                                <active>1</active>
+                            </depends>
+                            <comment>
+                                <![CDATA[The subtitle  of your payment form.]]>
+                            </comment>
+                        </form_subtitle>
                         <icon_color translate="label">
                             <label>Icon color</label>
                             <frontend_type>text</frontend_type>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
-                            <sort_order>20</sort_order>
+                            <sort_order>21</sort_order>
                             <depends>
                                 <active>1</active>
                             </depends>
@@ -1186,7 +1214,7 @@
                             <label>Save Cards</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
-                            <sort_order>21</sort_order>
+                            <sort_order>22</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
@@ -1201,7 +1229,7 @@
                             <label>CVV verification</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
-                            <sort_order>22</sort_order>
+                            <sort_order>23</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
@@ -1217,7 +1245,7 @@
                             <label>Localisation</label>
                             <frontend_type>select</frontend_type>
                             <source_model>chargepayment/adminhtml_system_config_source_localisation</source_model>
-                            <sort_order>23</sort_order>
+                            <sort_order>24</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
