@@ -7,6 +7,26 @@
                 <path>chargepayment/cards</path>
                 <label>My Saved Cards (Checkout.com)</label>
             </action>
+            <action method="addLink" ifconfig="payment/checkoutapijs/active">
+                <name>checkout_api_card_list</name>
+                <path>chargepayment/cards</path>
+                <label>My Saved Cards (Checkout.com)</label>
+            </action>
+            <action method="addLink" ifconfig="payment/checkoutapikit/active">
+                <name>checkout_api_card_list</name>
+                <path>chargepayment/cards</path>
+                <label>My Saved Cards (Checkout.com)</label>
+            </action>
+            <action method="addLink" ifconfig="payment/checkoutapihosted/active">
+                <name>checkout_api_card_list</name>
+                <path>chargepayment/cards</path>
+                <label>My Saved Cards (Checkout.com)</label>
+            </action>
+            <action method="addLink" ifconfig="payment/checkoutapiframes/active">
+                <name>checkout_api_card_list</name>
+                <path>chargepayment/cards</path>
+                <label>My Saved Cards (Checkout.com)</label>
+            </action>
         </reference>
     </customer_account>
     <chargepayment_cards_index>
@@ -46,9 +66,9 @@
                     <template>checkoutapi/chargepayment/frameKit.phtml</template>
                 </action>
             </block>
-            <block name="checkoutapi.frameEmbedded" type="chargepayment/frameEmbedded" >
-                <action method="setTemplate" ifconfig="payment/checkoutapiembedded/active" >
-                    <template>checkoutapi/chargepayment/frameEmbedded.phtml</template>
+            <block name="checkoutapi.framesJs" type="chargepayment/framesJs" >
+                <action method="setTemplate" ifconfig="payment/checkoutapiframes/active" >
+                    <template>checkoutapi/chargepayment/framesJs.phtml</template>
                 </action>
             </block>
         </reference>

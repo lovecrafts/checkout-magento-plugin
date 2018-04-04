@@ -1,7 +1,7 @@
 <config>
     <modules>
         <CheckoutApi_ChargePayment>
-            <version>2.4.0</version>
+            <version>2.4.1</version>
         </CheckoutApi_ChargePayment>
     </modules>
     <global>
@@ -156,11 +156,11 @@
                 <theme_color>#00b660</theme_color>
                 <saveCard>0</saveCard>
             </checkoutapihosted>
-            <checkoutapiembedded>
+            <checkoutapiframes>
                 <active>0</active>
                 <cctypes>AE,VI,MC,DI</cctypes>
                 <title>Credit Card (Checkout.com)</title>
-                <model>chargepayment/creditCardEmbedded</model>
+                <model>chargepayment/creditCardFrames</model>
                 <current_currency>0</current_currency>
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
@@ -171,7 +171,7 @@
                 <autoCapTime>0</autoCapTime>
                 <saveCard>0</saveCard>
                 <theme>standard</theme>
-            </checkoutapiembedded>
+            </checkoutapiframes>
         </payment>
     </default>
     <adminhtml>

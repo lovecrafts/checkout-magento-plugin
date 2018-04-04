@@ -12,8 +12,8 @@ document.observe('dom:loaded', function(){ console.log('dom:loaded');
         case 'checkoutapikit':
             checkoutKit();
             break;
-        case 'checkoutapiembedded':
-            checkoutEmbedded();
+        case 'checkoutapiframes':
+            checkoutFrames();
             break;
     }
 
@@ -109,7 +109,7 @@ document.observe('dom:loaded', function(){ console.log('dom:loaded');
     }
 
 
-    function checkoutEmbedded(){ 
+    function checkoutFrames(){
         var controllerName = window.jsCheckoutApi.controllerName;
         
         if(controllerName == 'index'){
@@ -128,13 +128,13 @@ document.observe('dom:loaded', function(){ console.log('dom:loaded');
             jQuery(".onestepcheckout-place-order").append(btn);
             jQuery('#btncheckoutapipayment').hide();
 
-            if(jQuery('#p_method_checkoutapiembedded').length > 0){
-                if($( "p_method_checkoutapiembedded" ).checked){
+            if(jQuery('#p_method_checkoutapiframes').length > 0){
+                if($( "p_method_checkoutapiframes" ).checked){
                     jQuery('#btncheckoutapipayment').show();
                     jQuery('.onestepcheckout-place-order a').hide();
 
                     jQuery('.payment-methods input:radio').change(function() {
-                       if($( "p_method_checkoutapiembedded" ).checked){
+                       if($( "p_method_checkoutapiframes" ).checked){
                                 jQuery('#btncheckoutapipayment').show();
                                 jQuery('.onestepcheckout-place-order a').hide();    
 
@@ -146,7 +146,7 @@ document.observe('dom:loaded', function(){ console.log('dom:loaded');
                 } else{
                     jQuery('.onestepcheckout-place-order a').show();
                     jQuery('.payment-methods input:radio').change(function() {
-                       if($( "p_method_checkoutapiembedded" ).checked){
+                       if($( "p_method_checkoutapiframes" ).checked){
                                 jQuery('#btncheckoutapipayment').show();
                                 jQuery('.onestepcheckout-place-order a').hide();    
 
@@ -157,7 +157,7 @@ document.observe('dom:loaded', function(){ console.log('dom:loaded');
                     });
                 }
 
-                if(jQuery('#btncheckoutapipayment').length > 0){
+                if(jQuery('#btncheckoutapipayment').length > 0){ 
                     $('btncheckoutapipayment').observe('click', function(e){
                         Event.stop(e);
                         var already_placing_order = false;
@@ -169,8 +169,8 @@ document.observe('dom:loaded', function(){ console.log('dom:loaded');
                             Event.stop(e);
                         }
                         else{
-                           if($('checkoutapiembedded-new-card')){ 
-                                if($('checkoutapiembedded-new-card').checked){
+                           if($('checkoutapiframes-new-card')){ 
+                                if($('checkoutapiframes-new-card').checked){
                                     if (Frames.isCardValid()) Frames.submitCard();
                                 } else {
                                     window.checkoutApiSubmitOrder();

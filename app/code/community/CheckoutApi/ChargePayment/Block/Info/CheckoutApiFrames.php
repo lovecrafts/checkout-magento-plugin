@@ -6,7 +6,7 @@
  *
  * @version 20160203
  */
-class CheckoutApi_ChargePayment_Block_Info_CheckoutApiEmbedded  extends Mage_Payment_Block_Info_Cc
+class CheckoutApi_ChargePayment_Block_Info_CheckoutApiFrames  extends Mage_Payment_Block_Info_Cc
 {
     /**
      * Removed cart type

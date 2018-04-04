@@ -6,11 +6,12 @@
  */
 ?>
 <?php
-$isJs           = $this->isEmbeddedPaymentMethod();
+$isJs           = $this->isFramesPaymentMethod();
 $_controller    = Mage::app()->getFrontController()->getRequest()->getControllerName();
 $_code          = $this->getPaymentCode();
 $currentCode    = Mage::app()->getStore()->getCurrentCurrencyCode();
 $baseCode       = Mage::app()->getStore()->getBaseCurrencyCode();
+
 ?>
 <?php if($isJs): ?>
     <script type="text/javascript">

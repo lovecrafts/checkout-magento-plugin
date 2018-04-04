@@ -16,7 +16,7 @@
                 <?php if(!empty($cardList)): ?>
                     <?php foreach($cardList as $index => $card):?>
                         <li>
-                            <input class="checkoutapiembedded-saved-card validate-one-required-by-name" type="radio" id="card-<?php echo $index;?>" value="<?php echo $card['value'];?>" name="payment[customer_card]"/>
+                            <input class="checkoutapiframes-saved-card validate-one-required-by-name" type="radio" id="card-<?php echo $index;?>" value="<?php echo $card['value'];?>" name="payment[customer_card]"/>
                             <label for="card-<?php echo $index;?>"><?php echo $card['type'] . ' ' . $card['title'];?></label>
                         </li>
                     <?php endforeach;?>
@@ -33,8 +33,8 @@
 
                     <?php endif;?>
                     <li>
-                        <input id="checkoutapiembedded-new-card" class="checkoutapiembedded-new-card validate-one-required-by-name" type="radio" name="payment[customer_card]" value="new_card"/>
-                        <label for="checkoutapiembedded-new-card">Use New Card</label>
+                        <input id="checkoutapiframes-new-card" class="checkoutapiframes-new-card validate-one-required-by-name" type="radio" name="payment[customer_card]" value="new_card"/>
+                        <label for="checkoutapiframes-new-card">Use New Card</label>
                     </li>
                 <?php endif;?>
             <?php endif;?>
@@ -50,7 +50,6 @@
                             publicKey: '<?php echo $this->getPublicKey();?>',
                             containerSelector: '.frames-container',
                             theme: '<?php echo $this->getTheme();?>',
-                            themeOverride: '<?php echo $this->getCustomCssUrl(); ?>',
                             cardTokenised: function(event) {
                                 if (document.getElementById('cko-card-token').value.length === 0 || document.getElementById('cko-card-token').value != event.data.cardToken) {
                                     document.getElementById('cko-card-token').value = event.data.cardToken;
@@ -82,9 +81,9 @@
 
                             var script = document.createElement('script');
                             script.type = "text/javascript";
-                            script.src = '<?php echo $this->getEmbeddedJsPath();?>';
+                            script.src = '<?php echo $this->getFramesJsPath();?>';
                             script.async = true;
-                            document.getElementById('payment_form_checkoutapiembedded').appendChild(script);
+                            document.getElementById('payment_form_checkoutapiframes').appendChild(script);
                         } else {
                             Frames.init(window.framesCurrentConfig);
                         }
@@ -92,7 +91,7 @@
                 <!-- end frames.js -->
             </div>
             </li>
-            <li class="checkoutapiembedded-save-card-check">
+            <li class="checkoutapiframes-save-card-check">
                 <label for="<?php echo $this->getMethodCode() ?>_save_card_check"><?php echo $this->__('Save card for future payments. ') ?></label>
                 <input type="checkbox" name="payment[save_card_check]" id="<?php echo $this->getMethodCode() ?>_save_card_check" value='1'>     
             </li>
@@ -103,33 +102,33 @@
             <script type="application/javascript">
                 hideNewCard();
 
-                $$('.checkoutapiembedded-saved-card').invoke('observe', 'change', hideNewCard);
-                $$('.checkoutapiembedded-new-card').invoke('observe', 'change', showNewCard);
+                $$('.checkoutapiframes-saved-card').invoke('observe', 'change', hideNewCard);
+                $$('.checkoutapiframes-new-card').invoke('observe', 'change', showNewCard);
 
                 function hideNewCard() {
-                    $$('.checkoutapiembedded-li').each(Element.hide);
-                    $$('.checkoutapiembedded-save-card-check').each(Element.hide);
+                    $$('.checkoutapiframes-li').each(Element.hide);
+                    $$('.checkoutapiframes-save-card-check').each(Element.hide);
                     jQuery('.frames-container').hide();
                 }
 
                 function showNewCard() {
-                    $$('.checkoutapiembedded-li').each(Element.show);
-                    $$('.checkoutapiembedded-save-card-check').each(Element.show);
+                    $$('.checkoutapiframes-li').each(Element.show);
+                    $$('.checkoutapiframes-save-card-check').each(Element.show);
                     jQuery('.frames-container').show();
                 }
             </script>
         <?php endif;?>
         <?php if(!$this->isCustomerLogged() || !$this->isSaveCard()):?>
             <script type="application/javascript">
-                $$('.checkoutapiembedded-save-card-check').each(Element.hide);
+                $$('.checkoutapiframes-save-card-check').each(Element.hide);
             </script>
         <?php endif;?>
         <?php if($this->cvvVerification()):?>
         <script type="application/javascript">
             hideCvvVerification();
 
-            $$('.checkoutapiembedded-saved-card').invoke('observe', 'change', showCvvVerification);
-            $$('.checkoutapiembedded-new-card').invoke('observe', 'change', hideCvvVerification);
+            $$('.checkoutapiframes-saved-card').invoke('observe', 'change', showCvvVerification);
+            $$('.checkoutapiframes-new-card').invoke('observe', 'change', hideCvvVerification);
 
             function hideCvvVerification() {
                 $$('.cvvVerification').each(Element.hide);
@@ -147,14 +146,14 @@
             jQuery('.onestepcheckout-place-order a').hide();
             jQuery('#btncheckoutapipayment').hide();
 
-            if(jQuery('#p_method_checkoutapiembedded').length > 0){ 
-                if($( "p_method_checkoutapiembedded" ).checked){
+            if(jQuery('#p_method_checkoutapiframes').length > 0){ 
+                if($( "p_method_checkoutapiframes" ).checked){
             
                     jQuery('#btncheckoutapipayment').show();
                     jQuery('.onestepcheckout-place-order a').hide();
 
                     jQuery('.payment-methods input:radio').change(function() { console.log('change');
-                       if($( "p_method_checkoutapiembedded" ).checked){
+                       if($( "p_method_checkoutapiframes" ).checked){
                                 jQuery('#btncheckoutapipayment').show();
                                 jQuery('.onestepcheckout-place-order a').hide();    
 
@@ -167,7 +166,7 @@
                     
                     jQuery('.onestepcheckout-place-order a').show();
                     jQuery('.payment-methods input:radio').change(function() {
-                       if($( "p_method_checkoutapiembedded" ).checked){
+                       if($( "p_method_checkoutapiframes" ).checked){
                                 jQuery('#btncheckoutapipayment').show();
                                 jQuery('.onestepcheckout-place-order a').hide();    
 
@@ -192,8 +191,8 @@
                     }
                     else{
 
-                       if($('checkoutapiembedded-new-card')){
-                            if($('checkoutapiembedded-new-card').checked){
+                       if($('checkoutapiframes-new-card')){
+                            if($('checkoutapiframes-new-card').checked){
                                 if (Frames.isCardValid()) Frames.submitCard();
                             } else {
                                 window.checkoutApiSubmitOrder();
