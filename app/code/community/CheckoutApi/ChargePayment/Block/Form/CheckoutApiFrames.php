@@ -6,9 +6,9 @@
  *
  * @version 20151002
  */
-class CheckoutApi_ChargePayment_Block_Form_CheckoutApiEmbedded  extends Mage_Payment_Block_Form_Cc
+class CheckoutApi_ChargePayment_Block_Form_CheckoutApiFrames  extends Mage_Payment_Block_Form_Cc
 {
-    private $_paymentCode = CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD_EMBEDDED;
+    private $_paymentCode = CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD_FRAMES;
 
     /**
      * Set template for checkout page
@@ -24,7 +24,7 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiEmbedded  extends Mage_Pay
         $params['controllerName'] = (string)Mage::app()->getFrontController()->getRequest()->getControllerName();
         $session->setJsCheckoutApiParams($params);
 
-        $this->setTemplate('checkoutapi/chargepayment/form/checkoutapiembedded.phtml');
+        $this->setTemplate('checkoutapi/chargepayment/form/checkoutapiframes.phtml');
     }
 
     /**
@@ -49,7 +49,7 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiEmbedded  extends Mage_Pay
      * @version 20160203
      */
     public function getDebugMode() {
-        return Mage::getModel('chargepayment/creditCardEmbedded')->isDebug();
+        return Mage::getModel('chargepayment/creditCardFrames')->isDebug();
     }
     
     /**
@@ -101,8 +101,8 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiEmbedded  extends Mage_Pay
      *
      * @version 20160512
      */
-    public function getEmbeddedJsPath() {
-        return Mage::helper('chargepayment')->getEmbeddedJsPath();
+    public function getFramesJsPath() {
+        return Mage::helper('chargepayment')->getFramesJsPath();
     }
 
     /*
@@ -112,7 +112,7 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiEmbedded  extends Mage_Pay
 
     public function isCustomerLogged() {
 
-        return Mage::getModel('chargepayment/creditCardEmbedded')->getCustomerId();
+        return Mage::getModel('chargepayment/creditCardFrames')->getCustomerId();
     }
 
     /*
@@ -122,17 +122,7 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiEmbedded  extends Mage_Pay
 
     public function getTheme() {
 
-        return Mage::getModel('chargepayment/creditCardEmbedded')->getTheme();
-    }
-
-     /*
-     * Get Theme option
-     *
-     * */
-
-    public function getCustomCssUrl() {
-
-        return Mage::getModel('chargepayment/creditCardEmbedded')->getCustomCssUrl();
+        return Mage::getModel('chargepayment/creditCardFrames')->getTheme();
     }
 
     /*
@@ -141,7 +131,7 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiEmbedded  extends Mage_Pay
     public function getCustomerCardList() {
         $result         = array();
 
-        $customerId     = Mage::getModel('chargepayment/creditCardEmbedded')->getCustomerId();
+        $customerId     = Mage::getModel('chargepayment/creditCardFrames')->getCustomerId();
 
         if (empty($customerId)) {
             return $result;
@@ -172,7 +162,7 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiEmbedded  extends Mage_Pay
     *
     **/
     public function isSaveCard(){
-        return Mage::getModel('chargepayment/creditCardEmbedded')->getSaveCardSetting();
+        return Mage::getModel('chargepayment/creditCardFrames')->getSaveCardSetting();
     }
 
     /**
@@ -180,6 +170,6 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiEmbedded  extends Mage_Pay
     *
     **/
     public function cvvVerification(){
-        return Mage::getModel('chargepayment/creditCardEmbedded')->getCvvVerification();
+        return Mage::getModel('chargepayment/creditCardFrames')->getCvvVerification();
     }
 }

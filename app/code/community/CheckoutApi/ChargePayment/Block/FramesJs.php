@@ -6,7 +6,7 @@
  *
  * @version 20160203
  */
-class CheckoutApi_ChargePayment_Block_FrameEmbedded  extends Mage_Core_Block_Template
+class CheckoutApi_ChargePayment_Block_FramesJs  extends Mage_Core_Block_Template
 {
     /**
      * Return TRUE if is JS API
@@ -15,10 +15,10 @@ class CheckoutApi_ChargePayment_Block_FrameEmbedded  extends Mage_Core_Block_Tem
      *
      * @version 20160203
      */
-    public function isEmbeddedPaymentMethod() {
+    public function isFramesPaymentMethod() {
        $paymentMethod = (string)Mage::getSingleton('checkout/session')->getQuote()->getPayment()->getMethod();
 
-        return $paymentMethod === CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD_EMBEDDED ? true : false;
+        return $paymentMethod === CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD_FRAMES ? true : false;
     }
 
     /**
@@ -29,6 +29,6 @@ class CheckoutApi_ChargePayment_Block_FrameEmbedded  extends Mage_Core_Block_Tem
      * @version 20160219
      */
     public function getPaymentCode() {
-        return CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD_EMBEDDED;
+        return CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD_FRAMES;
     }
 }
