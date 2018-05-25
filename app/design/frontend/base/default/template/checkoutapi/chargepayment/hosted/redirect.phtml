@@ -30,16 +30,16 @@
 <script>
     (function () {
         var config = {
-            "addressLine1"  : '<?php echo $params['billingDetails']['addressLine1']?>',
-            "addressLine2"  : '<?php echo $params['billingDetails']['addressLine2']?>',
-            "postcode"      : '<?php echo $params['billingDetails']['postcode']?>',
-            "country"       : '<?php echo $params['billingDetails']['country']?>',
-            "city"          : '<?php echo $params['billingDetails']['city']?>',
-            "state"         : '<?php echo $params['billingDetails']['state']?>',
+            "addressLine1"  : "<?php echo htmlspecialchars($params['billingDetails']['addressLine1'], ENT_QUOTES);?>",
+            "addressLine2"  : "<?php echo htmlspecialchars($params['billingDetails']['addressLine2'], ENT_QUOTES);?>",
+            "postcode"      : "<?php echo htmlspecialchars($params['billingDetails']['postcode'], ENT_QUOTES);?>",
+            "country"       : "<?php echo htmlspecialchars($params['billingDetails']['country'], ENT_QUOTES);?>",
+            "city"          : "<?php echo htmlspecialchars($params['billingDetails']['city'], ENT_QUOTES);?>",
+            "state"         : "<?php echo htmlspecialchars($params['billingDetails']['state'], ENT_QUOTES);?>",
         };
 
         <?php if(!empty($params['billingDetails']['phone'])):?>
-            config.phone = {"number": '<?php echo $params['billingDetails']['phone']['number']?>'};
+            config.phone = {"number": '<?php echo htmlspecialchars($params['billingDetails']['phone']['number'], ENT_QUOTES);?>'};
         <?php endif;?>
 
         document.getElementById('billingDetails').value = JSON.stringify(config);
