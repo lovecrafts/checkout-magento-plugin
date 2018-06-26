@@ -43,11 +43,10 @@ class CheckoutApi_ChargePayment_Model_CreditCardFrames extends CheckoutApi_Charg
     }
 
     protected function _getSavedCartDataFromPost($data) {
-
         $savedCard  = $data->getCustomerCard();
 
         /* If non saved card */
-        if (empty($savedCard) || $savedCard === 'new_card') {
+        if (empty($savedCard) || $savedCard === 'new_card' || strpos($savedCard, 'checkoutapiframes') !== false) {
             return array();
         }
 
@@ -123,7 +122,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardFrames extends CheckoutApi_Charg
      *
      * @return bool
      */
-    public function getOrderPlaceRedirectUrl() {
+    public function getOrderPlaceRedirectUrl() { 
         $session    = Mage::getSingleton('chargepayment/session_quote');
         $isLocal    = $session->getIsLocalPayment();
         $lpUrl      = $session->getLpRedirectUrl();
@@ -159,7 +158,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardFrames extends CheckoutApi_Charg
      *
      * @version 20160203
      */
-    public function getPaymentToken() {
+    public function getPaymentToken($orderId=null) {
         $Api                = CheckoutApi_Api::getApi(array('mode' => $this->getEndpointMode()));
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
         $price              = $isCurrentCurrency ? $this->_getQuote()->getGrandTotal() : $this->_getQuote()->getBaseGrandTotal();
@@ -172,6 +171,10 @@ class CheckoutApi_ChargePayment_Model_CreditCardFrames extends CheckoutApi_Charg
 		
         $amount     = $Api->valueToDecimal($price, $priceCode);
         $config     = $this->_getCharge($amount);
+
+        if(isset($orderId)){
+            $config['postedParam']['trackId'] = $orderId;
+        }
 
         $paymentTokenCharge = $Api->getPaymentToken($config);
 
@@ -313,14 +316,65 @@ class CheckoutApi_ChargePayment_Model_CreditCardFrames extends CheckoutApi_Charg
      */
     public function authorize(Varien_Object $payment, $amount) {
 		// does not create charge on checkout.com if amount is 0
-
         if (empty($amount)) {
             return $this;
         }
 
         $requestData        = Mage::app()->getRequest()->getParam('payment');
-
         $session            = Mage::getSingleton('chargepayment/session_quote');
+
+        if(strpos($requestData['customer_card'], 'checkoutapiframes') !== false){
+
+            $result = $this->createLpCharge($requestData, $payment);
+
+            if($result->isValid()) {
+                $localPayment = $result['localPayment'];
+                $redirectUrl = $localPayment['paymentUrl'];
+                $entityId = $result->getId();
+
+                if(!$redirectUrl){
+                    $errorMessage = 'An error has occured, Please verify your payment details.';
+                    Mage::log('Empty redirect url', null, $this->_code.'.log');
+                    Mage::throwException($errorMessage);
+                }
+
+                /* is 3D payment */
+                if ($redirectUrl && $entityId) {
+                    $payment->setAdditionalInformation('payment_token', $entityId);
+                    $payment->setAdditionalInformation('payment_token_url', $redirectUrl);
+                    $payment->setTransactionId($entityId);
+
+                    $session->addPaymentToken($entityId);
+                    $session
+                        ->setIs3d(true)
+                        ->setLpRedirectUrl($redirectUrl)
+                        ->setIsLocalPayment(true)
+                        ->setEndpointMode($this->getEndpointMode())
+                        ->setSecretKey($this->_getSecretKey())
+                        ->setNewOrderStatus($this->getNewOrderStatus())
+                    ;
+                } 
+
+                return $this;
+            } else {
+
+                $errors             = $result->toArray();
+
+                if (!empty($errors['errorCode'])) {
+                    $responseCode       = (int)$errors['errorCode'];
+                    $responseMessage    = (string)$errors['message'];
+                    $errorMessage       = "Error Code - {$responseCode}. Message - {$responseMessage}.";
+                } else {
+                    $errorMessage = Mage::helper('chargepayment')->__('Authorize action is not available.');
+                }
+
+                Mage::log($errorMessage, null, $this->_code.'.log');
+                Mage::throwException($errorMessage);
+
+            }
+
+        }
+
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
         $quoteId            = null;
         $order              = $payment->getOrder();
@@ -495,11 +549,13 @@ class CheckoutApi_ChargePayment_Model_CreditCardFrames extends CheckoutApi_Charg
         }
 
         $shippingAddressConfig = array(
+            'recipientName'      => $shippingAddress->getName(),
             'addressLine1'       => $street[0],
             'addressLine2'       => $street[1],
             'postcode'           => $shippingAddress->getPostcode(),
             'country'            => $shippingAddress->getCountry(),
-            'city'               => $shippingAddress->getCity()
+            'city'               => $shippingAddress->getCity(),
+            'state'              => $shippingAddress->getCity()
         );
 
         $phoneNumber = $shippingAddress->getTelephone();
@@ -546,7 +602,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardFrames extends CheckoutApi_Charg
             'currency'          => $currencyDesc,
             'billingDetails'    => $billingAddressConfig,
             'shippingDetails'   => $shippingAddressConfig,
-            'products'          => $products,
+            // 'products'          => $products,
             'customerIp'        => $ip,
             'metadata'          => array(
                 'server'            => Mage::helper('core/http')->getHttpUserAgent(),
@@ -554,7 +610,7 @@ class CheckoutApi_ChargePayment_Model_CreditCardFrames extends CheckoutApi_Charg
                 'magento_version'   => Mage::getVersion(),
                 'plugin_version'    => Mage::helper('chargepayment')->getExtensionVersion(),
                 'lib_version'       => CheckoutApi_Client_Constant::LIB_VERSION,
-                'integration_type'  => 'JS',
+                'integration_type'  => 'FramesJs',
                 'time'              => Mage::getModel('core/date')->date('Y-m-d H:i:s')
             ),
 
@@ -602,8 +658,158 @@ class CheckoutApi_ChargePayment_Model_CreditCardFrames extends CheckoutApi_Charg
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'saveCard');
     }
 
-     public function getCvvVerification() {
+    public function getCvvVerification() {
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'cvvVerification');
     }
+
+    public function getIncludeApm(){
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'includeApm');
+    }
+
+    public function getLocalPayment(){
+        $paymentToken = $this->getPaymentToken();
+        $result = $this->getLocalPaymentProvider($paymentToken['token']);
+        $alternativePayment=[];
+
+        foreach ((array)$result as &$value) { 
+            $alternativePayment[]['lpName'] = $value['name'];
+        }
+
+        return $alternativePayment;        
+    }
+
+    public function getPublicKey() {
+        return Mage::helper('chargepayment')->getConfigData($this->_code, 'publickey');
+    }
+
+    public function getLocalPaymentProvider($paymentToken){
+        $Api = CheckoutApi_Api::getApi(array('mode' => $this->getEndpointMode()));
+        $paymentToken = array('paymentToken' => $paymentToken, 'authorization' => $this->getPublicKey());
+        $result = $Api->getLocalPaymentProviderByPayTok($paymentToken);
+        $data = $result->getData();
+
+        foreach ((array)$data as &$value) { 
+            return $value;
+        }
+    }
+
+     /**
+    *
+    * Get Bank info for Ideal
+    *
+    **/
+    public function getLocalPaymentInformation($lpId){ 
+        $secretKey = $this->getSecretKey();
+        $mode = $this->getEndpointMode();
+        $url = "https://sandbox.checkout.com/api2/v2/lookups/localpayments/{$lpId}/tags/issuerid";
+        
+        if($mode == 'live'){
+            $url = "https://api2.checkout.com/v2/lookups/localpayments/{$lpId}/tags/issuerid";
+        }
+
+
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_SSL_VERIFYPEER=>  false,
+            CURLOPT_HTTPHEADER => array(
+              "authorization: ".$secretKey,
+              "cache-control: no-cache",
+            ),
+        ));
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+
+        curl_close($curl);
+
+        if ($err) {
+          echo "cURL Error #:" . $err;
+          WC_Checkout_Non_Pci::log("cURL Error #:" . $err);
+        } else {
+
+            $test = json_decode($response);
+
+            foreach ((array)$test as &$value) { 
+                foreach ($value as $i=>$item){
+                    foreach ($item as  $is=>$items) {
+                        return $item->values;
+                    }
+                }
+            }
+        }
+    }
+
+    public function createLpCharge($requestData, $payment){
+
+        $orderId = $payment->getOrder()->getIncrementId();
+        $paymentToken = $this->getPaymentToken($orderId);
+
+        $string = $requestData['customer_card'];
+        $last_word_start = strrpos($string, '-') + 1; // +1 so we don't include the space in our result
+        $apmName = substr($string, $last_word_start); 
+
+        $secretKey = $this->getSecretKey();
+        $localpayment = $this->getLocalPaymentProvider($paymentToken['token']);
+
+        foreach ($localpayment as $i=>$item) {
+           $lpName = strtolower(preg_replace('/\s+/', '', $item['name']));
+           if($lpName == $apmName){
+                $lppId = $item['id'];
+           }
+        }
+
+        $config = array();
+        $config['authorization']    = $secretKey;
+        $config['postedParam']['email'] = $paymentToken['customerEmail'];
+        $config['postedParam']['paymentToken'] = $paymentToken['token'];
+
+        if($requestData['customer_card'] == 'checkoutapiframes-apm-ideal'){
+            $config['postedParam']['localPayment'] = array(
+                                        "lppId" => $lppId,
+                                        "userData" => array(
+                                                        "issuerId" => $requestData['cko-lp-issuerId']
+                                        )
+            );
+        } elseif($requestData['customer_card'] == 'checkoutapiframes-apm-boleto'){
+            $config['postedParam']['localPayment'] = array(
+                                        "lppId" => $lppId,
+                                        "userData" => array(
+                                                        "birthDate" => $requestData['cko-lp-boletoDate'],
+                                                        "cpf" => $requestData['cko-lp-cpf'],
+                                                        "customerName" => $requestData['cko-lp-custName']
+                                        )
+            );
+        } elseif($requestData['customer_card'] == 'checkoutapiframes-apm-qiwi'){
+
+            $config['postedParam']['localPayment'] = array(
+                                        "lppId" => $lppId,
+                                        "userData" => array(
+                                                        "walletId" => $requestData['cko-lp-walletId'],
+                                        )
+            );
+        } else {
+            $config['postedParam']['localPayment'] = array(
+                                        "lppId" => $lppId,
+            );
+        }
+
+
+        $Api = CheckoutApi_Api::getApi(array('mode' => $this->getEndpointMode()));
+        $result = $Api->createLocalPaymentCharge($config);
+
+        return $result; 
+
+    }
+
+
+
 
 }

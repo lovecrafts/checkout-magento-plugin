@@ -90,17 +90,9 @@ final class CheckoutApi_Lib_Validator extends CheckoutApi_lib_Object
      */
 	public static function isValidEmail($email) 
 	{
-		// $emailReg = "/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,6})$/";
-		// $email = strtolower($email);
-		// return preg_match ($emailReg,$email);
-
-		$email = strtolower($email);
-
-		if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-		  $email = 0; 
-		}
-
-		return $email;
+		if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+		  return true;
+		} 
 	}
 
     /**

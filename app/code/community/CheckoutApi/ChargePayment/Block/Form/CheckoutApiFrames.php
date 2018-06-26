@@ -172,4 +172,22 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiFrames  extends Mage_Payme
     public function cvvVerification(){
         return Mage::getModel('chargepayment/creditCardFrames')->getCvvVerification();
     }
+
+    /**
+    * Get IncludeAPm setting from config
+    *
+    **/
+    public function includeApm(){
+        return Mage::getModel('chargepayment/creditCardFrames')->getIncludeApm();
+    }
+
+    public function localPayment(){
+
+        return Mage::getModel('chargepayment/creditCardFrames')->getLocalPayment();
+    }
+
+    public function idealBankInfo(){
+        $lppId = 'lpp_9';
+        return Mage::getModel('chargepayment/creditCardFrames')->getLocalPaymentInformation($lppId);
+    }
 }

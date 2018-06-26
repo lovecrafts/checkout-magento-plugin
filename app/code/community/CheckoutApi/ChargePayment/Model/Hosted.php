@@ -286,6 +286,7 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
             'publicKey'         => $this->getPublicKey(),
             'paymentToken'      => $paymentToken,
             'customerEmail'     => $config['postedParam']['email'],
+            'customerName'      => $config['postedParam']['customerName'],
             'value'             => $config['postedParam']['value'],
             'currency'          => $config['postedParam']['currency'],
             'cardFormMode'      => self::CARD_FORM_MODE,
