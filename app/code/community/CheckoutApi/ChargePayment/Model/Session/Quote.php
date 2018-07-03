@@ -135,13 +135,16 @@ class CheckoutApi_ChargePayment_Model_Session_Quote extends Mage_Core_Model_Sess
             } elseif($paymentcode =='checkoutapicard') {
                 $secretKey = Mage::getModel('chargepayment/creditCard')->getSecretKey();
                 $mode = Mage::getModel('chargepayment/creditCard')->getMode();
+            } elseif($paymentcode =='checkoutapiframes') {
+                $secretKey = Mage::getModel('chargepayment/creditCardFrames')->getSecretKey();
+                $mode = Mage::getModel('chargepayment/creditCardFrames')->getMode();
             }
         }
 
         if(empty($secretKey) || empty($mode)){ 
             return $result;
         }
-           
+
         if(!is_null($paymentToken)){
             $Api = CheckoutApi_Api::getApi(array('mode' =>$mode ));
 
