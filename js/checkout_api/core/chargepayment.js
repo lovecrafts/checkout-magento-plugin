@@ -183,7 +183,80 @@ checkoutApi.prototype = {
                 if($('checkoutapiframes-new-card').checked){
                     if (Frames.isCardValid()) Frames.submitCard();
                 } else {
-                    this.saveOrderSubmit();
+                    if(jQuery('#alt-payment:checked').length > 0){
+                        
+                            if(jQuery('#alt-payment:checked').val() == "checkoutapiframes-apm-ideal"){
+                                var modal = document.getElementById('ckoModal');
+                                modal.style.display = "block";
+
+                                jQuery('#idealInfo').show();
+                                jQuery('#boletoInfo').hide();
+                                jQuery('#qiwiInfo').hide();
+
+                            } else if(jQuery('#alt-payment:checked').val() == "checkoutapiframes-apm-boleto"){
+                                var modal = document.getElementById('ckoModal');
+                                modal.style.display = "block";
+
+                                jQuery('#idealInfo').hide();
+                                jQuery('#boletoInfo').show();
+                                jQuery('#qiwiInfo').hide();
+
+                            } else if(jQuery('#alt-payment:checked').val() == "checkoutapiframes-apm-qiwi"){
+                                var modal = document.getElementById('ckoModal');
+                                modal.style.display = "block";
+
+                                jQuery('#qiwiInfo').show();
+                                jQuery('#boletoInfo').hide();
+                                jQuery('#idealInfo').hide();
+                            } else {
+                                window.checkoutApiSubmitOrder();
+                            }
+
+                        jQuery('#mybtn').on('click', function(e) {
+                            if(jQuery('#alt-payment:checked').val() == "checkoutapiframes-apm-ideal"){
+                                var e = document.getElementById("issuer");
+                                var value = e.options[e.selectedIndex].value;
+                                var text = e.options[e.selectedIndex].text;
+
+                                document.getElementById('cko-lp-issuerId').value = value;
+                            } else if(jQuery('#alt-payment:checked').val() == "checkoutapiframes-apm-boleto"){
+                                if(document.getElementById('boletoDate').value == ""){
+                                    alert('Please enter correct date');
+                                    return false;
+                                } else {
+                                    document.getElementById('cko-lp-boletoDate').value = document.getElementById('boletoDate').value;
+                                }
+
+                                if(document.getElementById('cpf').value == ""){
+                                    alert('Please enter your CPF');
+                                    return false;
+                                } else {
+                                    document.getElementById('cko-lp-cpf').value = document.getElementById('cpf').value;
+                                }
+
+                                if(document.getElementById('custName').value == ""){
+                                    alert('Please enter your customer name');
+                                    return false;
+                                } else {
+                                    document.getElementById('cko-lp-custName').value = document.getElementById('custName').value;
+                                }
+
+                            } if(jQuery('#alt-payment:checked').val() == "checkoutapiframes-apm-qiwi"){
+                                if(document.getElementById('walletId').value == ""){
+                                    alert('Please enter your Wallet Id');
+                                    return false;
+                                } else {
+                                    document.getElementById('cko-lp-walletId').value = document.getElementById('walletId').value;
+                                }
+                            }
+
+                            modal.style.display = "none";
+                            window.checkoutApiSubmitOrder();
+
+                        });
+                    } else {
+                        this.saveOrderSubmit();
+                    }
                 }
             } else {
                 if (Frames.isCardValid()) Frames.submitCard();

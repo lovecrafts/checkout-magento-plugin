@@ -699,7 +699,7 @@ class CheckoutApi_Client_ClientGW3 extends CheckoutApi_Client_Client
         $param['postedParam']['type'] = CheckoutApi_Client_Constant::LOCALPAYMENT_CHARGE_TYPE;
         $postedParam = $param['postedParam'];
         $this->flushState();
-        $uri = $this->getUriCharge();
+        $uri = $this->getUriCharge().'/localpayment';
         $isValidEmail = CheckoutApi_Client_Validation_GW3::isEmailValid($postedParam);
         $isValidSessionToken = CheckoutApi_Client_Validation_GW3::isSessionToken($postedParam);
         $isValidLocalPaymentHash = CheckoutApi_Client_Validation_GW3::isLocalPyamentHashValid($postedParam);
@@ -720,7 +720,7 @@ class CheckoutApi_Client_ClientGW3 extends CheckoutApi_Client_Client
         }
 
         if(!isset($param['postedParam']['localPayment']['userData']) ) {
-            $param['postedParam']['localPayment']['userData'] = '{}';
+            $param['postedParam']['localPayment']['userData'] = new stdClass;
         }
         return $this->request( $uri ,$param,!$hasError);
     }
@@ -1231,6 +1231,27 @@ class CheckoutApi_Client_ClientGW3 extends CheckoutApi_Client_Client
         return $this->request( $uri ,$param,!$hasError);
     }
 
+    public  function getLocalPaymentProviderByPayTok($param)
+    {
+        $this->flushState();
+        $uri = $this->getUriProvider();
+        $hasError = false;
+        $isPaymentTokenValid = CheckoutApi_Client_Validation_GW3::isPaymentToken($param);
+        $param['method'] = CheckoutApi_Client_Adapter_Constant::API_GET;
+        $delimiter = '/localpayments/';
+
+        if(!$isPaymentTokenValid) {
+            $hasError = true;
+            $this->throwException('Please provide a valid payment token',array('param'=>$param));
+        }
+
+        if(!$hasError){
+            $uri = "{$uri}{$delimiter}?paymentToken={$param['paymentToken']}";
+        }
+
+        return $this->request( $uri ,$param,!$hasError);
+    }
+
     /**
      * Get Card Provider list
      * @param array $param payload param
@@ -1312,7 +1333,7 @@ class CheckoutApi_Client_ClientGW3 extends CheckoutApi_Client_Client
             $uri = "$uri/{$param['planId']}";
         }
 
-        return $this->_responseUpdateStatus($this->request( $uri ,$param,!$hasError));
+        return $this->request( $uri ,$param,!$hasError);
     }
 
     /**

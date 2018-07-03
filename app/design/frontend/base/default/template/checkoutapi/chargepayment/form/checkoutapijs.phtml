@@ -54,7 +54,7 @@
                         publicKey: '<?php echo $this->getPublicKey();?>',
                         paymentToken: '<?php echo $tokenResult['token'];?>',
                         customerEmail: '<?php echo $tokenResult['customerEmail'];?>',
-                        customerName: '<?php echo $tokenResult['customerName'];?>',
+                        customerName: "<?php echo htmlspecialchars($tokenResult['customerName'], ENT_QUOTES); ?>",
                         value: '<?php echo $tokenResult['value'];?>',
                         currency: '<?php echo $tokenResult['currency'];?>',
                         widgetContainerSelector: '#payment_form_<?php echo $this->getMethodCode() ?>',

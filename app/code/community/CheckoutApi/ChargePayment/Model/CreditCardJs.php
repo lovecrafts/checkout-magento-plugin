@@ -539,11 +539,13 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         }
 
         $shippingAddressConfig = array(
+            'recipientName'      => $shippingAddress->getName(),
             'addressLine1'       => $street[0],
             'addressLine2'       => $street[1],
             'postcode'           => $shippingAddress->getPostcode(),
             'country'            => $shippingAddress->getCountry(),
-            'city'               => $shippingAddress->getCity()
+            'city'               => $shippingAddress->getCity(),
+            'state'              => $shippingAddress->getCity()
         );
 
         $phoneNumber = $shippingAddress->getTelephone();
