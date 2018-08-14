@@ -25,9 +25,10 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         $isDebugKit     = Mage::getModel('chargepayment/creditCardKit')->isDebug();
         $isDebugHosted  = Mage::getModel('chargepayment/hosted')->isDebug();
         $isDebugGPay    = Mage::getModel('chargepayment/googlePay')->isDebug();
-        $isDebugApplePay    = Mage::getModel('chargepayment/applePay')->isDebug();
+        $isDebugApplePay = Mage::getModel('chargepayment/applePay')->isDebug();
+        $isDebugFrames  = Mage::getModel('chargepayment/creditCardFrames')->isDebug();
 
-        $isDebug        = $isDebugCard || $isDebugJs || $isDebugKit || $isDebugHosted || $isDebugGPay || $isDebugApplePay ? true : false;
+        $isDebug        = $isDebugCard || $isDebugJs || $isDebugKit || $isDebugHosted || $isDebugGPay || $isDebugApplePay || $isDebugFrames ? true : false;
 
         if ($isDebug) {
             Mage::log(file_get_contents('php://input'), null, CheckoutApi_ChargePayment_Model_Webhook::LOG_FILE);
