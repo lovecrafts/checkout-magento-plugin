@@ -8,11 +8,13 @@ checkoutApi.prototype = {
         this.phpMethodCode      = 'checkoutapicard';
         this.jsMethodCode       = 'checkoutapijs';
         this.kitMethodCode      = 'checkoutapikit';
-        this.hostedMethodCode   = 'hosted';
+        this.hostedMethodCode   = 'checkoutapihosted';
         this.framesMethodCode   = 'checkoutapiframes';
+        this.googlePay          = 'checkoutapigooglepay';
+        this.applePay           = 'checkoutapiapplepay';
         this.preparePayment();
     },
-    preparePayment: function() { 
+    preparePayment: function() {
         switch (this.controller) {
             case 'onepage':
                 this.prepareSubmit();
@@ -27,6 +29,7 @@ checkoutApi.prototype = {
         var button = $('review-buttons-container').down('button');
         button.writeAttribute('onclick', '');
         button.stopObserving('click');
+
         switch (this.code) {
             case this.phpMethodCode:
                 button.observe('click', function() {
@@ -48,6 +51,35 @@ checkoutApi.prototype = {
                     this.checkoutFrames();
                 }.bind(this));
                 break;
+            case this.hostedMethodCode:
+                button.observe('click', function() {
+                    this.checkoutHosted();
+                }.bind(this));
+                break;
+            case this.googlePay:
+                var gpaybutton = jQuery('.gpay-button');
+                jQuery('.gpay-button').attr('style','width: 220px;');
+                jQuery('#checkout-review-submit').append(gpaybutton);
+                jQuery('.gpay-button').show();
+                
+
+                button.observe('click', function() {
+                    jQuery('.gpay-button').trigger('click');
+                }.bind(this));
+                break;
+            case this.applePay:
+                if (window.ApplePaySession) {
+                    var applePaybutton = jQuery('#cko-apple-pay-button');
+                    jQuery('#cko-apple-pay-button').attr('style','width: 220px;');
+                    jQuery('#checkout-review-submit').append(applePaybutton);
+                    jQuery('#cko-apple-pay-button').show();
+                }
+
+                button.observe('click', function() {
+                    jQuery('#cko-apple-pay-button').trigger('click');
+                }.bind(this));
+                break;
+
         }
     },
     prepareAdminSubmit: function() {
@@ -100,10 +132,12 @@ checkoutApi.prototype = {
                     this.saveOrderSubmit();
                 }
             } else {
+
                 CKOAPIJS.open();
                 if (CKOAPIJS.isMobile()) {
                     $('checkout-api-js-hover').show();
                 }
+                
             }
         } else {
             alert('Please agree to all the terms and conditions before placing the order.');
@@ -254,6 +288,7 @@ checkoutApi.prototype = {
                             window.checkoutApiSubmitOrder();
 
                         });
+
                     } else {
                         this.saveOrderSubmit();
                     }
@@ -265,6 +300,8 @@ checkoutApi.prototype = {
             alert('Please agree to all the terms and conditions before placing the order.');
             return;
         }
-
+    },
+    checkoutHosted: function(){
+        this.saveOrderSubmit();
     }
 };

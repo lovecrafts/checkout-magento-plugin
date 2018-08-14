@@ -9,7 +9,7 @@
 <?php if ($isActive):?>
     <ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>" style="display:none;">
 
-        <p><center><img id="cko-loading" src="<?php echo $this->getSkinUrl('images/checkoutApi/load.gif');?>" style="width: 50px;"/> </center></p>
+        <p><center><img id="cko-loading" src="<?php echo $this->getSkinUrl('images/checkoutApi/cko-preloader.gif');?>" style="width: 50px;"/> </center></p>
 
             <?php if($this->isCustomerLogged() && $this->isSaveCard() && $this->getPaymentMode() != 'localpayments' ): ?>
                 <?php $cardList = $this->getCustomerCardList();?>

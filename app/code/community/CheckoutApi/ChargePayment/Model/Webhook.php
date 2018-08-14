@@ -167,8 +167,10 @@ class CheckoutApi_ChargePayment_Model_Webhook
         $publicJsKey    = Mage::getModel('chargepayment/creditCardJs')->getPublicKeyWebHook();
         $publicKitKey   = Mage::getModel('chargepayment/creditCardKit')->getPublicKeyWebHook();
         $publicHostedKey    = Mage::getModel('chargepayment/hosted')->getPublicKeyWebHook();
+        $publicApplePayKey    = Mage::getModel('chargepayment/applePay')->getPublicKeyWebHook();
+        $publicGPayKey    = Mage::getModel('chargepayment/googlePay')->getPublicKeyWebHook();
 
-        $result         = $publicKey === $key || $publicJsKey === $key || $publicKitKey === $key || $publicHostedKey ? true : false;
+        $result         = $publicKey === $key || $publicJsKey === $key || $publicKitKey === $key || $publicHostedKey === $key || $publicApplePayKey === $key || $publicGPayKey === $key ? true : false;
 
         if (!$result) {
             Mage::log("Public shared keys {$key} (API) and {$publicKey} (Magento) do not match.", null, self::LOG_FILE);

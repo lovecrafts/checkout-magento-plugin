@@ -11,6 +11,8 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
     const CODE_CREDIT_CARD_KIT              = 'checkoutapikit';
     const CODE_CREDIT_CARD_HOSTED           = 'checkoutapihosted';
     const CODE_CREDIT_CARD_FRAMES           = 'checkoutapiframes';
+    const CODE_CREDIT_CARD_GOOGLE_PAY       = 'checkoutapigooglepay';
+    const CODE_CREDIT_CARD_APPLE_PAY        = 'checkoutapiapplepay';
     const FRAMES_THEME_STANDARD             = 'standard';
     const FRAMES_THEME_SIMPLE               = 'simple';
 
