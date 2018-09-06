@@ -345,7 +345,6 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         }';
 
         $ch = curl_init();
-        $data = '{"merchantIdentifier":"merchant.com.checkout.sandbox.cms", "domainName":"www.cmsbox.fr", "displayName":"test"}';
         curl_setopt($ch, CURLOPT_URL, $validationURL);
         curl_setopt($ch, CURLOPT_SSLCERT, $applePayCertPath);
         curl_setopt($ch,CURLOPT_SSLCERTTYPE,"PEM");
