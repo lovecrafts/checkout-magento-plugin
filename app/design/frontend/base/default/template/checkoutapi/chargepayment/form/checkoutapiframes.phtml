@@ -278,6 +278,41 @@
 
 </script>
 
+<script type="text/javascript">
+    var button = $('payment-buttons-container').down('button');
+    button.writeAttribute('onclick', '');
+
+    jQuery('.sp-methods input:radio').change(function() { 
+        if($( "p_method_checkoutapiframes" ).checked){
+            if($( "checkoutapiframes-new-card" ).checked){
+                button.writeAttribute('onclick', '');
+            } else {
+                button.writeAttribute('onclick', 'payment.save()');
+            }   
+
+        } else {
+           jQuery('input[id="checkoutapiframes-new-card"]').attr('checked', false);
+           button.writeAttribute('onclick', 'payment.save()');
+        }
+    });
+
+    button.observe('click', function() {
+        if(jQuery('#p_method_checkoutapiframes').length > 0){
+            if($( "checkoutapiframes-new-card" ).checked){ console.log('am here');
+                if(Frames.isCardValid()){
+                    payment.save();
+                } else { console.log(2);
+                    alert('Please enter your card details');
+                }
+            } else { console.log(3);
+                payment.save();
+            }
+        } else {
+                payment.save();
+        }
+    });
+</script>
+
 <?php else :?>
     <ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>" style="display:none;">
         <li><?php echo $this->__('Selected Payment Type is not allowed.') ?></li>
