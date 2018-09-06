@@ -33,22 +33,22 @@
     border: .5px solid black;
     cursor: pointer;
 }
-.apple-pay-button-with-text.apple-pay-button-black-with-text > .logo {
+.apple-pay-button-with-text.apple-pay-button-black-with-text > .cko-applepay-logo {
     background-image: -webkit-named-image(apple-pay-logo-white);
     background-color: black;
     cursor: pointer;
 }
-.apple-pay-button-with-text.apple-pay-button-white-with-text > .logo {
+.apple-pay-button-with-text.apple-pay-button-white-with-text > .cko-applepay-logo {
     background-image: -webkit-named-image(apple-pay-logo-black);
     background-color: white;
     cursor: pointer;
 }
-.apple-pay-button-with-text.apple-pay-button-white-with-line-with-text > .logo {
+.apple-pay-button-with-text.apple-pay-button-white-with-line-with-text > .cko-applepay-logo {
     background-image: -webkit-named-image(apple-pay-logo-black);
     background-color: white;
     cursor: pointer;
 }
-.apple-pay-button-with-text > .text {
+.apple-pay-button-with-text > .cko-applepay-text {
     font-family: -apple-system;
     font-size: calc(1em * var(--apple-pay-scale));
     font-weight: 300;
@@ -57,7 +57,7 @@
     margin-right: calc(2px * var(--apple-pay-scale));
     cursor: pointer;
 }
-.apple-pay-button-with-text > .logo {
+.apple-pay-button-with-text > .cko-applepay-logo {
     width: calc(35px * var(--apple-pay-scale));
     height: 100%;
     background-size: 100% 60%;
