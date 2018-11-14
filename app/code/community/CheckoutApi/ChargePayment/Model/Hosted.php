@@ -421,6 +421,9 @@ class CheckoutApi_ChargePayment_Model_Hosted extends Mage_Payment_Model_Method_A
             $ip = $_SERVER['REMOTE_ADDR'];
         }
 
+        $tmp = explode(',', $ip);
+        $ip = end($tmp);
+
         $config['postedParam'] = array (
             'trackId'           => NULL,
             'customerName'      => $billingAddress->getName(),
