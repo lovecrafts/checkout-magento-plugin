@@ -74,6 +74,9 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
                 $result = $modelWebhook->voidOrder($data);
                 break;
             default:
+                $message = $eventType. ' - event not handle for chargeId : '. $data->message->id;
+                Mage::log($message, null, CheckoutApi_ChargePayment_Model_Webhook::LOG_FILE);
+                
                 $result = $this->getResponse()->setHttpResponseCode(200);
                 return;
         }
