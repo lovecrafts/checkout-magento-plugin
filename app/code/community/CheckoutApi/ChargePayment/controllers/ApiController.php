@@ -57,11 +57,6 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
 
         $eventType          = $data->eventType;
 
-        if (!$modelWebhook->isValidResponse($data)) {
-            $this->getResponse()->setHttpResponseCode(400);
-            return;
-        }
-
         switch ($eventType) {
             case CheckoutApi_ChargePayment_Model_Webhook::EVENT_TYPE_CHARGE_SUCCEEDED:
                 $result = $modelWebhook->authoriseOrder($data);
@@ -79,7 +74,7 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
                 $result = $modelWebhook->voidOrder($data);
                 break;
             default:
-                $this->getResponse()->setHttpResponseCode(500);
+                $result = $this->getResponse()->setHttpResponseCode(200);
                 return;
         }
 
