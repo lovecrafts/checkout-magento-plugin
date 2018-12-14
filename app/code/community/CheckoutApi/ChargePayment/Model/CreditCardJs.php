@@ -582,6 +582,9 @@ class CheckoutApi_ChargePayment_Model_CreditCardJs extends CheckoutApi_ChargePay
         } else {
             $ip = $_SERVER['REMOTE_ADDR'];
         }
+        
+        $tmp = explode(',', $ip);
+        $ip = end($tmp);
 
         $config['postedParam'] = array (
             'trackId'           => NULL,

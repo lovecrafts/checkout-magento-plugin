@@ -413,6 +413,9 @@ class CheckoutApi_ChargePayment_Model_CreditCardKit extends CheckoutApi_ChargePa
             $ip = $_SERVER['REMOTE_ADDR'];
         }
 
+        $tmp = explode(',', $ip);
+        $ip = end($tmp);
+
         $config['postedParam'] = array (
             'trackId'           => NULL,
             'customerName'      => $billingAddress->getName(),

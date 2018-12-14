@@ -362,6 +362,9 @@ class CheckoutApi_ChargePayment_Model_CreditCard extends CheckoutApi_ChargePayme
             $ip = $_SERVER['REMOTE_ADDR'];
         }
 
+        $tmp = explode(',', $ip);
+        $ip = end($tmp);
+
         $config['postedParam']['autoCapture']  = $autoCapture;
         $config['postedParam']['autoCapTime']  = $this->getAutoCapTime();
 
