@@ -108,12 +108,9 @@ class CheckoutApi_ChargePayment_Model_ApplePay extends CheckoutApi_ChargePayment
      * @version 20160204
      */
     public function authorize(Varien_Object $payment, $amount) { 
-		// does not create charge on checkout.com if amount is 0
-        if (empty($amount)) {
+        if (empty($amount)) { 
             return $this;
-        }                
-
-        return $this;
+        }
     }
 
     /**
@@ -126,7 +123,6 @@ class CheckoutApi_ChargePayment_Model_ApplePay extends CheckoutApi_ChargePayment
      * @version 20160204
      */
     private function _getCharge($amount = null, $quoteId = null) {
-        $secretKey          = $this->_getSecretKey();
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
         $quote              = $this->_getQuote($quoteId);
 
@@ -191,7 +187,6 @@ class CheckoutApi_ChargePayment_Model_ApplePay extends CheckoutApi_ChargePayment
         }
 
         $config                     = array();
-        $config['authorization']    = $secretKey;
 
         if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
             $ip = $_SERVER['HTTP_CLIENT_IP'];
@@ -277,103 +272,8 @@ class CheckoutApi_ChargePayment_Model_ApplePay extends CheckoutApi_ChargePayment
         return Mage::helper('chargepayment')->getConfigData($this->_code, 'appleCertKey');
     }
 
-    /*
-    * Create Apple pay charge
-    */
-    public function createAppleCharge($requestData, $payment){
-        $signature = $requestData["cko-google-signature"];
-        $protocolVersion = $requestData["cko-google-protocolVersion"];
-        $signedMessage = $requestData["cko-google-signedMessage"];
-        $publicKey = Mage::helper('chargepayment')->getConfigData($this->_code, 'publickey');
-        $endPointMode = $this->getEndpointMode();
-
-        $createTokenUrl = "https://sandbox.checkout.com/api2/tokens";
-
-        if($endPointMode == 'live'){
-            $createTokenUrl = "https://api2.checkout.com/tokens";
-        }
-
-        $token_data = array(
-            'signature' => $signature,
-            'protocolVersion' => $protocolVersion,
-            'signedMessage' => $signedMessage,
-        );
-
-        //  GET TOKEN
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $createTokenUrl);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'Authorization: '.$publicKey,
-            'Content-Type:application/json;charset=UTF-8'
-            ));
-        curl_setopt($ch, CURLOPT_POSTFIELDS,
-            json_encode( array(
-                'type' => 'googlepay',
-                'token_data' => $token_data,
-            )));
-
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-        $server_output = curl_exec($ch);
-        curl_close ($ch);
-
-        $response = json_decode($server_output);
-        $GoogleToken = $response->token;
-
-        if(!empty($GoogleToken)){
-            $orderId = $payment->getOrder()->getIncrementId();
-            $order = Mage::getModel('sales/order')->loadByIncrementId($orderId);
-            $Api = CheckoutApi_Api::getApi(array('mode' => $this->getEndpointMode()));
-            $amount     = $Api->valueToDecimal($price, $priceCode);
-            $currencyCode =  Mage::app()->getLocale()->currency($order->getOrderCurrencyCode())->getSymbol();
-            $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
-            $priceCode          = $isCurrentCurrency ? $this->getCurrencyCode() : Mage::app()->getStore()->getBaseCurrencyCode();
-            $quoteId = $order->getQuoteId();
-            $grandTotal = $order->getGrandTotal();
-            $value     = $Api->valueToDecimal($grandTotal, $priceCode);
-
-            $config = $this->_getCharge($grandTotal, $quoteId);
-            $config['postedParam']['trackId'] = $orderId;
-            $config['postedParam']['transactionIndicator'] = '2';
-            $config['postedParam']['cardToken'] = $GoogleToken;
-            $config['postedParam']['value'] = $value; 
-
-            $createChargeUrl = "https://sandbox.checkout.com/api2/v2/charges/token";
-
-            if($endPointMode == 'live'){
-                $createChargeUrl = "https://api2.checkout.com/v2/charges/token";
-            }
-
-             //  CHARGE REQUEST
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL,$createChargeUrl);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                'Authorization: '.$this->_getSecretKey(),
-                'Content-Type:application/json;charset=UTF-8'
-                ));
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($config['postedParam']));
-
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-            $server_output = curl_exec($ch);
-            curl_close ($ch);
-
-            $response = json_decode($server_output);
-
-            return $response;
-
-        } else {
-
-            $errorMessage = 'An error has occured, please verify your payment details and try again.';
-            Mage::log('Empty GoogleToken', null, $this->_code.'.log');
-            Mage::throwException($errorMessage);
-        }
-    }
-
     /**
-    * Get Payment information to send to Paypal
+    * Get Payment information
     **/
     public function getPaymentInfo() {
         $isCurrentCurrency  = $this->getIsUseCurrentCurrency();
@@ -386,12 +286,30 @@ class CheckoutApi_ChargePayment_Model_ApplePay extends CheckoutApi_ChargePayment
         $config     = $this->_getCharge($amount);
 
         $applePayInfo = array();
-        $applePayInfo['value']     = $price;
+        
         $applePayInfo['currency']  = $priceCode;
         $applePayInfo['customerName'] = $config['postedParam']['customerName'];
         $applePayInfo['environment'] = $environment;
         $applePayInfo['countryCode'] = $config['postedParam']['billingDetails']['country'];
         $applePayInfo['products'] = $config['postedParam']['products'];
+
+        if(empty($applePayInfo['products'])){
+            if(empty($postedParam['products'])){
+                $current_product = Mage::registry('current_product');
+                if($current_product) {
+                    $sku = $current_product->getSku();
+                    $products[] = array (
+                        'name'       => $current_product->getName(),
+                        'sku'        => $current_product->getSku(),
+                        'price'      => (float) $current_product->getPrice(),
+                        'quantity'   => 1,
+                    );
+                }
+
+                $config['postedParam']['products'] = $products;
+                $applePayInfo['products'] = $products;
+            }
+        }
 
         $carriers = Mage::getStoreConfig('carriers', Mage::app()->getStore()->getId());
         foreach ($carriers as $carrierCode => $carrierConfig) {
@@ -399,14 +317,23 @@ class CheckoutApi_ChargePayment_Model_ApplePay extends CheckoutApi_ChargePayment
                 $applePayInfo['shippingMethod'][] = $carrierConfig;
             }
         }
-       
-        $applePayInfo['selectedShippingMethod'] = Mage::getSingleton('checkout/session')->getQuote()->getShippingAddress()->getShippingDescription();
-        $applePayInfo['selectedShippingMethodCode'] = Mage::getSingleton('checkout/session')->getQuote()->getShippingAddress()->getShippingMethod();
-        $applePayInfo['selectedShippingAmount'] = Mage::getSingleton('checkout/session')->getQuote()->getShippingAddress()->getShippingAmount();
 
-        $applePayInfo['subtotal'] = $price - $applePayInfo['selectedShippingAmount'];
+        if(Mage::registry('current_product')) {
+            $product = Mage::registry('current_product');
+            $id = $product->getId();
+            $qty = $product->getStockItem()->getQty();
+            $productPrice = round($product->getPrice(),2);
+            $applePayInfo['subtotal'] = $productPrice;
+            $applePayInfo['value']     = $productPrice;
+        } else {
+            $applePayInfo['value']     = $price;
+            $applePayInfo['selectedShippingMethod'] = Mage::getSingleton('checkout/session')->getQuote()->getShippingAddress()->getShippingDescription();
+            $applePayInfo['selectedShippingMethodCode'] = Mage::getSingleton('checkout/session')->getQuote()->getShippingAddress()->getShippingMethod();
+            $applePayInfo['selectedShippingAmount'] = round(Mage::getSingleton('checkout/session')->getQuote()->getShippingAddress()->getShippingAmount(), 2);
+            $applePayInfo['subtotal'] = round($price - $applePayInfo['selectedShippingAmount'], 2);
+        }
+
         $applePayInfo['storeName'] = Mage::app()->getStore()->getName();
-
         $result = array_merge($applePayInfo, $config);
         
         return $result;

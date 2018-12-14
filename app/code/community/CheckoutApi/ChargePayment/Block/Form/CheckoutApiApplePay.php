@@ -6,7 +6,7 @@
  *
  * @version 20151002
  */
-class CheckoutApi_ChargePayment_Block_Form_CheckoutApiApplePay  extends Mage_Payment_Block_Form_Cc
+class CheckoutApi_ChargePayment_Block_Form_CheckoutApiApplePay  extends Mage_Payment_Block_Form
 {
     private $_paymentCode = CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD_APPLE_PAY;
 
@@ -25,6 +25,10 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiApplePay  extends Mage_Pay
         $session->setJsCheckoutApiParams($params);
 
         $this->setTemplate('checkoutapi/chargepayment/form/checkoutapiapplepay.phtml');
+    }
+
+    public function getMethodCode() {
+        return CheckoutApi_ChargePayment_Helper_Data::CODE_CREDIT_CARD_APPLE_PAY;
     }
 
     /*
@@ -118,5 +122,43 @@ class CheckoutApi_ChargePayment_Block_Form_CheckoutApiApplePay  extends Mage_Pay
     **/
     public function getPaymentInfo(){
         return Mage::getModel('chargepayment/applePay')->getPaymentInfo();
+    }
+
+    /**
+    * Get apple pay button color from config for text
+    **/
+    public function getAppleButtonColorText() {
+        
+        $colorText = Mage::helper('chargepayment')->getConfigData($this->_paymentCode, 'applepayButtonColor');
+
+        if($colorText == 'white'){
+            $buttonColorText = 'apple-pay-button-with-text apple-pay-button-white-with-line-with-text';
+        } else {
+            $buttonColorText = 'apple-pay-button-with-text apple-pay-button-black-with-text';
+        }
+
+        return  $buttonColorText;
+    }
+
+    /**
+    * Get apple pay button color from config for logo
+    **/
+    public function getAppleButtonColorLogo() {
+        $colorLogo = Mage::helper('chargepayment')->getConfigData($this->_paymentCode, 'applepayButtonColor');
+
+        if($colorLogo == 'white'){
+            $buttoncolorLogo = 'apple-pay-button apple-pay-button-white-with-line';
+        } else {
+            $buttoncolorLogo = 'apple-pay-button apple-pay-button-black';
+        }
+
+        return  $buttoncolorLogo;
+    }
+
+    /**
+    * Get apple pay button with text or logo only
+    **/
+    public function getAppleButton() {
+        return  Mage::helper('chargepayment')->getConfigData($this->_paymentCode, 'applepayButton');
     }
 }

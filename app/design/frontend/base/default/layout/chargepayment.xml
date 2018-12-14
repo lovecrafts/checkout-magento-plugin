@@ -1,5 +1,19 @@
 <?xml version="1.0"?>
 <layout version="0.1.0">
+    <checkout_cart_index>
+        <reference name="checkout.cart.methods">
+            <action method="append" ifconfig="payment/checkoutapiapplepay/active">
+                <block>checkoutapi.form.checkoutapiapplepay</block>
+            </action>
+        </reference>
+    </checkout_cart_index>
+    <catalog_product_view>
+        <reference name="product.info.addtocart">
+            <action method="append" ifconfig="payment/checkoutapiapplepay/active">
+                <block>checkoutapi.form.checkoutapiapplepay</block>
+            </action>
+        </reference>
+    </catalog_product_view>
     <customer_account>
         <reference name="customer_account_navigation">
             <action method="addLink" ifconfig="payment/checkoutapicard/active">
@@ -44,6 +58,14 @@
             <block type="page/html" name="chargepayment.local.complete" template="checkoutapi/chargepayment/local/complete.phtml"/>
         </reference>
     </chargepayment_api_complete>
+    <chargepayment_api_applepaycomplete>
+        <reference name="root">
+            <action method="setTemplate"><template>page/2columns-right.phtml</template></action>
+        </reference>
+        <reference name="content">
+            <block type="page/html" name="chargepayment.local.complete" template="checkoutapi/chargepayment/local/complete.phtml"/>
+        </reference>
+    </chargepayment_api_applepaycomplete>
     <checkout_onepage_index translate="label">
         <reference name="head">
             <action method="addJs"><script>checkout_api/core/chargepayment.js</script></action>
@@ -109,5 +131,8 @@
                 </action>
             </block>
         </reference>
+
+        <block type="chargepayment/form_checkoutApiApplePay" before="-" name="checkoutapi.form.checkoutapiapplepay"/>
+
     </default>
 </layout>
