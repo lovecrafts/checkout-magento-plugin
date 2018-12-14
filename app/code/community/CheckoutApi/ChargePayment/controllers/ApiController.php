@@ -25,10 +25,9 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         $isDebugKit     = Mage::getModel('chargepayment/creditCardKit')->isDebug();
         $isDebugHosted  = Mage::getModel('chargepayment/hosted')->isDebug();
         $isDebugGPay    = Mage::getModel('chargepayment/googlePay')->isDebug();
-        $isDebugApplePay = Mage::getModel('chargepayment/applePay')->isDebug();
-        $isDebugFrames  = Mage::getModel('chargepayment/creditCardFrames')->isDebug();
+        $isDebugApplePay    = Mage::getModel('chargepayment/applePay')->isDebug();
 
-        $isDebug        = $isDebugCard || $isDebugJs || $isDebugKit || $isDebugHosted || $isDebugGPay || $isDebugApplePay || $isDebugFrames ? true : false;
+        $isDebug        = $isDebugCard || $isDebugJs || $isDebugKit || $isDebugHosted || $isDebugGPay || $isDebugApplePay ? true : false;
 
         if ($isDebug) {
             Mage::log(file_get_contents('php://input'), null, CheckoutApi_ChargePayment_Model_Webhook::LOG_FILE);
@@ -76,7 +75,7 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
             default:
                 $message = $eventType. ' - event not handle for chargeId : '. $data->message->id;
                 Mage::log($message, null, CheckoutApi_ChargePayment_Model_Webhook::LOG_FILE);
-                
+
                 $result = $this->getResponse()->setHttpResponseCode(200);
                 return;
         }
@@ -224,7 +223,11 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         $cardToken          = (string)$this->getRequest()->getParam('cko-card-token');
 
         if(!$cardToken){
-            $cardToken = Mage::getSingleton('core/session')->getHostedCardId();
+            if(Mage::getSingleton('core/session')->getIsGooglePay()){
+                $cardToken = Mage::getSingleton('core/session')->getGoogleToken();
+            } else {
+                 $cardToken = Mage::getSingleton('core/session')->getHostedCardId();
+            }
         }
 
         $orderIncrementId   = (string)$this->getRequest()->getParam('cko-context-id');
@@ -235,6 +238,7 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
 
         $order              = Mage::getModel('sales/order')->loadByIncrementId($orderIncrementId);
         $helper             = Mage::helper('chargepayment');
+
 
         if (!$order->getId()) {
             $this->norouteAction();
@@ -270,6 +274,8 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
                     ->setCcId(NULL);
                     
                 Mage::getSingleton('core/session')->unsHostedCardId();
+                Mage::getSingleton('core/session')->unsGoogleToken();
+                Mage::getSingleton('core/session')->unsIsGooglePay();
                 
                 $this->_redirect($result['redirect']);
 
@@ -291,6 +297,10 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
 
                 /* Restore quote session */
                 $helper->restoreQuoteSession($order);
+            
+                Mage::getSingleton('core/session')->unsGoogleToken();
+                Mage::getSingleton('core/session')->unsIsGooglePay();
+
                 $this->_redirectUrl($result['redirect']);
                 break;
             default:
@@ -326,6 +336,19 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
 
     }
 
+    /*
+    * Apple pay payment complete page
+    */
+    public function applepaycompleteAction() {
+        $this->loadLayout();
+
+        $this->getLayout()
+            ->getBlock('head')
+            ->setTitle($this->__('Apple Pay Payment Completed (Checkout.com)'));
+
+        $this->renderLayout();
+    }
+
     public function requestMerchantSessionAction(){
         $params = $this->getRequest()->getParams();
 
@@ -333,8 +356,8 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         $merchantIdentifier = Mage::getModel('chargepayment/applePay')->getApplePayMerchantIdentifier();
         $domainName = $_SERVER['SERVER_NAME'];
         $displayName = Mage::app()->getStore()->getName();
-        $applePayCertPath = Mage::getModel('chargepayment/applePay')->getApplePayCertPath();
-        $applePayCertKey = Mage::getModel('chargepayment/applePay')->getApplePayCertKey();
+        $applePayCertPath = Mage::getModel('chargepayment/applePay')->getApplePayCertPath(); 
+        $applePayCertKey = Mage::getModel('chargepayment/applePay')->getApplePayCertKey(); 
 
         $data = '{
             "merchantIdentifier":"'. $merchantIdentifier . '",
@@ -370,8 +393,13 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
 
     public function sendPaymentAction(){
         $params = $this->getRequest()->getParams();
+
         $payment = json_decode($params['payment']);
         $applePayPaymentData = $payment->paymentData;
+
+        $applePayShippingDetails = $params['shippingContact'];
+        $applePayValue = $params['newTotalCost'];
+        $applePayShippingMethod = $params['shippingMethodName'];
 
         if(empty($applePayPaymentData)){
             $errorMessage = 'Network error. Empty payment data';
@@ -394,6 +422,7 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
             'token_data' => (array) $applePayPaymentData 
         );
 
+
         // curl to create apple pay token.
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $createTokenUrl);
@@ -411,10 +440,49 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
 
         $response = json_decode($server_output);
 
+        if($response === false)
+            {
+                $message =  '{"curlError":"' . curl_error($ch) . '"}';
+                Mage::log($message, null, CheckoutApi_ChargePayment_Model_Webhook::LOG_FILE);
+            }
+
+
         if(!empty($response->token)){
             $ckoPaymentData = json_decode($params['paymentData']);
             $postedParam = (array) $ckoPaymentData->postedParam;
             $postedParam['cardToken'] = $response->token;
+
+            $applePayShippingContact = json_decode($applePayShippingDetails);
+
+            if(empty($postedParam['email'])){
+                $postedParam['email'] = $applePayShippingContact->emailAddress;
+            }
+
+            $billingDetails = $postedParam['billingDetails'];
+
+            if(empty($billingDetails->addressLine1)){ 
+                 $streetAddress = $applePayShippingContact->addressLines;
+
+                 $billingAddress = array(
+                    'addressLine1' => $streetAddress[0],
+                    'postcode' => $applePayShippingContact->postalCode,
+                    'country' => $applePayShippingContact->countryCode,
+                    'city' => $applePayShippingContact->locality,
+                    'state' => $applePayShippingContact->locality 
+                 );
+
+                $postedParam['billingDetails'] = $billingAddress;
+                $postedParam['shippingDetails'] = $billingAddress;
+                $postedParam['customerName'] = $applePayShippingContact->givenName. ' ' . $applePayShippingContact->familyName;
+            }
+
+            $endPointMode = Mage::helper('chargepayment')->getConfigData('checkoutapiapplepay', 'mode');
+
+            $Api    = CheckoutApi_Api::getApi(array('mode' => $endPointMode));
+            $amount = $Api->valueToDecimal($applePayValue, $postedParam['currency']);
+            
+            $postedParam['value'] = $amount;
+
             $secretKey = Mage::getModel('chargepayment/applePay')->getSecretKey();
 
             $createChargeUrl = "https://sandbox.checkout.com/api2/v2/charges/token";
@@ -423,7 +491,7 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
                 $createChargeUrl = "https://api2.checkout.com/v2/charges/token";
             }
 
-             // curl to create apple pay charge at cko
+            // curl to create apple pay charge at cko
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL,$createChargeUrl);
             curl_setopt($ch, CURLOPT_POST, 1);
@@ -440,9 +508,15 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
 
             $response = json_decode($server_output);
 
+            if($response === false)
+            {
+                $message =  '{"curlError":"' . curl_error($ch) . '"}';
+                Mage::log($message, null, CheckoutApi_ChargePayment_Model_Webhook::LOG_FILE);
+            }
+
             if($response){ 
                 if (preg_match('/^1[0-9]+$/', $response->responseCode)) {
-                    $orderId = $this->createApplePayOrder($ckoPaymentData, $response);
+                    $orderId = $this->createOrder($ckoPaymentData, $response, $applePayShippingDetails,$applePayShippingMethod);
 
                     if($orderId){
                         $updateChargeUrl = "https://sandbox.checkout.com/api2/v2/charges/".$response->id;
@@ -474,6 +548,12 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
                         }
                     }
 
+                    Mage::getSingleton('checkout/session')->clear();
+                    foreach( Mage::getSingleton('checkout/session')->getQuote()->getItemsCollection() as $item ){
+
+                      Mage::getSingleton('checkout/cart')->removeItem( $item->getId() )->save();
+                    }
+
                     $result = "SUCCESS";
                     $this->getResponse()->setBody($result);
                     return $this;
@@ -495,44 +575,25 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         }
     }
 
-    public function createApplePayOrder($params, $response){ 
-        $storeID = Mage::app()->getStore()->getId();
-        $store = Mage::getModel('core/store')->load($storeID);
-        $websiteId = $store->getWebsiteId();
-     
-        // Start New Sales Order Quote
+    public function createOrder($params,$response, $applePayShippingDetails,$applePayShippingMethod){
+        $storeID = Mage::app()->getStore('default')->getId();
         $quote = Mage::getModel('sales/quote')->setStoreId($storeID);
 
-        // Set Sales Order Quote Currency
-        $quote->setCurrency(Mage::app()->getStore($storeID)->getCurrentCurrencyCode());
+        $applePayShippingContact = json_decode($applePayShippingDetails);
+        $streetAddress = $applePayShippingContact->addressLines;
 
-        $postedParam = (array) $params->postedParam;       
-     
-        // Get customer
-        $customer = Mage::getModel('customer/customer')
-        ->setWebsiteId($websiteId)
-        ->loadByEmail($postedParam['email']);
-    
-     
-        //Create customer in case that it not exists
-        if (empty($customer->getData())) {
-            $customer = Mage::getModel('customer/customer');
-     
-            $customer->setWebsiteId($websiteId)
-                ->setStore($store)
-                ->setFirstname($customerData['firstname'])
-                ->setLastname($customerData['lastname'])
-                ->setEmail($customerData['email'])
-                ->setPassword($customerData['password']);
-     
-            $customer->save();
+        if(Mage::getSingleton('customer/session')->isLoggedIn()){
+                // for customer orders:
+                $customer = Mage::getModel('customer/customer')
+                        ->setWebsiteId(1)
+                        ->loadByEmail($applePayShippingContact->emailAddress);
+                $quote->assignCustomer($customer);
+        } else {
+                // for guesr orders only:
+                $quote->setCustomerEmail($applePayShippingContact->emailAddress);
         }
-     
-        // Assign Customer To Sales Order Quote
-        $quote->assignCustomer($customer);
-     
-        // Configure Notification
-        $quote->setSendCconfirmation(1);
+
+        $postedParam = (array) $params;
 
         foreach($postedParam['products'] as $productItem){
             $productItems = (array) $productItem;
@@ -542,80 +603,66 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
             $quote->addProduct($product, new Varien_Object(array('qty' => $productItems['quantity'])));
         }
 
-        $billingDetails = (array) $postedParam['billingDetails'];
-        $billingPhone = (array) $billingDetails['phone'];
+        $shippingMethodName = preg_replace('/\s*/', '', $applePayShippingMethod);
+        
+        // convert the string to all lowercase
+        $shippingMethod = strtolower($shippingMethodName);
 
-        $shippingDetails = (array) $postedParam['shippingDetails'];
-        $shippingPhone = (array) $shippingDetails['phone'];
-       
-        // Set Sales Order Billing Address
-        $quote->getBillingAddress()->addData(array(
-        'customer_address_id' => '',
-        'prefix' => '',
-        'firstname'  => $customer->getFirstname(),
-        'middlename' => $customer->getMiddlename(),
-        'lastname'   => $customer->getLastname(),
-        'suffix' => '',
-        'company' =>'',
-        'street' => array(
-            '0' => $billingDetails['addressLine1'],
-            '1' => $billingDetails['addressLine2']
-        ),
-        'city' => $billingDetails['city'],
-        'country_id' => $billingDetails['country'],
-        'region' => $billingDetails['state'],
-        'postcode' => $billingDetails['postcode'],
-        'telephone' => $billingPhone['number'],
-        // 'fax' => billingData['fax'],
-        'vat_id' => '',
-        'save_in_address_book' => 1
-        ));
+        if (preg_match('/_/', $shippingMethod)) { 
+            $shippingMethodCode = $shippingMethod;
+        } else { 
+            $shippingMethodCode = $shippingMethod.'_'.$shippingMethod;
+        }
 
-
-        // Set Sales Order Shipping Address
-        $shippingAddress = $quote->getShippingAddress()->addData(array(
-        'customer_address_id' => '',
-        'prefix' => '',
-        'firstname' => $customer->getFirstname(),
-        'middlename' => $customer->getMiddlename(),
-        'lastname' => $customer->getLastname(),
-        'suffix' => '',
-        'company' =>'',
-        'street' => array(
-            '0' => $shippingDetails['addressLine1'],
-            '1' => $shippingDetails['addressLine2']
-        ),
-        'city' => $shippingDetails['city'],
-        'country_id' => $shippingDetails['country'],
-        'region' => $shippingDetails['state'],
-        'postcode' => $shippingDetails['postcode'],
-        'telephone' => $shippingPhone['number'],
-        // 'fax' => shippingData['fax'],
-        'vat_id' => '',
-        'save_in_address_book' => 1
-        ));
+        $addressData = array(
+                'firstname' => $applePayShippingContact->givenName,
+                'lastname' => $applePayShippingContact->familyName,
+                'company' => '',
+                'email' =>  $applePayShippingContact->emailAddress,
+                'street' => array(
+                    '0'=>$streetAddress[0]
+                ),
+                'city' => $applePayShippingContact->locality,
+                'region_id' => '',
+                'region' => $applePayShippingContact->locality,
+                'postcode' => $applePayShippingContact->postalCode,
+                'country_id' => $applePayShippingContact->countryCode,
+                'telephone' =>  $applePayShippingContact->phoneNumber,
+                'fax' => '',
+                'customer_password' => '',
+                'confirm_password' =>  '',
+                'save_in_address_book' => '1',
+                'use_for_shipping' => '1'
+        );
 
 
-        // Collect Rates and Set Shipping & Payment Method
-        $shippingAddress->setCollectShippingRates(true)
-        ->collectShippingRates()
-        ->setShippingMethod($params->selectedShippingMethodCode);
-     
-        // Set payment method
-        $quote->getPayment()->setMethod('checkoutapiapplepay');
-     
-        // Collect Totals & Save Quote
+        $billingAddress = $quote->getBillingAddress()->addData($addressData);
+        $shippingAddress = $quote->getShippingAddress()->addData($addressData);
+
+        try {
+             $shippingAddress->setCollectShippingRates(true)->collectShippingRates()
+                        ->setShippingMethod($shippingMethodCode)
+                        ->setPaymentMethod('checkoutapiapplepay');
+        }catch (Exception $ex) {
+            print_r($ex->getMessage());
+            die();
+        }
+
+        $quote->getPayment()->importData(array('method' => 'checkoutapiapplepay'));
         $quote->collectTotals()->save();
-     
-        // Create Order From Quote
-        $service = Mage::getModel('sales/service_quote', $quote);
 
+        try {
+            // Create Order From Quote
+            $service = Mage::getModel('sales/service_quote', $quote);
+            $service->submitAll();
+            $increment_id = $service->getOrder()->getRealOrderId();
+        }
+        catch (Exception $ex) {
+            Mage::log($ex->getMessage(), null, CheckoutApi_ChargePayment_Model_Webhook::LOG_FILE);
+        }
 
-        $service->submitAll();
-        $order = $service->getOrder();
-
-        $payment = $order->getPayment();
-
+        $orderObj = $service->getOrder();
+        $payment = $orderObj->getPayment();
         $entityId = $response->id;
 
         $endPointMode = Mage::helper('chargepayment')->getConfigData('checkoutapiapplepay', 'mode');
@@ -631,7 +678,6 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
                 ->setIsTransactionClosed(0)
                 ->setShouldCloseParentTransaction(false)
                 ->setBaseAmountAuthorized($amount);
-                // ->setAdditionalInformation('use_current_currency', $isCurrentCurrency);
 
         if ($autoCapture) {
             $message = Mage::helper('sales')->__('Capturing amount of %s is pending approval on gateway.', $amount);
@@ -645,39 +691,16 @@ class CheckoutApi_ChargePayment_ApiController extends Mage_Core_Controller_Front
         
         $message .= ' ' . Mage::helper('sales')->__('Transaction ID: "%s".', $entityId);
 
-        Mage::log('response code = '. CheckoutApi_ChargePayment_Model_Checkout::CHECKOUT_API_RESPONSE_CODE_APPROVED, null, 'applepay.log');
-
         if($response->responseCode == CheckoutApi_ChargePayment_Model_Checkout::CHECKOUT_API_RESPONSE_CODE_APPROVED ){
-            $order->setStatus('pending');
-            $order->addStatusHistoryComment($message, false);
+            $orderObj->setStatus('pending');
+            $orderObj->addStatusHistoryComment($message, false);
         } else {
             $fraudmessage = $message.' '. Mage::helper('sales')->__(' Suspected fraud - Please verify amount and quantity.');
-            $order->setState('payment_review');
-            $order->setStatus('fraud');
-            $order->addStatusHistoryComment($fraudmessage, false);
+            $orderObj->setState('payment_review');
+            $orderObj->setStatus('fraud');
+            $orderObj->addStatusHistoryComment($fraudmessage, false);
         }
-        
-        $order->save();
-        $order->sendNewOrderEmail();
-        
-        $cart = Mage::getSingleton('checkout/cart');
-        $cart->truncate()->save();
-        
-        $increment_id = $service->getOrder()->getRealOrderId();
 
-        $session = Mage::getSingleton('checkout/session');
-        $session->setLastOrderId($order->getId());
-        $session->setLastRealOrderId($order->getIncrementId());
-        $session->setLastSuccessQuoteId($order->getQuoteId());
-        $session->setLastQuoteId($order->getQuoteId());
-     
-        Mage::dispatchEvent('sales_order_place_after', array('order' => $service->getOrder()));
-     
-        // Resource Clean-Up
-        $quote = $customer = $service = null;   
- 
-        // Finished
         return $increment_id;
-
     }
 }
