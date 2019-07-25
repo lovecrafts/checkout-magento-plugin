@@ -1,0 +1,23 @@
+{
+  "name": "e2e_magento2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --max-old-space-size=2000 ./node_modules/.bin/chimp ./config/chimp.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "babel-eslint": "^10.0.1",
+    "chai": "^4.1.2",
+    "chimp": "^0.51.1",
+    "eslint": "^5.15.2",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-jsx-a11y": "^6.2.1",
+    "eslint-plugin-react": "^7.12.4",
+    "stack-chain": "^2.0.0"
+  }
+}
