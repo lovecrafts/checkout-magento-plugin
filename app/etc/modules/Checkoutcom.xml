@@ -1,0 +1,12 @@
+<config>
+    <modules>
+        <Checkoutcom_Ckopayment>
+            <active>true</active>
+            <codePool>community</codePool>
+            <depends>
+                <Mage_Payment/>
+                <Mage_Sales/>
+            </depends>
+        </Checkoutcom_Ckopayment>
+    </modules>
+</config>
