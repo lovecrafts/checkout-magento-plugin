@@ -1,17 +1,10 @@
-[![N|Solid](https://cdn.checkout.com/img/checkout-logo-online-payments.jpg)](https://checkout.com/)
+<img src="https://cdn.checkout.com/img/checkout-logo-online-payments.jpg" alt="Checkout.com" width="380"/>
 
 # Magento 1.x Extension
 
 > For Magento 2.x versions please see [this](https://github.com/checkout/checkout-magento2-plugin) repo
 
 [Checkout.com](https://www.checkout.com "Checkout.com") is a software platform that has integrated 100% of the value chain to create payment infrastructures that truly make a difference.
-
-This extension allows shop owners to process online payments (card / alternative payments) using:
-  - **Frames.js** - Customisable payment form, embedded within your website
-  - **Checkout.js** - Customisable payment widget 
-  - **Checkout.js Hosted** - Redirection to a customisable page on Checkout.com's servers
-  - **Apple Pay & Google Pay** - Shoppers can pay using mobile wallets
-  - **Alternative payments** - Shoppers can pay using local payment options (Sofort, iDEAL, Boleto ... etc.)
 
 # Installation
 You can find a full installation guide [here](https://github.com/checkout/checkout-magento-plugin/wiki/Installation)
@@ -32,9 +25,9 @@ In order to successfully complete 3D Secure transactions, and to keep Magento or
 
 | Type | URL Example | Description |
 | ------ | ------ | ------ |
-| Redirections **Success**| _example.com_**/chargepayment/api/callback/** | Redirect after 3D Secure |
-| Redirections **Fail**| _example.com_**/chargepayment/api/fail/** | Redirect after 3D Secure |
-| Webhook | _example.com_**/chargepayment/api/webhook/** | Sync Magento |
+| Redirections **Success**| _example.com_**/ckopayment/api/callback/** | Redirect after 3D Secure |
+| Redirections **Fail**| _example.com_**/ckopayment/api/fail/** | Redirect after 3D Secure |
+| Webhook | _example.com_**/ckopayment/api/webhook/** | Sync Magento |
 
 
 > You can see a guide on how to set the URLs in the HUB [here](https://docs.checkout.com/docs/business-level-administration#section-manage-channel-urls) ; You can find test card details [here](https://docs.checkout.com/docs/testing#section-credit-cards)
@@ -44,7 +37,7 @@ In order to successfully complete 3D Secure transactions, and to keep Magento or
 Upon receiving your live credentials from your account manager, here are the required steps to start processing live transactions:
 
 - In the plugin settings, place your **live** keys
-- Switch the _Endpoint URL mode_ to **live**.
+- Switch the Environemnt to **live**.
 - Make sure you have configured the Redirection and Webhook URLs correctly in your **live** Checkout.com HUB
 
 

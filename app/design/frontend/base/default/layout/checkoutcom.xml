@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+	<customer_account>
+		<reference name="customer_account_navigation">
+			<action method="addLink" ifconfig="payment/checkoutcomcards/active">
+				<name>checkout_com_card_list</name>
+				<path>ckopayment/cards</path>
+				<label>My Saved Cards (Checkout.com)</label>
+			</action>
+		</reference>
+	</customer_account>
+	<ckopayment_cards_index>
+		<update handle="customer_account"/>
+		<reference name="my.account.wrapper">
+			<block type="ckopayment/customer_cards" name="customer.account.card.list" template="checkoutcom/customer/savecarddetails.phtml"/>
+			<block type="customer/account_dashboard" name="customer.account.link.back" template="customer/account/link/back.phtml" />
+		</reference>
+	</ckopayment_cards_index>
+	<checkout_onepage_index translate="label">
+		<reference name="head">
+			<action method="addJs">
+				<script>checkoutcom/chargepayment.js</script>
+			</action>
+			<action method="addCss">
+				<stylesheet>css/checkoutcom-styles.css</stylesheet>
+			</action>
+			<block type="core/text" name="checkout.com.jquery">
+				<action method="setText">
+					<text>
+						<![CDATA[<script type="text/javascript" src="https://cdn.checkout.com/js/frames.js"></script><script type="text/javascript">jQuery.noConflict();</script>]]>
+					</text>
+				</action>
+			</block>
+			<block type="core/text" name="checkout.com.gpay">
+				<action method="setText">
+					<text>
+						<![CDATA[<script type="text/javascript" src="https://pay.google.com/gp/p/js/pay.js"></script><script type="text/javascript">jQuery.noConflict();</script>]]>
+					</text>
+				</action>
+			</block>
+			<block type="core/text" name="checkout.com.klarna">
+				<action method="setText">
+					<text>
+						<![CDATA[<script async src="https://x.klarnacdn.net/kp/lib/v1/api.js"></script><script type="text/javascript">jQuery.noConflict();</script>]]>
+					</text>
+				</action>
+			</block>
+		</reference>
+	</checkout_onepage_index>
+	<checkout_onepage_review>
+		<reference name="checkout.onepage.review.info.items.after">
+			<block name="checkoutcom.default" type="ckopayment/default" >
+				<action method="setTemplate"  ifconfig="payment/checkoutcomcards/active">
+					<template>checkoutcom/default.phtml</template>
+				</action>
+			</block>
+		</reference>
+	</checkout_onepage_review>
+</layout>

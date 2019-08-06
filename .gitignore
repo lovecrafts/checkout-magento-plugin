@@ -1,0 +1,6 @@
+.DS_Store
+tests/node_modules/*
+.eslintrc.js
+tests/.eslintrc.js
+tests/.screenshots
+package-lock.json
