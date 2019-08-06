@@ -1,0 +1,242 @@
+<div class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>">
+
+	<!-- Input needed to sent the card token -->
+	<input type="hidden" id="apple-cko-card-token" name="payment[apple_cko_card_token]" value="" />
+
+	<!-- ApplePay warnings -->
+	<p style="display:none" id="ckocom_applePay_not_actived">ApplePay is possible on this browser, but not currently
+		activated.</p>
+	<p style="display:none" id="ckocom_applePay_not_possible">ApplePay is not available on this browser</p>
+
+	<script>
+
+		// Magic strings used in file
+		var applePayOptionSelector = '#dt_method_checkoutcomapplepay';
+		var applePayOptionBodySelector = '#dd_method_checkoutcomapplepay';
+		var applePayButtonId = 'ckocom_applePay';
+
+		// Warning messages for ApplePay
+		var applePayNotActivated = document.getElementById('ckocom_applePay_not_actived');
+		var applePayNotPossible = document.getElementById('ckocom_applePay_not_possible');
+
+		// Add spacer for the ApplePay icon in the payment method option
+		var appleLabel = jQuery(applePayOptionSelector + " > label:nth-child(2)");
+		appleLabel.append("<div class='cko-wallet-icon-spacer'></div>");
+
+		// Initially hide the ApplePay as a payment option
+		hideAppleApplePayOption();
+		// If ApplePay is available as a payment option, and enabled on the checkout page, un-hide the payment option
+		if (window.ApplePaySession) {
+			console.log("<?php echo $this->getMerchantIdentifier() ?>")
+			var promise = ApplePaySession.canMakePaymentsWithActiveCard("<?php echo $this->getMerchantIdentifier() ?>");
+			promise.then(function (canMakePayments) {
+				console.log(canMakePayments);
+				if (canMakePayments) {
+					// show the payment method it was one of the places where ApplePay was selected for
+					"<?php echo $this->getAppleButtonLocation() ?>".split(",").forEach(function (el) {
+						console.log("pana aici e bine")
+						if (el === "checkoutpage") {
+							showAppleApplePayOption();
+						}
+					})
+				} else {
+					displayApplePayNotPossible();
+				}
+			});
+		} else {
+			displayApplePayNotPossible();
+		}
+
+		// Display the button and remove the default place order
+		checkoutInitialiseApplePay = function () {
+
+			jQuery('#checkout-review-submit').append('<div id="' + applePayButtonId + '" class="apple-pay-button '
+				+ "<?php echo $this->getAppleButtonType() ?>" + " "
+				+ "<?php echo $this->getAppleButtonTheme() ?>" + '" lang="'
+				+ "<?php echo $this->getAppleButtonLanguage() ?>" + '"></div>');
+
+			// Remove the default Place Order Button
+			jQuery('.btn-checkout').hide();
+		};
+
+		// Listen for when the ApplePay button is pressed
+		jQuery(document).on('click', '#' + applePayButtonId, function () {
+			var applePaySession = new ApplePaySession(3, getApplePayConfig());
+			handleApplePayEvents(applePaySession);
+			applePaySession.begin();
+		});
+
+		/**
+		 *Get the configuration needed to initialise the ApplePay session
+		 *
+		 * @param {function} callback
+		 */
+		function getApplePayConfig() {
+			return {
+				currencyCode: '<?php echo $this->getPaymentInfo()["currency"] ?>',
+				countryCode: 'GB',
+				merchantCapabilities: ['supports3DS', 'supportsEMV', 'supportsCredit', 'supportsDebit'],
+				supportedNetworks: ['amex', 'masterCard', 'visa'],
+				total: {
+					label: window.location.host,
+					amount: "<?php echo $this->getPaymentInfo()['total'] ?>",
+					type: 'final'
+				}
+			}
+		}
+
+		/**
+		* Handle ApplePay events
+		*/
+		function handleApplePayEvents(session) {
+			/**
+			* An event handler that is called when the payment sheet is displayed.
+			*
+			* @param {object} event - The event contains the validationURL
+			*/
+			session.onvalidatemerchant = function (event) {
+				performAppleUrlValidation(event.validationURL, function (merchantSession) {
+					session.completeMerchantValidation(merchantSession);
+				});
+			};
+
+
+			/**
+			* An event handler that is called when a new payment method is selected.
+			*
+			* @param {object} event - The event contains the payment method selected
+			*/
+			session.onpaymentmethodselected = function (event) {
+				// base on the card selected the total can be change, if for example you
+				// plan to charge a fee for credit cards for example
+				var newTotal = {
+					type: 'final',
+					label: window.location.host,
+					amount: "<?php echo $this->getPaymentInfo()['total'] ?>",
+				};
+
+				var newLineItems = [
+					{
+						type: 'final',
+						label: 'Subtotal',
+						amount: "<?php echo $this->getPaymentInfo()['subTotal'] ?>"
+					},
+					{
+						type: 'final',
+						label: 'Shipping - ' + "<?php echo $this->getPaymentInfo()['shippingMethod'] ?>",
+						amount: "<?php echo $this->getPaymentInfo()['shippingCost'] ?>"
+					}
+				];
+				if (<?php echo $this->getPaymentInfo()['discounts'] ?> > 0) {
+					newLineItems.push({
+						type: 'final',
+						label: 'Discount',
+						amount: "-<?php echo $this->getPaymentInfo()['discounts'] ?>"
+					})
+				}
+
+				session.completePaymentMethodSelection(newTotal, newLineItems);
+			};
+
+			/**
+			* An event handler that is called when the user has authorized the Apple Pay payment
+			*  with Touch ID, Face ID, or passcode.
+			*/
+			session.onpaymentauthorized = function (event) {
+				generateCheckoutToken(event.payment.token.paymentData, function (outcome) {
+					if (outcome !== '') {
+						document.getElementById('apple-cko-card-token').value = outcome;
+						status = ApplePaySession.STATUS_SUCCESS;
+						review.save();
+					} else {
+						status = ApplePaySession.STATUS_FAILURE;
+					}
+					session.completePayment(status);
+				});
+			};
+
+			/**
+			* An event handler that is automatically called when the payment UI is dismissed.
+			*/
+			session.oncancel = function (event) {
+				// popup dismissed
+			};
+
+		}
+
+		/**
+		 *Perform the session validation
+		 *
+		 * @param {string} valURL validation URL from Apple
+		 * @param {function} callback
+		 */
+		function performAppleUrlValidation(valURL, callback) {
+			jQuery.ajax({
+				type: 'POST',
+                url: "<?php echo $this->getBaseUrl(); ?>" + "ckopayment/api/validateSession",
+				data: {
+					url: valURL,
+					merchantId: "<?php echo $this->getMerchantIdentifier() ?>",
+					domain: window.location.host,
+					displayName: window.location.host,
+				},
+				success: function (outcome) {
+					var data = JSON.parse(outcome);
+					callback(data);
+				}
+			});
+		}
+
+		/**
+		 * Generate the checkout.com token based on the ApplePAy payload
+		 *
+		 * @param {function} callback
+		 */
+		function generateCheckoutToken(token, callback) {
+			jQuery.ajax({
+				type: 'POST',
+                url: "<?php echo $this->getBaseUrl(); ?>" + "ckopayment/api/generateAppleToken",
+				data: {
+					token: token
+				},
+				success: function (outcome) {
+					callback(outcome);
+				},
+				error: function () {
+					callback('');
+				}
+			});
+		}
+
+		/**
+		* This will display the ApplePay not activated message
+		*/
+		function displayApplePayNotActivated() {
+			applePayNotActivated.style.display = '';
+		}
+
+		/**
+		* This will display the ApplePay not possible message
+		*/
+		function displayApplePayNotPossible() {
+			applePayNotPossible.style.display = '';
+		}
+
+		/**
+		* Hide the ApplePay payment option from the checkout page
+		*/
+		function hideAppleApplePayOption() {
+			jQuery(applePayOptionSelector).hide();
+			jQuery(applePayOptionBodySelector).hide();
+		}
+
+		/**
+		* Show the ApplePay payment option on the checkout page
+		*/
+		function showAppleApplePayOption() {
+			jQuery(applePayOptionSelector).show();
+			jQuery(applePayOptionBodySelector).show();
+		}
+
+	</script>
+</div>
