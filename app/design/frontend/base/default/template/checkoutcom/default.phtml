@@ -114,41 +114,45 @@
                     } else {
                         Frames.submitCard();
                     }
-				} else if($('p_method_checkoutcomapms').checked) {
-                    if (jQuery('#cko-apms-boleto').length > 0 && $('cko-apms-boleto').checked) {
-                        document.getElementById('cko-boleto-date').value = document.getElementById('boleto-date').value;
-                        document.getElementById('cko-cpf').value = document.getElementById('cpf').value;
-                        document.getElementById('cko-cust-name').value = document.getElementById('cust-name').value;
-                        review.save();
-                    } else if(jQuery('#cko-apms-ideal').length > 0 && $('cko-apms-ideal').checked) {
-                        document.getElementById('cko-ideal-bic').value = document.getElementById('issuer-id').value
-                        review.save();
-                    } else if(jQuery('#cko-apms-giropay').length > 0 && $('cko-apms-giropay').checked) {
-                        document.getElementById('cko-giropay-bank').value = document.getElementById('giropay-id').value
-                        review.save();
-                    } else if(jQuery('#cko-apms-sepa').length > 0 && $('cko-apms-sepa').checked) {
-                        if(!$('sepa-checkbox-input').checked) {
-                            alert('Please accept the mandate a for single payment.');
+				} else if(jQuery('#p_method_checkoutcomapms').length > 0){
+                    if($('p_method_checkoutcomapms').checked) {
+                        if (jQuery('#cko-apms-boleto').length > 0 && $('cko-apms-boleto').checked) {
+                            document.getElementById('cko-boleto-date').value = document.getElementById('boleto-date').value;
+                            document.getElementById('cko-cpf').value = document.getElementById('cpf').value;
+                            document.getElementById('cko-cust-name').value = document.getElementById('cust-name').value;
+                            review.save();
+                        } else if(jQuery('#cko-apms-ideal').length > 0 && $('cko-apms-ideal').checked) {
+                            document.getElementById('cko-ideal-bic').value = document.getElementById('issuer-id').value
+                            review.save();
+                        } else if(jQuery('#cko-apms-giropay').length > 0 && $('cko-apms-giropay').checked) {
+                            document.getElementById('cko-giropay-bank').value = document.getElementById('giropay-id').value
+                            review.save();
+                        } else if(jQuery('#cko-apms-sepa').length > 0 && $('cko-apms-sepa').checked) {
+                            if(!$('sepa-checkbox-input').checked) {
+                                alert('Please accept the mandate a for single payment.');
+                            } else {
+                                review.save();
+                            }
+                        }else if(jQuery('#cko-apms-klarna').length > 0 && $('cko-apms-klarna').checked) {
+                            try {
+                                Klarna.Payments.authorize(
+                                    // options
+                                    {
+                                        instance_id: "klarna-payments-instance" // Same as instance_id set in Klarna.Payments.load().
+                                    },
+                                    // callback
+                                    function (response) {
+                                        document.getElementById('cko-klarna-token').value = response.authorization_token;
+                                        review.save();
+                                    }
+                                );
+                            } catch (e) {
+                                // Handle error. The authorize~callback will have been called
+                                // with "{ show_form: false, approved: false }" at this point.
+                                console.log(e);
+                            }
                         } else {
                             review.save();
-                        }
-                    }else if(jQuery('#cko-apms-klarna').length > 0 && $('cko-apms-klarna').checked) {
-                        try {
-                            Klarna.Payments.authorize(
-                                // options
-                                {
-                                    instance_id: "klarna-payments-instance" // Same as instance_id set in Klarna.Payments.load().
-                                },
-                                // callback
-                                function (response) {
-                                    document.getElementById('cko-klarna-token').value = response.authorization_token;
-                                    review.save();
-                                }
-                            );
-                        } catch (e) {
-                            // Handle error. The authorize~callback will have been called
-                            // with "{ show_form: false, approved: false }" at this point.
-                            console.log(e);
                         }
                     } else {
                         review.save();
