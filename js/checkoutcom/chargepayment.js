@@ -13,4 +13,16 @@ jQuery(document).ready(function() {
             window.location.href.substr(0, window.location.href.indexOf('index.php') - 1) :
             window.location.protocol + window.location.host
     }
+
+    // hide div on page load
+    if(jQuery('#p_method_checkoutcomcards').length > 0){
+        jQuery('#cko-container').hide();
+        jQuery('#payment_form_checkoutcomcards').hide();
+
+        // show div if checkoutcom is checked
+        if($('p_method_checkoutcomcards').checked){
+            jQuery('#cko-container').show();
+            jQuery('#payment_form_checkoutcomcards').show();
+        }
+    }
 });
