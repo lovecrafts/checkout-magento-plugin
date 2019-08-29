@@ -57,6 +57,14 @@
 		</reference>
 	</checkout_onepage_review>
 	<default>
+		<reference name="head">
+			<action method="addJs">
+				<script>checkoutcom/chargepayment.js</script>
+			</action>
+			<action method="addCss">
+				<stylesheet>css/checkoutcom-styles.css</stylesheet>
+			</action>
+		</reference>
 		<reference name="header">
 			<reference name="top.container">
 				<block type="core/text" name="checkout.com.jquery">
