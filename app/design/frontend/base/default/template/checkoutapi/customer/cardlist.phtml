@@ -1,0 +1,36 @@
+<?php
+/**
+ * Template for My Account
+ *
+ * @version 20151030
+ */
+?>
+<div class="page-title">
+  <h1 class='titre-editorial'><?php echo $this->__('My Saved Cards (Checkout.com)');?></h1>
+</div>
+
+<?php $cardList = $this->getCustomerCardList();  ?>
+<?php if (!empty($cardList)): ?>
+<table class="data-table">
+  <thead>
+    <tr>
+      <th><?php echo $this->__('Card #');?></th>
+      <th><?php echo $this->__('Type');?></th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <?php foreach($cardList as $card):?>
+    <tr>
+      <td><?php echo $card['title'];?></td>
+      <td><?php echo $card['type'];?></td>
+      <td><a
+          href="<?php echo $this->getUrl("*/cards/remove", array("card" => $card['value']));?>"><?php echo $this->__('Remove');?></a>
+      </td>
+    </tr>
+    <?php endforeach?>
+  </tbody>
+</table>
+<?php else: ?>
+<p class="text-body">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+<?php endif; ?>
