@@ -1,0 +1,304 @@
+<?php
+/**
+ * Template for checkout page
+ *
+ * @version 20160202
+ */
+?>
+<?php $isActive = $this->isActive(); ?>
+<?php if ($isActive):?>
+
+<?php $paymentInfo = $this->getPaymentInfo(); ?>
+	<ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>">
+        
+        <p style="display:none" id="got_notactive">ApplePay is possible on this browser, but not currently activated.</p>
+        <p style="display:none" id="notgot">ApplePay is not available on this browser</p>
+        <div class="cko-apple-pay" style="display: none">
+
+       <?php if($this->getAppleButton() == 'text'): ?>
+        		<div class="<?php echo $this->getAppleButtonColorText(); ?>" id="cko-apple-pay-button" >
+                  <span class="text">Buy with</span>
+                  <span class="logo"></span>
+                </div>
+        <?php else: ?>
+            <?php if($this->getAppleButton() == 'logo'): ?>
+                <div class="<?php echo $this->getAppleButtonColorLogo(); ?>" id="cko-apple-pay-button"></div>
+            <?php endif; ?>
+        <?php endif; ?>
+        </div>
+        
+        <script type="text/javascript">
+            jQuery('input[name="payment[method]"]').attr('checked', false);
+            var controllerName = window.jsCheckoutApi.controllerName;
+            
+            if (window.ApplePaySession) {
+                jQuery('#p_method_checkoutapiapplepay').prop('disabled',false);
+             
+                var merchantIdentifier = '<?php echo $this->getApplePayMerchantIdentifier() ;?>';
+                var promise = ApplePaySession.canMakePaymentsWithActiveCard(merchantIdentifier);
+                promise.then(function (canMakePayments) {
+                  if (canMakePayments) { 
+                        if(controllerName == 'cart' || controllerName == 'product'){
+                            jQuery('.cko-apple-pay').css("display","block");
+                        } else {
+                            document.getElementById("cko-apple-pay-button").style.display = "block";    
+                        }
+
+                  } else {   
+                     document.getElementById("got_notactive").style.display = "block";
+                  }
+                }); 
+            } else {
+                document.getElementById("notgot").style.display = "block";
+                jQuery('#p_method_checkoutapiapplepay').prop('disabled',true);
+                jQuery('#notgot').css('opacity', '0.6');
+                jQuery('.cko-payment-method-icon.v-middle.checkoutapiapplepay').css('opacity', '0.2');
+            }
+
+            document.getElementById("cko-apple-pay-button").onclick = function(evt) {
+                var firstShippingMethodName = '';
+                var shippingMethodName = '';
+                var newTotalCost = '';
+                var shippingMethods = [];
+                
+                <?php if($paymentInfo['shippingMethod']): ?>
+                    <?php foreach ($paymentInfo['shippingMethod'] as $key => $shippingMethod):  ?>
+                            var shippingTitle = "<?php echo $shippingMethod['title']; ?>";
+                            var amount = "<?php echo $shippingMethod['price']; ?>";
+
+                            if(shippingTitle == "Free Shipping"){
+                                var amount = 0;
+                            } 
+
+                            shippingMethods.push({
+                                label: "<?php echo $shippingMethod['title']; ?>",
+                                detail: "",
+                                amount: amount,
+                                identifier: "<?php echo $shippingMethod['title']; ?>"
+                            });
+
+                    <?php endforeach; ?>
+
+                    firstShippingMethodName = shippingMethods[0]['label'];
+                    firstShippingCost = shippingMethods[0]['price'];
+
+                <?php endif; ?>
+
+                var lineItems = [];
+
+                <?php if($paymentInfo['subtotal']): ?>
+                        lineItems.push({
+                            type: "final",
+                            label: "Bag Subtotal",
+                            amount: "<?php echo $paymentInfo['subtotal']; ?>"
+                        });
+                <?php endif; ?>             
+
+                function shippingCost(identifier){
+                    var shippingCost = '';
+                    shippingMethods.forEach(function(element) {
+                        if(element.label == identifier){
+                            shippingCost = parseFloat(element.amount);
+                        }
+                    });
+
+                    return shippingCost;
+                }
+
+                if(controllerName == 'product'){
+                    var paymentRequest = {
+                       currencyCode: '<?php echo $paymentInfo['currency']; ?>',
+                       countryCode: 'US',
+                       requiredShippingContactFields: ['postalAddress','email', 'name', 'phone'],
+                       lineItems: lineItems,
+                       total: {
+                          label: "<?php echo $paymentInfo['storeName']; ?>",
+                          type: "final",
+                          amount: "<?php echo $paymentInfo['subtotal'];?>"
+                       },
+                       supportedNetworks: ['amex', 'masterCard', 'visa' ],
+                       merchantCapabilities: [ 'supports3DS', 'supportsEMV', 'supportsCredit', 'supportsDebit' ]
+                    };
+                } else {
+                    var paymentRequest = {
+                       currencyCode: '<?php echo $paymentInfo['currency']; ?>',
+                       countryCode: 'US',
+                       //lineItems: lineItems,
+                       requiredShippingContactFields: ['postalAddress','email', 'name', 'phone'],
+                       total: {
+                          label: "<?php echo $paymentInfo['storeName']; ?>",
+                          type: "final",
+                          amount: "<?php echo $paymentInfo['value'];?>"
+                       },
+                       supportedNetworks: ['amex', 'masterCard', 'visa' ],
+                       merchantCapabilities: [ 'supports3DS', 'supportsEMV', 'supportsCredit', 'supportsDebit' ]
+                    };
+                }
+
+                if(controllerName == 'onepage' || controllerName == 'cart'){
+                    shippingMethodName = "<?php echo $paymentInfo['selectedShippingMethodCode']; ?>";
+                }
+
+                var session = new ApplePaySession(1, paymentRequest);
+
+                // Merchant Validation
+                session.onvalidatemerchant = function (event) {
+                    var promise = performValidation(event.validationURL);
+                    promise.then(function (merchantSession) {
+                        
+                         session.completeMerchantValidation(merchantSession);
+                    }); 
+                }
+                
+                function performValidation(validationURL) {
+                    return new Promise(function(resolve, reject) {
+
+                        var url = '<?php echo $this->getUrl('chargepayment/api/requestMerchantSession', array('_secure'=>true));?>';
+
+                        ajaxReq = new Ajax.Request(url, {
+                            parameters: {validationURL: validationURL, domainName: location.host, isAjax: 1, method: 'POST'},
+                            onSuccess: function (response) {
+                                var data = JSON.parse(response.responseText);
+
+                                if(data) {
+                                    resolve(data);
+                                } else {
+                                    reject(Error(response.responseText));
+                                }
+
+                            },
+                            onFailure: function() {
+                                reject(Error("Network Error"));
+                            }
+                        });
+
+                    });
+                }
+                session.onshippingcontactselected = function(event) {
+                    var newShippingMethods = [];
+
+                    if(controllerName == 'product'){
+                        var shippingAmount = shippingCost(firstShippingMethodName);
+                        var lineItemsCost = parseFloat('<?php echo $paymentInfo['subtotal'];?>');
+                        newTotalCost = shippingAmount + lineItemsCost;
+                        newShippingMethods = shippingMethods;
+                    } else {
+                        newTotalCost = "<?php echo $paymentInfo['value'];?>";
+                    }
+                    
+                    var status = ApplePaySession.STATUS_SUCCESS;
+                    var newTotal = { type: 'final', label: "<?php echo $paymentInfo['storeName']; ?>", amount: newTotalCost};
+                    var newLineItems = lineItems ;
+
+                    session.completeShippingContactSelection(status, newShippingMethods, newTotal, newLineItems );
+                }
+                
+                session.onshippingmethodselected = function(event) {
+                    if(controllerName == 'product'){
+                        var shippingAmount = shippingCost(event.shippingMethod.identifier);
+                        var lineItemsCost = parseFloat('<?php echo $paymentInfo['subtotal'];?>');
+                        newTotalCost = shippingAmount + lineItemsCost;
+                        firstShippingCost = shippingAmount;
+
+                        shippingMethodName = event.shippingMethod.identifier;
+                    } else {
+                        newTotalCost = "<?php echo $paymentInfo['value'];?>";
+                    }
+
+                    var status = ApplePaySession.STATUS_SUCCESS;
+                    var newTotal = { type: 'final', label: "<?php echo $paymentInfo['storeName']; ?>", amount: newTotalCost};
+                    var newLineItems =lineItems;
+                    
+                    session.completeShippingMethodSelection(status, newTotal, newLineItems );
+                }
+                
+                session.onpaymentmethodselected = function(event) {
+                    if(controllerName == 'product'){
+                        var shippingAmount = shippingCost(firstShippingMethodName);
+                        var lineItemsCost = parseFloat('<?php echo $paymentInfo['subtotal'];?>');
+                        firstShippingCost = shippingAmount;
+                        newTotalCost = shippingAmount + lineItemsCost;
+
+                        shippingMethodName = firstShippingMethodName;
+                    } else {
+                        newTotalCost = "<?php echo $paymentInfo['value'];?>";
+                    }
+
+                    var newTotal = { type: 'final', label: "<?php echo $paymentInfo['storeName']; ?>", amount:newTotalCost};
+                    var newLineItems =lineItems;
+                    
+                    session.completePaymentMethodSelection( newTotal, newLineItems );
+                }
+                
+                session.onpaymentauthorized = function (event) {
+                    window.CkoApplePayShippingContact = event.payment.shippingContact
+
+                    var promise = sendPaymentToken(event.payment.token);
+                    var successUrl = "<?php echo Mage::getBaseUrl().'chargepayment/api/applepaycomplete'; ?>";
+
+                    promise.then(function (success) {   
+                        var status;
+                        if (success){
+                            status = ApplePaySession.STATUS_SUCCESS;
+                        } else {
+                            status = ApplePaySession.STATUS_FAILURE;
+                        }
+                        
+                        session.completePayment(status);
+
+                        if(success) {
+                            // redirect to success page
+                            window.location= successUrl;
+                        } else {
+
+                        }
+
+                    }, function(reason) { 
+                        if(reason.message == "ERROR") {
+                            var status = session.STATUS_FAILURE;
+                        } else if(reason.message == "ERROR SHIPPING") {
+                            var status = session.STATUS_FAILURE;
+                        } else {
+                            var status = session.STATUS_FAILURE;
+                        }
+                        session.completePayment(status);
+                    });
+                }
+                function sendPaymentToken(paymentToken) {
+                    return new Promise(function(resolve, reject) {
+                        var url = '<?php echo $this->getUrl('chargepayment/api/sendPayment', array('_secure'=>true));?>';
+                        var paymentData = '<?php echo json_encode($paymentInfo); ?>';
+
+                        ajaxReq = new Ajax.Request(url, {
+                            parameters: {
+                                paymentData: paymentData,
+                                shippingContact: JSON.stringify(window.CkoApplePayShippingContact),
+                                payment: JSON.stringify(paymentToken),
+                                newTotalCost: newTotalCost,
+                                shippingMethodName:shippingMethodName,
+                                isAjax: 1, 
+                                method: 'POST'
+                            },
+                            onSuccess: function (response) {
+                                if(response.responseText == "SUCCESS") {
+                                    resolve(true);
+                                } else {
+                                    reject(Error(response.responseText));
+                                }
+                            },
+                            onFailure: function() {
+                                reject(Error("Network Error"));
+                            }
+                        });
+                    });
+                }
+                
+                session.oncancel = function(event) {
+                    console.log(event);
+                }
+                
+                session.begin();
+            };
+        </script>
+	</ul>
+<?php endif; ?>

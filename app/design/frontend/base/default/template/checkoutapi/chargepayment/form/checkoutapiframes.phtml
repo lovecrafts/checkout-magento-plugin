@@ -1,0 +1,527 @@
+<?php
+/**
+ * Template for checkout page
+ *
+ * @version 20160202
+ */
+?>
+<?php $isActive = $this->isActive(); ?>
+<?php if ($isActive):?>
+  <ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>" style="display:none;">
+    <p><center><img id="cko-loading" src="<?php echo $this->getSkinUrl('images/checkoutApi/cko-preloader.gif');?>" style="width: 50px;"/> </center></p>
+    <?php if($this->isCustomerLogged() && $this->isSaveCard() && $this->getPaymentMode() != 'localpayments' ): ?>
+      <?php $cardList = $this->getCustomerCardList();?>
+      <?php if(!empty($cardList)): ?>
+        <?php foreach($cardList as $index => $card):?>
+          <li class="payment_true_checkbox">
+            <input class="checkoutapiframes-saved-card validate-one-required-by-name" type="radio" id="card-<?php echo $index;?>" value="<?php echo $card['value'];?>" name="payment[customer_card]"/>
+            <label for="card-<?php echo $index;?>"><?php echo $card['type'] . ' ' . $card['title'];?></label>
+          </li>
+        <?php endforeach;?>
+        <li>
+          <select name="choose-card" id="choose-card" onchange="payment.chooseCard(this.value)">
+            <?php foreach($cardList as $index => $card):?>
+              <option value="<?= $card['value'] ?>"><?= $card['type'] . ' ' . $card['title']?></option>
+            <?php endforeach ?>
+              <option value="new_card"><?php echo __('Use new card') ?></option>
+          </select>
+        </li>
+        <?php if($this->cvvVerification()):?>
+          <div class="cvvVerification">
+            <label class="required" for="<?php echo $this->getMethodCode() ?>_cc_cid"><em>*</em><?php echo $this->__('Card Verification Number') ?></label>
+            <div class="input-box">
+              <div class="v-fix">
+                <input type="text" value="" name="payment[cc_id]" id="<?php echo $this->getMethodCode() ?>_cc_id" class="input-text cvv required-entry validate-cc-cvn" title="Card Verification Number" pattern="\d*" autocomplete="off" value="<?php echo $this->getCcid();?>">
+              </div>
+              <a class="cvv-what-is-this" href="#"><?php echo $this->__('What is this?') ?></a>
+            </div>
+          </div>
+        <?php endif;?>
+        <li class="new-card">
+          <input id="checkoutapiframes-new-card" class="checkoutapiframes-new-card validate-one-required-by-name" type="radio" name="payment[customer_card]" value="new_card"/>
+          <label for="checkoutapiframes-new-card"><?php echo __('Use new card') ?></label>
+        </li>
+        <li class='use-new-card' onclick="payment.newCardAppear()"><?php echo __('Use new card') ?></li>
+      <?php endif;?>
+    <?php endif;?>
+
+    <?php if($this->includeApm() && !$this->isSaveCard()): ?>
+      <li>
+        <input id="checkoutapiframes-new-card" class="checkoutapiframes-new-card validate-one-required-by-name" type="radio" name="payment[customer_card]" value="new_card"/>
+        <label for="checkoutapiframes-new-card">Use New Card</label>
+      </li>
+    <?php endif?>
+
+    <?php if($this->includeApm() && $this->isSaveCard() && empty($cardList) ): ?>
+      <li>
+        <input id="checkoutapiframes-new-card" class="checkoutapiframes-new-card validate-one-required-by-name" type="radio" name="payment[customer_card]" value="new_card"/>
+        <label for="checkoutapiframes-new-card">Use New Card</label>
+      </li>
+    <?php endif?>
+
+      <li class="add-cart">
+        <input type="hidden" id="cko-card-token" name="payment[checkout_card_token]" value=""/>
+        <input type="hidden" id="cko-lp-issuerId" name="payment[cko-lp-issuerId]" value=""/>
+        <input type="hidden" id="cko-lp-boletoDate" name="payment[cko-lp-boletoDate]" value=""/>
+        <input type="hidden" id="cko-lp-cpf" name="payment[cko-lp-cpf]" value=""/>
+        <input type="hidden" id="cko-lp-custName" name="payment[cko-lp-custName]" value=""/>
+        <input type="hidden" id="cko-lp-walletId" name="payment[cko-lp-walletId]" value=""/>
+
+        <div class="frames-container">
+          <h3 class="add-cart">Ajouter une carte</h3>
+            <!-- frames.js -->
+            <script type="text/javascript"> 
+                    
+                    // console.log('am here');
+                    // window.framesCurrentConfig = {
+                    //     debugMode: true,
+                    //     publicKey: '<?php echo $this->getPublicKey();?>',
+                    //     containerSelector: '.frames-container',
+                    //     theme: '<?php echo $this->getTheme();?>',
+                        // cardTokenised: function(event) {
+                        //     // if (document.getElementById('cko-card-token').value.length === 0 || document.getElementById('cko-card-token').value != event.data.cardToken) {
+                                // document.getElementById('cko-card-token').value = event.data.cardToken;
+                                // Frames.unblockFields();
+                            //     Frames.init(window.checkout);
+                            //     window.checkoutApiSubmitOrder();
+                            // }
+                        // },
+                    //     frameActivated: function() { console.log('frameActivated');
+                    //         document.getElementById('cko-loading').hide();
+                    //     },
+                    //     cardValidationChanged: function(){
+                    //         console.log('cardValidationChanged');
+                    //         Frames.submitCard();
+                    //     }
+                    // };
+
+                    // window.frameIsReady = window.frameIsReady || false;
+
+                    // if (!window.frameIsReady) {
+                    //     window.CKOConfig = { 
+                    //         namespace: 'Frames',
+                    //          debugMode: true,
+                    //         ready: function() { console.log('ready');
+                    //             if (typeof Frames == 'undefined') { 
+                    //                 return false;
+                    //             }
+                    //             delete window.CKOConfig;
+
+                    //             console.log('frames ready');
+
+                    //             Frames.init(window.framesCurrentConfig);
+
+                    //             window.frameIsReady = true;
+                    //         }
+                    //     };
+
+                        // var script = document.createElement('script');
+                        // script.type = "text/javascript";
+                        // script.src = '<?php echo $this->getFramesJsPath();?>';
+                        // script.async = true;
+                        // document.getElementById('payment_form_checkoutapiframes').appendChild(script);
+                    // } else { console.log('else');
+                    //     Frames.init(window.framesCurrentConfig);
+                    // }
+
+                    var localisation = {
+                      cardNumberPlaceholder: "<?php echo $this->__('card number') ?>",
+                      expiryMonthPlaceholder: "<?php echo $this->__('month') ?>",
+                      expiryYearPlaceholder: "<?php echo $this->__('year') ?>",
+                      cvvPlaceholder: "<?php echo $this->__('cvv') ?>",
+                      cardNumberErrorMessage: "<?php echo $this->__('error with your card number') ?>"
+                    }
+
+                    // custom style
+                    var style = {
+                      'body.responsive .cko-md-modal': {
+                        padding: '0px 24px 0px 24px',
+                      },
+
+                      'body.theme-standard .input-group label': {
+                        display: 'block',
+                        position: 'static',
+                        width: '100%',
+                        height: '100%',
+                        left: '0',
+                        lineHeight: '0',
+                        paddingBottom: '5px'
+                      },
+
+                      '.input-group label.icon .ckojs': {
+                        position: 'static',
+                        top: '0',
+                        fontFamily: 'Arial',
+                        fontSize: '14px',
+                        color: '#666666',
+                        padding: '0px'
+                      },
+
+                      '.input-group label.icon .ckojs::before': {
+                        content: '"Numéro de carte"'
+                      },
+
+                      '.input-group label.icon .ckojs::after': {
+                        content: '"*"',
+                        color: '#CC0000'
+                      },
+
+                      '.split-view .left .input-group label.icon .ckojs::before': {
+                        content: '"Date d\'expiration"'
+                      },
+
+                      '.split-view .right .input-group label.icon .ckojs::before': {
+                        content: '"Code de sécurité"'
+                      },
+
+                      '.split-view.small-gap' : {
+                        marginTop: '16px'
+                      },
+
+                      '.input-group': {
+                        width: '100%',
+                        height: '100%',
+                        border: '0px',
+                        boxShadow: 'none',
+                        backgroundColor: 'transparent',
+                        marginTop: '0px',
+                        marginRight: '16px'
+                      },
+
+                      'body.theme-standard .input-group.focus': {
+                        backgroundColor: 'transparent',
+                        borderColor: 'transparent'
+                      },
+
+                      '.split-view .input-group': {
+                        width: '100%',
+                        paddingRight: '16px',
+                      },
+
+                      '.split-view.small-gap .left': {
+                        paddingRight: '0px'
+                      },
+
+                      '.split-view.small-gap .right': {
+                        paddingLeft: '0px'
+                      },
+
+                      '.split-view.small-gap .right .input-group': {
+                        paddingRight: '0px'
+                      },
+
+                      '.input-group .input-control': {
+                        fontSize: '14px',
+                        color: '#2D2D2D',
+                        height: '32px',
+                        border: '1px solid #CCCCCC',
+                        boxShadow: 'none',
+                        backgroundColor: '#ffffff',
+                        borderRadius: '5px'
+                      },
+
+                      '.split-view .left .input-control.center-align': {
+                        borderRight: '0px',
+                        borderRadius: '5px 0px 0px 5px'
+                      },
+
+                      '.split-view .right .input-control.center-align': {
+                        borderRight: '1px solid #CCCCCC',
+                        borderLeft: '0px',
+                        borderRadius: '0px 5px 5px 0px'
+                      },
+
+                      '.input-group label.icon+*': {
+                        paddingLeft: '16px'
+                      },
+
+                      '.input-group label.icon+*::placeholder': {
+                        color:'rgba(0,0,0,0.4)'
+                      },
+
+                      '.left .input-control.center-align::placeholder': {
+                        color:'rgba(0,0,0,0.4)'
+                      },
+
+                      '.right .input-control.center-align::placeholder': {
+                        color:'rgba(0,0,0,0.4)'
+                      },
+
+                      '.input-group label.icon+.no-left-padding': {
+                        paddingLeft: '0px'
+                      },
+
+                      '.input-group label.icon~.card-logo': {
+                        top: '71.5%'
+                      },
+
+                      '.input-group .hint-icon': {
+                        top: '71.5%'
+                      },
+
+                      'body.responsive .container': {
+                        width: '400px',
+                        maxWidth: '100%'
+                      },
+
+                      'input::placeholder': {
+                        color:'red'
+                      }
+                    }
+
+                    Frames.init({
+                      publicKey: '<?php echo $this->getPublicKey(); ?>',
+                      containerSelector: '.frames-container',
+                      theme: '<?php echo $this->getTheme();?>',
+                      style: style,
+                      localisation: localisation,
+                      frameActivated: function () {
+                        document.getElementById('cko-loading').hide();
+                      },
+                      cardTokenised: function (event) {
+                        document.getElementById('cko-card-token').value = event.data.cardToken;
+                        Frames.unblockFields();
+                      },
+                      cardTokenisationFailed: function (event) {
+                        alert('An error has occured while processing your payment. ' + event.data.message);
+                      },
+                      cardValidationChanged: function(){
+                        Frames.submitCard();
+                      }
+                    });
+            </script>
+            <!-- end frames.js -->
+        </div>
+      </li>
+
+      <li class="checkoutapiframes-save-card-check">
+        <input type="checkbox" name="payment[save_card_check]" id="<?php echo $this->getMethodCode() ?>_save_card_check" value='1'>     
+        <label for="<?php echo $this->getMethodCode() ?>_save_card_check"><?php echo $this->__('Save card for future payments.') ?></label>
+        <a href="#" class="lien">[?]</a>
+      </li>
+
+      <!-- Include Alternative Payment -->
+      <?php if($this->includeApm()): ?>
+        <div class="altPayment">
+          <br>
+          <label for="alternative-payment">Alternative Payment</label>
+          <br>
+          <div style="display: flex;">
+            <?php foreach($this->localPayment() as $index ): ?>
+              <?php if($index['lpName']):?>
+                <?php $lpName = strtolower($index['lpName']);
+                    $imgUrl = "https://cdn.checkout.com/sandbox/img/lp_logos/".$lpName.".png";
+                    $apmId = "checkoutapiframes-apm-".$lpName;
+                ?>
+                <li>
+                  <div class="apmSelected">
+                    <label class="apmLabel" />
+                    <img id="imgTe" src="<?php echo $imgUrl;?>" style="width: 50px;"/>
+                    <input class="checkoutapiframes-local-payment" type="radio" id="alt-payment" value="<?php echo $apmId; ?>" name="payment[customer_card]"/>
+                  </div>
+                </li> 
+              <?php endif; ?>
+            <?php endforeach;?>
+          </div>
+        </div> 
+      <?php endif; ?>
+  </ul>
+
+  <?php if (!empty($cardList) || $this->includeApm()):?>
+
+    <script type="text/javascript">
+        if ($$('#p_method_checkoutapiframes').length > 0) {
+            $( "p_method_checkoutapiframes" ).checked = false;
+
+            $$('.checkoutapiframes-saved-card').invoke('observe', 'change', setToken);
+
+            function setToken() {
+                document.getElementById('cko-card-token').value = '1';   
+            }
+        }
+    </script>
+
+    <script type="text/javascript">
+        if($$('#p_method_checkoutapiframes').length > 0 && $( "p_method_checkoutapiframes" ).checked){ 
+            hideNewCard();
+
+            $$('.checkoutapiframes-saved-card').invoke('observe', 'change', hideNewCard);
+            $$('.checkoutapiframes-new-card').invoke('observe', 'change', showNewCard);
+            $$('.checkoutapiframes-local-payment').invoke('observe', 'change', apmShowCard);
+
+            function hideNewCard() {
+                $$('.checkoutapiframes-li').each(Element.hide);
+                $$('.checkoutapiframes-save-card-check').each(Element.hide);
+                jQuery('.frames-container').hide();
+                jQuery('.apmSelected').removeClass('apmLab');
+                document.getElementById('cko-card-token').value = '1';
+            }
+
+            function showNewCard() {
+                $$('.checkoutapiframes-li').each(Element.show);
+                $$('.checkoutapiframes-save-card-check').each(Element.show);
+                jQuery('.frames-container').show();
+                jQuery('.apmSelected').removeClass('apmLab');
+            }
+
+            function apmShowCard(){ console.log('here');
+                jQuery('.apmSelected').removeClass('apmLab');
+                jQuery(this).closest('.apmSelected').addClass('apmLab');
+                $$('.checkoutapiframes-save-card-check').each(Element.hide);
+                jQuery('.frames-container').hide();
+            }
+        }
+    </script>
+
+  <?php endif;?>
+    
+  <?php if(!$this->isCustomerLogged() || !$this->isSaveCard()):?>
+    <script type="text/javascript">
+        showNewCard();
+        
+        $$('.checkoutapiframes-new-card').invoke('observe', 'change', showNewCard);
+
+        function showNewCard() {
+            $$('.checkoutapiframes-save-card-check').each(Element.hide);
+        }
+
+        
+    </script>
+  <?php endif;?>
+    
+  <?php if($this->cvvVerification()):?>
+    <script type="text/javascript">
+        hideCvvVerification();
+
+        $$('.checkoutapiframes-saved-card').invoke('observe', 'change', showCvvVerification);
+        $$('.checkoutapiframes-new-card').invoke('observe', 'change', hideCvvVerification);
+
+        function hideCvvVerification() {
+            $$('.cvvVerification').each(Element.hide);
+        }
+
+        function showCvvVerification() {
+            $$('.cvvVerification').each(Element.show);
+        }
+    </script>
+  <?php endif;?>
+
+  <!-- For custom checkout page -->
+  <script type="text/javascript">
+      // var controllerName = window.jsCheckoutApi.controllerName;
+      // if(controllerName == 'index'){
+      //     jQuery('.onestepcheckout-place-order a').hide();
+      //     jQuery('#btncheckoutapipayment').hide();
+
+      //     if(jQuery('#p_method_checkoutapiframes').length > 0){ 
+      //         if($( "p_method_checkoutapiframes" ).checked){
+          
+      //             jQuery('#btncheckoutapipayment').show();
+      //             jQuery('.onestepcheckout-place-order a').hide();
+
+      //             jQuery('.payment-methods input:radio').change(function() { console.log('change');
+      //                if($( "p_method_checkoutapiframes" ).checked){
+      //                         jQuery('#btncheckoutapipayment').show();
+      //                         jQuery('.onestepcheckout-place-order a').hide();    
+
+      //                     } else {
+      //                         jQuery('#btncheckoutapipayment').hide();
+      //                         jQuery('.onestepcheckout-place-order a').show();
+      //                 }
+      //             });
+      //         } else{
+      //             jQuery('.onestepcheckout-place-order a').show();
+      //             jQuery('.payment-methods input:radio').change(function() {
+      //                if($( "p_method_checkoutapiframes" ).checked){
+      //                         jQuery('#btncheckoutapipayment').show();
+      //                         jQuery('.onestepcheckout-place-order a').hide();    
+
+      //                 } else {
+      //                     jQuery('#btncheckoutapipayment').hide();
+      //                     jQuery('.onestepcheckout-place-order a').show();
+      //                 }
+      //             });
+
+      //         }
+
+      //         $$('#btncheckoutapipayment').invoke('observe', 'click', btncheckoutapipayment);
+              
+      //         function btncheckoutapipayment(){
+      //             event.preventDefault();
+
+      //            // First validate the form
+      //             var form = new VarienForm('onestepcheckout-form');
+
+      //             if(!form.validator.validate())  {
+      //                event.preventDefault();
+      //             }
+      //             else{
+
+      //                if($('checkoutapiframes-new-card')){
+      //                     if($('checkoutapiframes-new-card').checked){
+      //                         if (Frames.isCardValid()) Frames.submitCard();
+      //                     } else {
+      //                         window.checkoutApiSubmitOrder();
+      //                     }
+      //                 } else {
+      //                     if (Frames.isCardValid()) Frames.submitCard();
+      //                 }
+      //             }
+      //         }
+      //     }
+      // }
+
+  </script>
+
+  <script type="text/javascript">
+      // if($$('#payment-buttons-container').length > 0){
+      //     var button = $('payment-buttons-container').down('button');
+      //     button.writeAttribute('onclick', '');
+
+      //     jQuery('.sp-methods input:radio').change(function() { 
+      //         if($( "p_method_checkoutapiframes" ).checked){
+      //             if($( "checkoutapiframes-new-card" ).checked){
+      //                 button.writeAttribute('onclick', '');
+      //             } else {
+      //                 button.writeAttribute('onclick', 'payment.save()');
+      //             }   
+
+      //         } else {
+      //            jQuery('input[id="checkoutapiframes-new-card"]').attr('checked', false);
+      //            button.writeAttribute('onclick', 'payment.save()');
+      //         }
+      //     });
+
+      //     button.observe('click', function() {
+      //         if(jQuery('#p_method_checkoutapiframes').length > 0){
+      //             if($( "checkoutapiframes-new-card" ).checked){ console.log('am here');
+      //                 if(Frames.isCardValid()){
+      //                     payment.save();
+      //                 } else { console.log(2);
+      //                     alert('Please enter your card details');
+      //                 }
+      //             } else { console.log(3);
+      //                 payment.save();
+      //             }
+      //         } else {
+      //                 payment.save();
+      //         }
+      //     });
+      // }
+      
+  </script>
+
+<?php else :?>
+  <ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>" style="display:none;">
+    <li><?php echo $this->__('Selected Payment Type is not allowed.') ?></li>
+  </ul>
+<?php endif?>
+
+<script>
+let select = document.querySelector('#choose-card')
+if(select) {
+  document.querySelector('.add-cart').style.display = 'none'
+  document.querySelector('.checkoutapiframes-save-card-check').style.display = 'none'
+} 
+
+</script>
