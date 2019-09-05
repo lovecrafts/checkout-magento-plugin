@@ -157,16 +157,37 @@ class Checkoutcom_Ckopayment_ApiController extends Mage_Core_Controller_Front_Ac
                 ->setIsTransactionClosed(0)
                 ->registerAuthorizationNotification($amount);
 
-            if($paymentStatus == 'Captured') {
+            if ($response->risk['flagged']) {
+                // Payment Flagged status from config
+                $flagStatus = Mage::getModel('ckopayment/checkoutcomConfig')->getFlaggedOrderStatus();
+
+                // check if flagged status configured in module equals to suspected_fraud
+                if ($flagStatus == "suspected_fraud") {
+                    $state = Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW;
+                    $status = Mage_Sales_Model_Order::STATUS_FRAUD;
+                    $message = 'Payment flagged on Checkout.com';
+
+                    $order->setState($state, $status, $message);
+
+                } else{
+                    $order->setState(Mage_Sales_Model_Order::STATE_NEW, true);
+                    $order->addStatusHistoryComment('Payment flagged on Checkout.com ', false);
+                }
+
+            } elseif($paymentStatus == 'Captured') {
                 $captureStatus = $this->_getConfigModel()->getCapturedOrderStatus();
                 $order->setState($captureStatus, true);
-                //$order->setPaymentIsCaptured(1);
+                $order->addStatusHistoryComment($message);
             } else {
-                if ($authStatus == 'pending') {
+                $authorisedStatus = $this->_getConfigModel()->getAuthorisedOrderStatus();
+
+                if($authorisedStatus == 'pending') {
                     $order->setState(Mage_Sales_Model_Order::STATE_NEW, true);
                 } else {
                     $order->setState(Mage_Sales_Model_Order::STATE_PROCESSING, true);
                 }
+
+                $order->addStatusHistoryComment($message);
             }
 
             //check if saved card checkbox was check to save source id in db
@@ -176,7 +197,6 @@ class Checkoutcom_Ckopayment_ApiController extends Mage_Core_Controller_Front_Ac
                 $session->setIsSaveCardCheck(false);
             }
 
-            $order->addStatusHistoryComment($message);
             $order->save();
             return $this->_redirect('checkout/onepage/success');
         }
