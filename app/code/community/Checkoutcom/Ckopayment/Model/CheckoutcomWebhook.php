@@ -102,6 +102,16 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomWebhook
             $order->save();
         }
 
+        $invoiceCollection = $order->getInvoiceCollection();
+        foreach($invoiceCollection as $invoice) {
+            $invoiceIncrementId =  $invoice->getIncrementId();
+        }
+        
+        // Send invoice email
+        if(!null == $invoiceIncrementId){
+            $invoice->sendEmail($notifyCustomer=true, $comment='');
+        }
+
         return true;
     }
 
