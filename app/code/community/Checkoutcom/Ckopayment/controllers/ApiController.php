@@ -149,15 +149,16 @@ class Checkoutcom_Ckopayment_ApiController extends Mage_Core_Controller_Front_Ac
 
             $amountCents = $response->amount;
             $amount = $this->_getUtilsModel()->decimalToValue($amountCents, $response->currency);
-            // Register authorisation and set transaction id
             $payment = $order->getPayment();
-            $payment->setTransactionId($action[0]['id'])
-                ->setShouldCloseParentTransaction(0)
-                ->setAdditionalInformation('ckoPaymentId', $response->id)
-                ->setIsTransactionClosed(0)
-                ->registerAuthorizationNotification($amount);
 
             if ($response->risk['flagged']) {
+                // Register Authorization
+                $payment->setTransactionId($action[0]['id'])
+                    ->setShouldCloseParentTransaction(0)
+                    ->setAdditionalInformation('ckoPaymentId', $response->id)
+                    ->setIsTransactionClosed(0)
+                    ->registerAuthorizationNotification($amount);
+
                 // Payment Flagged status from config
                 $flagStatus = Mage::getModel('ckopayment/checkoutcomConfig')->getFlaggedOrderStatus();
 
@@ -175,6 +176,7 @@ class Checkoutcom_Ckopayment_ApiController extends Mage_Core_Controller_Front_Ac
                 }
 
             } elseif($paymentStatus == 'Captured') {
+                $message = '3Ds payment captured successfully on checkout.com.';
                 $captureStatus = $this->_getConfigModel()->getCapturedOrderStatus();
                 $order->setState($captureStatus, true);
                 $order->addStatusHistoryComment($message);
@@ -187,6 +189,13 @@ class Checkoutcom_Ckopayment_ApiController extends Mage_Core_Controller_Front_Ac
                     $order->setState(Mage_Sales_Model_Order::STATE_PROCESSING, true);
                 }
 
+                // Register Authorization
+                $payment->setTransactionId($action[0]['id'])
+                    ->setShouldCloseParentTransaction(0)
+                    ->setAdditionalInformation('ckoPaymentId', $response->id)
+                    ->setIsTransactionClosed(0)
+                    ->registerAuthorizationNotification($amount);
+
                 $order->addStatusHistoryComment($message);
             }
 
@@ -197,6 +206,7 @@ class Checkoutcom_Ckopayment_ApiController extends Mage_Core_Controller_Front_Ac
                 $session->setIsSaveCardCheck(false);
             }
 
+            $order->sendNewOrderEmail();
             $order->save();
             return $this->_redirect('checkout/onepage/success');
         }
