@@ -72,7 +72,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomWebhook
                         $payment->setTransactionId($webhookData->data->action_id)
                             ->setIsTransactionClosed(0)
                             ->setCurrencyCode($order->getBaseCurrencyCode())
-                            ->registerCaptureNotification($grandTotals, true);
+                            ->registerCaptureNotification($order->getBaseGrandTotal(), true);
 
                         $order->setPaymentIsCaptured(1);
                         $order->addStatusToHistory($captureStatus, $message);

@@ -124,7 +124,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
         }
 
         // Format amount to cent
-        $amountCent = Mage::getModel('ckopayment/checkoutcomUtils')->valueToDecimal($amount, $currencyCode);
+        $amountCent = Mage::getModel('ckopayment/checkoutcomUtils')->valueToDecimal($order->getGrandTotal(), $currencyCode);
 
         if ($isSaveCard) {
             // Charge request params with source id
