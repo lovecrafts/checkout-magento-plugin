@@ -637,17 +637,13 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
 
         // Additional info in metadata
         $metadata = array(
-            'server' => Mage::helper('core/http')->getHttpUserAgent(),
+            'server' => Mage::getBaseUrl(),
+            'sdk_data' => "PHP SDK v".CheckoutApi::VERSION,
+            'integration_data' => "Checkout.com Magento Plugin v".Mage::helper('ckopayment')->getExtensionVersion(),
+            'platform_data' => "Magento v".Mage::getVersion(),
             'quoteId' => $quote->getId(),
-            'magento_version' => Mage::getVersion(),
-            'plugin_version' => Mage::helper('ckopayment')->getExtensionVersion(),
-            'lib_version' => CheckoutApi::VERSION,
-            'integration_type' => 'FramesJs',
-            'time' => Mage::getModel('core/date')->date('Y-m-d H:i:s'),
-            'udf5' => 'Magento - '. Mage::getVersion()
-                . ', Checkout Plugin - ' . Mage::helper('ckopayment')->getExtensionVersion()
-                . ', Php Sdk - '. CheckoutApi::VERSION
         );
+
 
         // set capture delay if payment action is authorise and capture
         if($autoCapture){
