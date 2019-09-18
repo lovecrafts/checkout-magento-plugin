@@ -72,7 +72,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomWebhook
                         $payment->setTransactionId($webhookData->data->action_id)
                             ->setIsTransactionClosed(0)
                             ->setCurrencyCode($order->getBaseCurrencyCode())
-                            ->registerCaptureNotification($grandTotals, true);
+                            ->registerCaptureNotification($order->getBaseGrandTotal(), true);
 
                         $order->setPaymentIsCaptured(1);
                         $order->addStatusToHistory($captureStatus, $message);
@@ -100,6 +100,16 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomWebhook
             $message = "Webhook received from checkout.com. Payment captured on checkout.com hub";
             $order->addStatusToHistory(false, $message);
             $order->save();
+        }
+
+        $invoiceCollection = $order->getInvoiceCollection();
+        foreach($invoiceCollection as $invoice) {
+            $invoiceIncrementId =  $invoice->getIncrementId();
+        }
+
+        // Send invoice email
+        if(!null == $invoiceIncrementId){
+            $invoice->sendEmail($notifyCustomer=true, $comment='');
         }
 
         return true;
