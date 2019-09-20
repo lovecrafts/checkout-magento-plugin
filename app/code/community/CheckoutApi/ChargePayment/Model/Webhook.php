@@ -252,25 +252,31 @@ class CheckoutApi_ChargePayment_Model_Webhook
 
             $message = Mage::helper('sales')->__('Refunded amount of %s. Transaction ID: "%s"', $formattedAmount, $transactionId);
 
-            $transactionModel = Mage::getModel('sales/order_payment_transaction');
-            $transactionModel
-                ->setOrderPaymentObject($order->getPayment())
-                ->setTxnId($transactionId)
-                ->setParentTxnId((string)$response->message->originalId)
-                ->setTxnType(Mage_Sales_Model_Order_Payment_Transaction::TYPE_REFUND)
-                ->save();
+            
+            if($amountDecimal < $amountOrder){
+                $message = Mage::helper('sales')->__('Partially Refunded amount of %s. Transaction ID: "%s"', $formattedAmount, $transactionId);
+                $order->addStatusHistoryComment($message);
+            } else {
+                $transactionModel = Mage::getModel('sales/order_payment_transaction');
+                $transactionModel
+                    ->setOrderPaymentObject($order->getPayment())
+                    ->setTxnId($transactionId)
+                    ->setParentTxnId((string)$response->message->originalId)
+                    ->setTxnType(Mage_Sales_Model_Order_Payment_Transaction::TYPE_REFUND)
+                    ->save();
 
-            $creditMemo = $service->prepareCreditmemo($data)
-                ->setPaymentRefundDisallowed(true)
-                ->setAutomaticallyCreated(true)
-                ->register()
-                ->setTransactionId((string)$response->message->id)
-                ->addComment((string)$response->message->description)
-                ->save();
+                $creditMemo = $service->prepareCreditmemo($data)
+                    ->setPaymentRefundDisallowed(true)
+                    ->setAutomaticallyCreated(true)
+                    ->register()
+                    ->setTransactionId((string)$response->message->id)
+                    ->addComment((string)$response->message->description)
+                    ->save();
 
-            $order->setChargeIsRefunded(1);
-            $order->addStatusHistoryComment($message);
-            $order->setStatus(Mage_Sales_Model_Order::STATE_CLOSED);
+                $order->setChargeIsRefunded(1);
+                $order->addStatusHistoryComment($message);
+                $order->setStatus(Mage_Sales_Model_Order::STATE_CLOSED);
+            }
 
             $order->save();
         } catch (Mage_Core_Exception $e) {
