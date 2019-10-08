@@ -497,9 +497,6 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
         $shipStreet = Mage::helper('customer/address')
             ->convertStreetLines($shippingAddress->getStreet(), 2);
 
-        // Get phone number from shipping
-        $phoneNumber = $shippingAddress->getTelephone();
-
         // Shipping address details
         $shipStreet1 = $shipStreet[0];
         $shipStreet2 = $shipStreet[1];
@@ -523,7 +520,6 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
                 $billRegion = $billingAddress['region'];
                 $billPostcode = $billingAddress['postcode'];
                 $billCountry = $billingAddress['country_id'];
-                $billPhone = $billingAddress['telephone'];
                 $customerName = $billingAddress['firstname'] . ' ' . $billingAddress['lastname'] ;
                 $email = $adminOrderParams['account']['email'];
             } else {
@@ -552,8 +548,6 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
                     $shipPostcode = $shippingAddress['country_id'];
                     $shipCountry = $billingAddress['country_id'];
                 }
-
-                $phoneNumber = $billPhone;
             }
         }
 
@@ -626,10 +620,8 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
         $shippingAddressParam->zip = $shipPostcode;
         $shippingAddressParam->country = $shipCountry;
 
-        $phone = new Phone();
-        $phone->number = $phoneNumber;
 
-        $payment->shipping = new Shipping($shippingAddressParam, $phone);
+        $payment->shipping = new Shipping($shippingAddressParam);
 
         // Set redirection url in payment request
         $payment->success_url = Mage::getBaseUrl() . 'ckopayment/api/success';
