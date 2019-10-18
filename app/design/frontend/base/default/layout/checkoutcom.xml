@@ -84,4 +84,21 @@
 			</reference>
 		</reference>
 	</default>
+	<onestepcheckout_index_index>
+		<reference name="head">
+			<action method="addJs">
+				<script>checkoutcom/chargepayment.js</script>
+			</action>
+			<action method="addCss">
+				<stylesheet>css/checkoutcom-styles.css</stylesheet>
+			</action>
+			<block type="core/text" name="checkout.com.jquery">
+					<action method="setText">
+						<text>
+							<![CDATA[<script type="text/javascript" src="https://cdn.checkout.com/js/frames.js"></script><script type="text/javascript">jQuery.noConflict();</script>]]>
+						</text>
+					</action>
+				</block>
+		</reference>
+	</onestepcheckout_index_index>
 </layout>
