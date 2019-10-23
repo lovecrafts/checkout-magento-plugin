@@ -89,7 +89,7 @@ abstract class CheckoutApi_ChargePayment_Model_Checkout extends Mage_Payment_Mod
      */
     public function cancel(Varien_Object $payment)
     {
-        $this->void($payment);
+        //$this->void($payment);
 
         return $this;
     }
@@ -293,7 +293,7 @@ abstract class CheckoutApi_ChargePayment_Model_Checkout extends Mage_Payment_Mod
         $latestChargeStatus = $latestCharge['status'];
 
 
-        if ($latestChargeStatus == 'Authorised') {
+        if ($latestChargeStatus == 'Authorised' || $latestChargeStatus == 'Declined') {
             // If latest status is authorised then perform capture
             $this->performCapture($payment, $amount, $order, $isDebug);
 
