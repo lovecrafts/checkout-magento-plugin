@@ -185,6 +185,7 @@ class CheckoutApi_ChargePayment_Helper_Data  extends Mage_Core_Helper_Abstract
         $session->addCheckoutOrderIncrementId($order->getIncrementId());
 
         $order->setStatus(Mage_Sales_Model_Order::STATE_PENDING_PAYMENT);
+        $order->setState(Mage_Sales_Model_Order::STATE_PENDING_PAYMENT);
         $order->save();
 
         return $this;
