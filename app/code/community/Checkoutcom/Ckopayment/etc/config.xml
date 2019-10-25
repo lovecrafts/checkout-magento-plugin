@@ -39,6 +39,7 @@
 					</ckopayment>
 				</observers>
 			</sales_order_place_after>
+			<!-- we have proper autoloading instead -->
 			<controller_front_init_before>
 				<observers>
 					<ckopayment>

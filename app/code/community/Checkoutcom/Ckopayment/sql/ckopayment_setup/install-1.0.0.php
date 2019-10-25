@@ -3,6 +3,9 @@
 /* @var $installer Mage_Core_Model_Resource_Setup */
 $this->startSetup();
 
+/**
+ * can't do this!
+ */
 // add column charge_is_captured
 $this->getConnection()->addColumn(
     $this->getTable('sales/order'),
@@ -14,6 +17,10 @@ $this->getConnection()->addColumn(
     )
 );
 
+
+/**
+ * can't do this!
+ */
 // add column charge_is_voided
 $this->getConnection()->addColumn(
     $this->getTable('sales/order'),
@@ -25,6 +32,10 @@ $this->getConnection()->addColumn(
     )
 );
 
+
+/**
+ * can't do this!
+ */
 // add column charge_is_refunded
 $this->getConnection()->addColumn(
     $this->getTable('sales/order'),

@@ -14,6 +14,7 @@
             <div class="save-card-title" style="padding-bottom: 10px;">
                 <?php echo $this->getSaveCardTitle(); ?>
             </div>
+            <!-- saved cards are here -->
             <?php foreach ($this->getCustomerCardList() as $index => $value): ?>
 
                     <?php if ($value['isMada']): ?>
@@ -183,6 +184,8 @@
         methodSelector.addEventListener('click', function () {
             myForm.style.display = methodSelector.checked ? '' : 'none';
         });
+
+        // frames and tokenisation. looks good
 
         Frames.init({
             publicKey: '<?php echo $this->getPublicKey(); ?>',

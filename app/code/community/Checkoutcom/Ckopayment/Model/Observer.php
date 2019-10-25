@@ -6,6 +6,12 @@
 class Checkoutcom_Ckopayment_Model_Observer
 {
     /**
+     * Need to review all these manipulations with regards to the NAV integration
+     *
+     * Here they listen for admin changes only/mostly.
+     */
+
+    /**
      * Set order status depending on selection from Authorised order status from Checkout.com configuration
      *
      * @param Varien_Event_Observer $observer

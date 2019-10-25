@@ -7,6 +7,10 @@
  */
 class Checkoutcom_Ckopayment_Model_Autoloader extends Varien_Event_Observer
 {
+    /**
+     * So bad, we have a normal autoloader for composer based libs
+     * @param $event
+     */
     public function controllerFrontInitBefore( $event ) {
         //load Zend_Loader
         require_once  Mage::getBaseDir().('/lib/Zend/Loader.php');

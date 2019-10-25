@@ -1,3 +1,6 @@
+/**
+ * Why would one need it?
+ */
 jQuery(document).ready(function() {
     /**
      *This function will get the base URL of the domain it's loaded from.

@@ -147,6 +147,8 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
                 // Check if payment is 3Dsecure
                 if ($response->isPending()) {
                     // Check if redirection link exist
+
+                    // looks like 3ds is only a redirect!
                     if ($response->getRedirection()) {
                         // do redirection to 3D page
                         // Update order payment information with payment id from checkout.com
