@@ -103,18 +103,8 @@
 			// Check if checkout.com exist
 			if (jQuery('#p_method_checkoutcomcards').length > 0) {
 				//Check if checkout.com is selected
-				if ($('p_method_checkoutcomcards').checked) {
-                    if(jQuery('#cko-new-card').length > 0){
-                        if($('cko-new-card').checked){
-                            Frames.submitCard();
-                        } else {
-                            document.getElementById('cko-card-token').value = ''
-                            review.save();
-                        }
-                    } else {
-                        Frames.submitCard();
-                    }
-				} else if(jQuery('#p_method_checkoutcomapms').length > 0){
+                if(jQuery('.p_method_checkoutcomapms').length > 0){
+
                     if($('p_method_checkoutcomapms').checked) {
                         if (jQuery('#cko-apms-boleto').length > 0 && $('cko-apms-boleto').checked) {
                             document.getElementById('cko-boleto-date').value = document.getElementById('boleto-date').value;
@@ -154,9 +144,8 @@
                         } else {
                             review.save();
                         }
-                    } else {
-                        review.save();
                     }
+
                 } else {
 					review.save();
 				}
