@@ -489,3 +489,7 @@
 	text-align: center;
 	opacity: 0.7;
 }
+
+#payment_form_checkoutcomcards {
+	width: 100% !important;
+}
