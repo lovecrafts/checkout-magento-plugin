@@ -594,6 +594,11 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
             'name' => $customerName,
         );
 
+        // Set 3ds to false if admin order
+        if(Mage::app()->getRequest()->getParam('order')){
+            $threeD = false;
+        }
+
         $threeDs = new ThreeDs($threeD);
 
         if ($threeD) {
