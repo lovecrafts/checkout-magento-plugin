@@ -9,7 +9,7 @@ app/design/adminhtml/default/default/layout/checkoutcom.xml       app/design/adm
 js/checkoutcom           js/checkoutcom
 lib/checkout-sdk-php     lib/checkout-sdk-php
 
-skin/frontend/base/default/css/checkoutcom-style.css      skin/frontend/base/default/css/checkoutcom-style.css
+skin/frontend/base/default/css/checkoutcom-styles.css      skin/frontend/base/default/css/checkoutcom-styles.css
 skin/frontend/base/default/images/checkoutcom             skin/frontend/base/default/images/checkoutcom
 skin/adminhtml/default/default/images/checkoutcom         skin/adminhtml/default/default/images/checkoutcom
 
