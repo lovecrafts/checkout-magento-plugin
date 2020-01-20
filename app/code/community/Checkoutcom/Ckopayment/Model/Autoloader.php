@@ -28,13 +28,17 @@ class Checkoutcom_Ckopayment_Model_Autoloader extends Varien_Event_Observer
         }
 
         //remove the Varien_Autoloader from the stack
-        spl_autoload_unregister($original_autoload);
+        if(!is_null($original_autoload)) {
+            spl_autoload_unregister($original_autoload);
+        }
 
         //register CKO autoloader, which gets on the stack first
         require_once Mage::getBaseDir('lib') . "/checkout-sdk-php/checkout.php";
         $autoLoader->pushAutoloader(array('checkout', 'load'), true);
 
         //IMPORTANT: add the Varien_Autoloader back to the stack
-        spl_autoload_register($original_autoload);
+        if(!is_null($original_autoload)) {
+            spl_autoload_register($original_autoload);
+        }
     }
 }
