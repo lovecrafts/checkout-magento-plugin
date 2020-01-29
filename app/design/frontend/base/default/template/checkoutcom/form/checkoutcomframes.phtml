@@ -339,8 +339,16 @@
             cardValidationChanged
         );
         function cardValidationChanged(event) {
-            if(Frames.isCardValid())
+            if(Frames.isCardValid()){
+                var customerName = "<?php echo $this->getCustomerName(); ?>";
+
+                if (customerName.length <= 1) {
+                    customerName = document.getElementById("billing:firstname").value + ' ' + document.getElementById("billing:lastname").value;
+                }
+
+                Frames.cardholder.name = customerName ;
                 Frames.submitCard();
+            }
         }
 
         Frames.addEventHandler(Frames.Events.CARD_TOKENIZED, onCardTokenized);

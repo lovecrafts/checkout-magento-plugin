@@ -160,8 +160,12 @@ $publicKey = Mage::getModel('ckopayment/checkoutcomConfig')->getPublicKey();
                 cardValidationChanged
             );  
             function cardValidationChanged(event) {
-                if(Frames.isCardValid())
+                if(Frames.isCardValid()){
+                    var cardholder = document.getElementById('order-billing_address_firstname').value + '' + document.getElementById('order-billing_address_lastname').value;
+                    Frames.cardholder.name = cardholder;
+                    
                     Frames.submitCard();
+                }
             }
 
             Frames.addEventHandler(Frames.Events.CARD_TOKENIZED, onCardTokenized);
