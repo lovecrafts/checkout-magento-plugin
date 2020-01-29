@@ -3,8 +3,8 @@
 /*
  * class Checkoutcom_Ckopayment_Block_Adminhtml_System_config_Fieldset_Method
  */
-class Checkoutcom_Ckopayment_Block_Adminhtml_System_config_Fieldset_Method
-    extends Checkoutcom_Ckopayment_Block_Adminhtml_System_config_Fieldset_Fieldset
+class Checkoutcom_Ckopayment_Block_Adminhtml_System_Config_Fieldset_Method
+    extends Checkoutcom_Ckopayment_Block_Adminhtml_System_Config_Fieldset_Fieldset
 {
 
     /**
