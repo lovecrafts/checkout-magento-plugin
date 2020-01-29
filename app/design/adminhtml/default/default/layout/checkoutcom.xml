@@ -1,8 +1,24 @@
 <?xml version="1.0"?>
 <layout version="0.1.0">
     <adminhtml_sales_order_create_index>
-        <reference name="before_body_end">
-            <block type="core/template" name="checkoutcom_frames" template="checkoutcom/form/checkoutcomframes.phtml" />
+        <reference name="head">
+            <action method="addJs">
+                <script>checkoutcom/cko-admin.js</script>
+            </action>
+            <action method="addCss">
+                <stylesheet>css/checkoutcom-styles.css</stylesheet>
+            </action>
+            <action method="addCss">
+                <stylesheet>css/normalize.css</stylesheet>
+            </action>
+            <action method="addCss">
+                <stylesheet>css/style.css</stylesheet>
+            </action>
         </reference>
     </adminhtml_sales_order_create_index>
+    <default>
+        <reference name='head'>
+            <action method="addJs"><script>checkoutcom/cko-admin.js</script></action>
+        </reference>
+    </default>
 </layout>
