@@ -488,6 +488,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
         $billRegion =$billingAddress->getRegion();
         $billPostcode = $billingAddress->getPostcode();
         $billCountry = $billingAddress->getCountry();
+        $customerName = $billingAddress->getFirstName() . ' ' . $billingAddress->getLastName() ;
 
         $email = Mage::helper('ckopayment')->getCustomerEmail($quoteId);
 
