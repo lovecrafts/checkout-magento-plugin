@@ -130,7 +130,7 @@ class Checkoutcom_Ckopayment_ApiController extends Mage_Core_Controller_Front_Ac
         $response = $checkout->payments()->details($ckoSessionId);
         $source = $response->source;
         $paymentStatus = $response->status;
-        $action = $response->actions;
+        $id = isset($response->actions) ? $response->actions[0]['id'] : $response->id;
 
         if ($response->isSuccessful()) {
             $orderId = $response->reference;
@@ -153,7 +153,7 @@ class Checkoutcom_Ckopayment_ApiController extends Mage_Core_Controller_Front_Ac
 
             if ($response->risk['flagged']) {
                 // Register Authorization
-                $payment->setTransactionId($action[0]['id'])
+                $payment->setTransactionId($id)
                     ->setShouldCloseParentTransaction(0)
                     ->setAdditionalInformation('ckoPaymentId', $response->id)
                     ->setIsTransactionClosed(0)
@@ -190,7 +190,7 @@ class Checkoutcom_Ckopayment_ApiController extends Mage_Core_Controller_Front_Ac
                 }
 
                 // Register Authorization
-                $payment->setTransactionId($action[0]['id'])
+                $payment->setTransactionId($id)
                     ->setShouldCloseParentTransaction(0)
                     ->setAdditionalInformation('ckoPaymentId', $response->id)
                     ->setIsTransactionClosed(0)
