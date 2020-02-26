@@ -18,9 +18,6 @@
 	</ckopayment_cards_index>
 	<checkout_onepage_index translate="label">
 		<reference name="head">
-			<action method="addJs">
-				<script>checkoutcom/chargepayment.js</script>
-			</action>
 			<action method="addCss">
 				<stylesheet>css/checkoutcom-styles.css</stylesheet>
 			</action>
@@ -58,9 +55,6 @@
 	</checkout_onepage_review>
 	<default>
 		<reference name="head">
-			<action method="addJs">
-				<script>checkoutcom/chargepayment.js</script>
-			</action>
 			<action method="addCss">
 				<stylesheet>css/checkoutcom-styles.css</stylesheet>
 			</action>
@@ -86,9 +80,6 @@
 	</default>
 	<onestepcheckout_index_index>
 		<reference name="head">
-			<action method="addJs">
-				<script>checkoutcom/chargepayment.js</script>
-			</action>
 			<action method="addCss">
 				<stylesheet>css/checkoutcom-styles.css</stylesheet>
 			</action>
