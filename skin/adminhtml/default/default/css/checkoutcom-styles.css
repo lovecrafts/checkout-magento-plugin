@@ -529,7 +529,6 @@
 
 .input-container {
   position: relative;
-  display: flex;
   height: 40px;
 }
 .icon-container:last-child {

@@ -24,12 +24,6 @@
 			<action method="addCss">
 				<stylesheet>css/checkoutcom-styles.css</stylesheet>
 			</action>
-			<action method="addCss">
-				<stylesheet>css/normalize.css</stylesheet>
-			</action>
-			<action method="addCss">
-				<stylesheet>css/style.css</stylesheet>
-			</action>
 			<block type="core/text" name="checkout.com.jquery">
 				<action method="setText">
 					<text>
@@ -70,12 +64,6 @@
 			<action method="addCss">
 				<stylesheet>css/checkoutcom-styles.css</stylesheet>
 			</action>
-			<action method="addCss">
-				<stylesheet>css/normalize.css</stylesheet>
-			</action>
-			<action method="addCss">
-				<stylesheet>css/style.css</stylesheet>
-			</action>
 		</reference>
 		<reference name="header">
 			<reference name="top.container">
@@ -103,12 +91,6 @@
 			</action>
 			<action method="addCss">
 				<stylesheet>css/checkoutcom-styles.css</stylesheet>
-			</action>
-			<action method="addCss">
-				<stylesheet>css/normalize.css</stylesheet>
-			</action>
-			<action method="addCss">
-				<stylesheet>css/style.css</stylesheet>
 			</action>
 			<block type="core/text" name="checkout.com.jquery">
 				<action method="setText">
