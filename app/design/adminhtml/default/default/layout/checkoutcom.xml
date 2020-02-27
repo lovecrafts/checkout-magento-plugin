@@ -8,12 +8,6 @@
             <action method="addCss">
                 <stylesheet>css/checkoutcom-styles.css</stylesheet>
             </action>
-            <action method="addCss">
-                <stylesheet>css/normalize.css</stylesheet>
-            </action>
-            <action method="addCss">
-                <stylesheet>css/style.css</stylesheet>
-            </action>
         </reference>
     </adminhtml_sales_order_create_index>
     <default>
