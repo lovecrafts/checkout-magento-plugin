@@ -88,6 +88,7 @@
 /* For mobile devices */
 @media only screen and (max-width: 600px) {
 	.apple-pay-button {
+		display: block;
 		width: var(--wallet-button-width-mobile) !important;
 		height: var(--wallet-button-height-mobile) !important;
    }

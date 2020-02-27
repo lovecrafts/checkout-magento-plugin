@@ -9,6 +9,12 @@
 	<p style="display:none" id="ckocom_applePay_not_possible">ApplePay is not available on this browser</p>
 
 	<script>
+		var route = "<?php echo Mage::app()->getRequest()->getRouteName(); ?>";
+        var buttonArea = '#checkout-review-submit';
+        
+        if(route === 'aw_onestepcheckout'){
+            buttonArea = '#aw-onestepcheckout-place-order';
+        }
 
 		// Magic strings used in file
 		var applePayOptionSelector = '#dt_method_checkoutcomapplepay';
@@ -27,14 +33,13 @@
 		hideAppleApplePayOption();
 		// If ApplePay is available as a payment option, and enabled on the checkout page, un-hide the payment option
 		if (window.ApplePaySession) {
-			console.log("<?php echo $this->getMerchantIdentifier() ?>")
 			var promise = ApplePaySession.canMakePaymentsWithActiveCard("<?php echo $this->getMerchantIdentifier() ?>");
 			promise.then(function (canMakePayments) {
-				console.log(canMakePayments);
+				
 				if (canMakePayments) {
 					// show the payment method it was one of the places where ApplePay was selected for
 					"<?php echo $this->getAppleButtonLocation() ?>".split(",").forEach(function (el) {
-						console.log("pana aici e bine")
+						
 						if (el === "checkoutpage") {
 							showAppleApplePayOption();
 						}
@@ -49,8 +54,8 @@
 
 		// Display the button and remove the default place order
 		checkoutInitialiseApplePay = function () {
-
-			jQuery('#checkout-review-submit').append('<div id="' + applePayButtonId + '" class="apple-pay-button '
+			window.applepayinit = true;
+			jQuery(buttonArea).append('<div id="' + applePayButtonId + '" class="apple-pay-button '
 				+ "<?php echo $this->getAppleButtonType() ?>" + " "
 				+ "<?php echo $this->getAppleButtonTheme() ?>" + '" lang="'
 				+ "<?php echo $this->getAppleButtonLanguage() ?>" + '"></div>');
@@ -147,7 +152,12 @@
 					if (outcome !== '') {
 						document.getElementById('apple-cko-card-token').value = outcome;
 						status = ApplePaySession.STATUS_SUCCESS;
-						review.save();
+						if(route === 'aw_onestepcheckout'){
+                            jQuery('#aw-onestepcheckout-place-order-button').click();                                                         
+                            jQuery('.aw-onestepcheckout-place-order-please-wait').show();
+                        } else {
+                            review.save();
+                        }
 					} else {
 						status = ApplePaySession.STATUS_FAILURE;
 					}
@@ -237,6 +247,5 @@
 			jQuery(applePayOptionSelector).show();
 			jQuery(applePayOptionBodySelector).show();
 		}
-
 	</script>
 </div>
