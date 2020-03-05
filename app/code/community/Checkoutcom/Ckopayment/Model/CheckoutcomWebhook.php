@@ -61,41 +61,42 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomWebhook
 
             $amountLessThanGrandTotal = $amount < $grandTotalsCents ? true : false;
 
-            // Check if not partial refund
-            if (!$amountLessThanGrandTotal) {
-                // check if can create invoice automatically
-                if ($createInvoice) {
-                    $message = "Webhook received from checkout.com. Payment captured on checkout.com hub";
-
-                    try {
-                        $payment = $order->getPayment();
-                        $payment->setTransactionId($webhookData->data->action_id)
-                            ->setIsTransactionClosed(0)
-                            ->setCurrencyCode($order->getBaseCurrencyCode())
-                            ->registerCaptureNotification($order->getBaseGrandTotal(), true);
-
-                        $order->setPaymentIsCaptured(1);
-                        $order->addStatusToHistory($captureStatus, $message);
-                        $order->save();
-                    } catch (Exception $e) {
-                        Mage::log($e, Zend_Log::DEBUG, 'checkoutcom_webhook.log', true);
-                        return false;
-                    }
-                } else {
-                    $message = "Webhook received from checkout.com. Payment captured checkout.com hub";
-                    $order->addStatusToHistory($captureStatus, $message);
-                    $order->save();
-                }
-            } else {
+            $payment = $order->getPayment();
+            $payment->setTransactionId($webhookData->data->action_id);
+            $payment->setIsTransactionClosed(0);
+            $payment->setCurrencyCode($order->getBaseCurrencyCode());
+            
+            if($amountLessThanGrandTotal){
                 $amountDecimal = Mage::getModel('ckopayment/checkoutcomUtils')
                     ->decimalToValue($amount, $currencyCode);
                 $currencySymbol = Mage::app()->getLocale()->currency($currencyCode)->getSymbol();
 
                 // set message in order history for partial capture and update status
                 $message = "Webhook received from checkout.com. An amount of {$currencySymbol}{$amountDecimal} has been partially captured on hub. No invoice created";
-                $order->addStatusToHistory($captureStatus, $message);
-                $order->save();
+                $this->_addTransaction(
+                        $payment,
+                        $webhookData->data->action_id,
+                        'capture',
+                        array('is_transaction_closed' => 0),
+                        array(
+                            'real_transaction_id' => $webhookData->data->action_id
+                        ),
+                        false
+                    );
+            } else {
+                if ($createInvoice) {
+                    $message = "Webhook received from checkout.com. Payment captured on checkout.com hub";
+                    $payment->registerCaptureNotification($order->getBaseGrandTotal(), true);
+                } else {
+                    $message = "Webhook received from checkout.com. Payment captured on checkout.com hub. No invoice created";
+                }
             }
+            
+            $order->setPaymentIsCaptured(1);
+            $order->addStatusToHistory($captureStatus, $message);
+            $order->save();
+
+
         } else {
             $message = "Webhook received from checkout.com. Payment captured on checkout.com hub";
             $order->addStatusToHistory(false, $message);
@@ -115,6 +116,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomWebhook
         return true;
     }
 
+
     /**
      * Set message to order for webhook event payment_approved
      *
@@ -129,8 +131,9 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomWebhook
 
         // check if payment already refunded on backend.
         if (!$order->getPaymentIsRefunded()) {
-            $captureStatus = Mage::getModel('ckopayment/checkoutcomConfig')->getCapturedOrderStatus();
+            $status = Mage::getModel('ckopayment/checkoutcomConfig')->getCapturedOrderStatus();
             $refundStatus = Mage::getModel('ckopayment/checkoutcomConfig')->getRefundedOrderStatus();
+
             $createCreditMemo = Mage::getModel('ckopayment/checkoutcomConfig')->getCreateMemo();
             $amount = $webhookData->data->amount;
             $currencyCode = $order->getOrderCurrencyCode();
@@ -140,54 +143,59 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomWebhook
 
             $amountLessThanGrandTotal = $amount < $grandTotalsCents ? true : false;
 
-            // Check if not partial refund
-            if (!$amountLessThanGrandTotal) {
-                // check if can create invoice automatically
-                if ($createCreditMemo) {
-                    $message = "Webhook received from checkout.com. Payment refunded on checkout.com hub.";
+            $payment = $order->getPayment();
+            $payment->setTransactionId($webhookData->data->action_id);
+            $payment->setIsTransactionClosed(0);
+            $payment->setCurrencyCode($order->getBaseCurrencyCode());
 
-                    try {
-                        $service = Mage::getModel('sales/service_order', $order);
-                        $transactionModel = Mage::getModel('sales/order_payment_transaction');
-                        $transactionModel
-                            ->setOrderPaymentObject($order->getPayment())
-                            ->setTxnType(Mage_Sales_Model_Order_Payment_Transaction::TYPE_REFUND)
-                            ->save();
-
-                        $creditMemo = $service->prepareCreditmemo()
-                            ->setPaymentRefundDisallowed(true)
-                            ->setAutomaticallyCreated(true)
-                            ->register()
-                            ->setTransactionId($webhookData->data->action_id)
-                            ->save();
-
-                        $order->setPaymentIsRefunded(1);
-                        $order->addStatusToHistory($refundStatus, $message);
-                        $order->save();
-                    } catch (Exception $e) {
-                        Mage::log($e, Zend_Log::DEBUG, 'checkoutcom_webhook.log', true);
-                        return false;
-                    }
-                } else {
-                    $message = "Webhook received from checkout.com. Payment refunded on checkout.com hub.";
-                    $order->addStatusToHistory($refundStatus, $message);
-                    $order->save();
-                }
-            } else {
+            if($amountLessThanGrandTotal){
                 $amountDecimal = Mage::getModel('ckopayment/checkoutcomUtils')
                     ->decimalToValue($amount, $currencyCode);
                 $currencySymbol = Mage::app()->getLocale()->currency($currencyCode)->getSymbol();
 
-                // set message in order history for partial capture and update status
-                $message = "Webhook received from checkout.com. An amount of {$currencySymbol}{$amountDecimal} has been partially refunded on checkout.com hub. No credit memo created";
-                $order->addStatusToHistory($captureStatus, $message);
-                $order->save();
+                // set message in order history for partial refund and update status
+                $message = "Webhook received from checkout.com. An amount of {$currencySymbol}{$amountDecimal} has been partially refunded on hub. No invoice created";
+                
+            } else {
+                if ($createCreditMemo) {
+                    $message = "Webhook received from checkout.com. Payment refunded on checkout.com hub";
+
+                    $service = Mage::getModel('sales/service_order', $order);
+                    
+                    $creditMemo = $service->prepareCreditmemo()
+                        ->setPaymentRefundDisallowed(true)
+                        ->setAutomaticallyCreated(true)
+                        ->register()
+                        ->save();
+                    
+                    $order->setPaymentIsRefunded(1);
+                } else {
+                    $message = "Webhook received from checkout.com. Payment refunded on checkout.com hub. No creditMemo created";
+                }
+
+                $status = $refundStatus;
             }
+            
+            $this->_addTransaction(
+                        $payment,
+                        $webhookData->data->action_id,
+                        'refund',
+                        array('is_transaction_closed' => 0),
+                        array(
+                            'real_transaction_id' => $webhookData->data->action_id
+                        ),
+                        false
+                    );
+            
+            $order->addStatusToHistory($status, $message);
+            $order->save();
+
         } else {
-            $message = "Webhook received from checkout.com. Payment refunded successfully here";
+            $message = "Webhook received from checkout.com. Payment refunded successfully.";
             $order->addStatusToHistory(false, $message);
             $order->save();
         }
+
 
         return true;
     }
@@ -215,5 +223,32 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomWebhook
         $order->save();
 
         return true;
+    }
+
+    /**
+    *
+    * Register transaction id in magentol
+    *
+    */ 
+    protected function _addTransaction(Mage_Sales_Model_Order_Payment $payment, $transactionId, $transactionType,
+        array $transactionDetails = array(), array $transactionAdditionalInfo = array(), $message = false
+    ) {
+        $payment->setTransactionId($transactionId);
+        $payment->resetTransactionAdditionalInfo();
+        foreach ($transactionDetails as $key => $value) {
+            $payment->setData($key, $value);
+        }
+        foreach ($transactionAdditionalInfo as $key => $value) {
+            $payment->setTransactionAdditionalInfo($key, $value);
+        }
+        $transaction = $payment->addTransaction($transactionType, null, false , $message);
+        foreach ($transactionDetails as $key => $value) {
+            $payment->unsetData($key);
+        }
+        $payment->unsLastTransId();
+
+        $transaction->setMessage($message);
+
+        return $transaction;
     }
 }
