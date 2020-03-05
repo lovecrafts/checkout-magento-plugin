@@ -62,20 +62,85 @@
 </div>
 
 <script type="text/javascript">
-
-	// Checkout if apple pay was selected
+	if(window.route === 'aw_onestepcheckout'){
+        function hidePlaceOrder(){
+            jQuery('#aw-onestepcheckout-place-order-button').hide();
+            jQuery('.aw-onestepcheckout-place-order-please-wait').hide();
+        }
+        
+        function showPlaceOrder(){
+            jQuery('#aw-onestepcheckout-place-order-button').show();
+            jQuery('.aw-onestepcheckout-place-order-please-wait').show();
+        }
+    } 
+    
+    // Checkout if apple pay was selected
     if (jQuery('#p_method_checkoutcomapplepay').length > 0) {
         if ($('p_method_checkoutcomapplepay').checked) {
-            // Call method from checkoutcomapplepay to separate logic
-            checkoutInitialiseApplePay();
+            if(typeof window.applepayinit === 'undefined') {
+                setTimeout(function(){
+                    checkoutInitialiseApplePay();
+                    
+                    if(window.route === 'aw_onestepcheckout'){
+                        jQuery('#ckocom_applePay').show();
+                        hidePlaceOrder();
+                    }
+                },1000 );
+            }
         }
+        
+        // On payment method change
+        // Show/hide place order button
+        jQuery('input:radio[name="payment[method]"]').change(function () {
+            if(this.value === 'checkoutcomapplepay'){
+                if(window.applepayinit){
+                    jQuery('#ckocom_applePay').show();
+                    hidePlaceOrder();
+                } else {
+                    checkoutInitialiseApplePay();
+                    jQuery('#ckocom_applePay').show();
+                    hidePlaceOrder();
+                }
+            } else {
+                jQuery('#ckocom_applePay').hide();
+                showPlaceOrder();
+            }
+        });
     }
 
     // Check if google pay was selected
     if (jQuery('#p_method_checkoutcomgooglepay').length > 0) {
         if ($('p_method_checkoutcomgooglepay').checked) {
-            googlePayTransactionController.init();
+            if(typeof window.googlepayinit === 'undefined') {
+                setTimeout(function(){
+                    googlePayTransactionController.init();
+                    
+                    if(window.route === 'aw_onestepcheckout'){
+                        jQuery('#ckocom_googlePay_area').show();
+                        hidePlaceOrder();
+                    }
+                },1000 );
+            }
         }
+        
+        // On payment method change
+        // Show/hide place order button
+        jQuery('input:radio[name="payment[method]"]').change(function () {
+            if(this.value === 'checkoutcomgooglepay'){
+                if(window.googlepayinit){
+                    jQuery('#ckocom_googlePay_area').show();
+                    hidePlaceOrder();
+                } else {
+                    googlePayTransactionController.init();
+                    jQuery('#ckocom_googlePay_area').show();
+                    hidePlaceOrder();
+                }
+            } else {
+                jQuery('#ckocom_googlePay_area').hide();
+                showPlaceOrder();
+            }
+        });
+       
     }
 
     // Check if sepa was selected
