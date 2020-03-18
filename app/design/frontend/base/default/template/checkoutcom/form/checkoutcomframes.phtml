@@ -226,6 +226,11 @@
         // Frames v2 config
         Frames.init({
             publicKey : "<?php echo $this->getPublicKey(); ?>",
+            style: {
+                base: {
+                  fontSize: "16px"
+                }
+            },
             frameActivated: function () {
                loader.style.display = loader.style.display === 'none' ? '' : 'none';
             },
