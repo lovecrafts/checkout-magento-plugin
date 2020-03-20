@@ -312,7 +312,8 @@ class Checkoutcom_Ckopayment_Block_Form_CheckoutcomApms extends Mage_Payment_Blo
         $products = array();
 
         foreach($items as $item) {
-            $unitPrice = Mage::getModel('ckopayment/checkoutcomUtils')->valueToDecimal($item->getPrice(), $currencyCode);
+            $unitPrice = Mage::getModel('ckopayment/checkoutcomUtils')->valueToDecimal($item->getPriceInclTax(), $currencyCode);
+            
             $products[] = array(
                 "name" => $item->getName(),
                 "quantity" => $item->getQty(),

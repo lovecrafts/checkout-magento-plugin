@@ -16,8 +16,9 @@ use Checkout\Models\Payments\IdSource;
 use Checkout\Library\Exceptions\CheckoutHttpException;
 use Checkout\Library\Exceptions\CheckoutModelException;
 
+
 /**
- * Class Checkoutcom_Ckopayment_Model_CheckoutcomCards
+ * Checkoutcom_Ckopayment_Model_CheckoutcomCards
  */
 class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_Method_Cc
 {
@@ -264,7 +265,6 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
             // Check if payment is already voided or captured on checkout.com hub
             $details = $checkout->payments()->details($ckoPaymentId);
 
-
             if ($details->status == 'Voided' || $details->status == 'Captured' && !$amountLessThanGrandTotal) {
                 $errorMessage = 'Payment has already been voided or captured on Checkout.com hub for order Id : ' . $orderId;
 
@@ -292,7 +292,11 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
 
                 Mage::throwException($errorMessage);
             } else {
+
+                $parentTransactionId = $this->getCkoParentTransId('Authorization', $ckoPaymentId);
+
                 $payment->setTransactionId($response->action_id);
+                $payment->setParentTransactionId($parentTransactionId);
                 $payment->setIsTransactionClosed(0);
 
                 $order->setPaymentIsCaptured(1);
@@ -311,7 +315,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
 
         return $this;
     }
-
+        
     /**
      * Used to process refund from backend
      *
@@ -377,8 +381,18 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
                 Mage::throwException($errorMessage);
             } else {
                 $order->setPaymentIsRefunded(1);
+
+                $parentTransactionId = $this->getCkoParentTransId('Capture', $ckoPaymentId);
+                $payment->setTransactionId($response->action_id);
+                $payment->setParentTransactionId($parentTransactionId);
+
+                if ($amountLessThanGrandTotal) {
+                    $payment->setIsTransactionClosed(0);
+                }
+                
                 $order->save();
             }
+
         } catch (CheckoutModelException $ex) {
             $errorMessage = "An error has occurred while processing your refund request. ";
             Mage::log($errorMessage, null, $this->_code . '.log');
@@ -446,6 +460,10 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
                 Mage::throwException($errorMessage);
             } else {
                 $order->setPaymentIsVoided(1);
+                $parentTransactionId = $this->getCkoParentTransId('Authorization', $ckoPaymentId);
+                $payment->setTransactionId($response->action_id);
+                $payment->setParentTransactionId($parentTransactionId);
+
                 $order->save();
             }
         } catch (CheckoutModelException $ex) {
@@ -826,6 +844,35 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
         $isMada = $result[0]['is_mada'];
 
         return $isMada;
+    }
+
+    /**
+     * getCkoParentTransId
+     * 
+     * Get payment action id from cko 
+     *
+     * @param  mixed $actionType
+     * @param  mixed $ckoPaymentId
+     * @return void
+     */
+    public function getCkoParentTransId($actionType, $ckoPaymentId) 
+    {
+        $environment =  Mage::getModel('ckopayment/checkoutcomConfig')->getEnvironment() == 'sandbox' ? true : false;
+        // Initialize the Checkout Api
+        $checkout = new CheckoutApi($this->_getSecretKey(), $environment);
+        
+        $actions = $checkout->payments()->actions($ckoPaymentId);
+        $parentTransactionId = '';
+
+        foreach ($actions as $action) {
+            foreach ($action as $act) {
+                if ($act->type == $actionType ) {
+                    $parentTransactionId = $act->id;
+                }
+            }
+        }
+
+        return $parentTransactionId;
     }
 
 }
