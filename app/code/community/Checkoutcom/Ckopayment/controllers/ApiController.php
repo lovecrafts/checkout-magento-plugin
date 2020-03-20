@@ -170,25 +170,20 @@ class Checkoutcom_Ckopayment_ApiController extends Mage_Core_Controller_Front_Ac
 
                     $order->setState($state, $status, $message);
 
-                } else{
+                } else {
                     $order->setState(Mage_Sales_Model_Order::STATE_NEW, true);
                     $order->addStatusHistoryComment('Payment flagged on Checkout.com ', false);
                 }
 
-            } elseif($paymentStatus == 'Captured') {
+            } elseif ($paymentStatus == 'Captured') {
                 $message = '3Ds payment captured successfully on checkout.com.';
                 $captureStatus = $this->_getConfigModel()->getCapturedOrderStatus();
                 $order->setState($captureStatus, true);
                 $order->addStatusHistoryComment($message);
             } else {
                 $authorisedStatus = $this->_getConfigModel()->getAuthorisedOrderStatus();
-
-                if($authorisedStatus == 'pending') {
-                    $order->setState(Mage_Sales_Model_Order::STATE_NEW, true);
-                } else {
-                    $order->setState(Mage_Sales_Model_Order::STATE_PROCESSING, true);
-                }
-
+                
+                // $order->addStatusHistoryComment($message, false);
                 // Register Authorization
                 $payment->setTransactionId($action[0]['id'])
                     ->setShouldCloseParentTransaction(0)
@@ -196,7 +191,9 @@ class Checkoutcom_Ckopayment_ApiController extends Mage_Core_Controller_Front_Ac
                     ->setIsTransactionClosed(0)
                     ->registerAuthorizationNotification($amount);
 
-                $order->addStatusHistoryComment($message);
+                if ($authorisedStatus == 'pending') {
+                    $order->setState(Mage_Sales_Model_Order::STATE_NEW, true);
+                }                
             }
 
             //check if saved card checkbox was check to save source id in db

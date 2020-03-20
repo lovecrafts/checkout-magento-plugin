@@ -160,13 +160,13 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomWebhook
             $payment->setTransactionId($actionId);
             $payment->setParentTransactionId($parentTransactionId);
             $payment->setShouldCloseParentTransaction(true);
+
+            $amountDecimal = Mage::getModel('ckopayment/checkoutcomUtils')
+                    ->decimalToValue($amount, $currencyCode);
+            $currencySymbol = Mage::app()->getLocale()->currency($currencyCode)->getSymbol();
+            $refundAmount = $currencySymbol.$amountDecimal;
             
             if ($amountLessThanGrandTotal) {
-                $amountDecimal = Mage::getModel('ckopayment/checkoutcomUtils')
-                    ->decimalToValue($amount, $currencyCode);
-                $currencySymbol = Mage::app()->getLocale()->currency($currencyCode)->getSymbol();
-                $refundAmount = $currencySymbol.$amountDecimal;
-
                 // set message in order history for partial refund and update status
                 $message = "Webhook received from checkout.com. Registered notification about refunded amount of {$refundAmount}. Transaction ID: {$actionId}. Credit Memo has not been created. Please create offline Credit Memo.";
 
@@ -187,7 +187,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomWebhook
                     $payment->registerRefundNotification($order->getBaseGrandTotal());
                     $order->setPaymentIsRefunded(1);
                 } else {
-                    $message = "Webhook received from checkout.com. Payment refunded on checkout.com hub. No credit memo created.";
+                    $message = "Webhook received from checkout.com. Registered notification about refunded amount of {$refundAmount}. Transaction ID: {$actionId}. Credit Memo has not been created. Please create offline Credit Memo.";
                     $order->addStatusToHistory($refundStatus, $message);
                 }
             }
