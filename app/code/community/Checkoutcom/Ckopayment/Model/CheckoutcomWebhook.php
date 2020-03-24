@@ -155,8 +155,10 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomWebhook
             $amountLessThanGrandTotal = $amount < $grandTotalsCents ? true : false;
 
             $payment = $order->getPayment();
-            $parentTransactionId = Mage::getModel('ckopayment/checkoutcomCards')->getCkoParentTransId('Capture', $webhookData->data->id);
+            $parentTransactionId = Mage::getModel('ckopayment/checkoutcomCards')->getCkoLastTransId('Refund', $webhookData->data->id);
 
+            $totalRefunded = Mage::getModel('ckopayment/checkoutcomCards')->getTotalRefunded($webhookData->data->id);
+            
             $payment->setTransactionId($actionId);
             $payment->setParentTransactionId($parentTransactionId);
             $payment->setShouldCloseParentTransaction(true);
@@ -167,6 +169,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomWebhook
             $refundAmount = $currencySymbol.$amountDecimal;
             
             if ($amountLessThanGrandTotal) {
+                $isClosed = $totalRefunded == $grandTotalsCents ? true : false;
                 // set message in order history for partial refund and update status
                 $message = "Webhook received from checkout.com. Registered notification about refunded amount of {$refundAmount}. Transaction ID: {$actionId}. Credit Memo has not been created. Please create offline Credit Memo.";
 
@@ -174,7 +177,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomWebhook
                     $payment,
                     $actionId,
                     'refund',
-                    array('is_transaction_closed' => 0),
+                    array('is_transaction_closed' => $isClosed,),
                     array('real_transaction_id' => $actionId),
                     false
                 );

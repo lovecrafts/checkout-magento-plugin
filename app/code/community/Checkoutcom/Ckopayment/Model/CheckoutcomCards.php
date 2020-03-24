@@ -382,7 +382,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
             } else {
                 $order->setPaymentIsRefunded(1);
 
-                $parentTransactionId = $this->getCkoParentTransId('Capture', $ckoPaymentId);
+                $parentTransactionId = $this->getCkoLastTransId('Refund', $ckoPaymentId);
                 $payment->setTransactionId($response->action_id);
                 $payment->setParentTransactionId($parentTransactionId);
 
@@ -874,5 +874,57 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
 
         return $parentTransactionId;
     }
+    
+    /**
+     * getCkoLastTransId
+     *
+     * @param  mixed $actionType
+     * @param  mixed $ckoPaymentId
+     * @return void
+     */
+    public function getCkoLastTransId($actionType, $ckoPaymentId) 
+    {
+        $environment =  Mage::getModel('ckopayment/checkoutcomConfig')->getEnvironment() == 'sandbox' ? true : false;
+        // Initialize the Checkout Api
+        $checkout = new CheckoutApi($this->_getSecretKey(), $environment);
+        
+        $actions = $checkout->payments()->actions($ckoPaymentId);
+        $parentTransactionId = '';
 
+        foreach ($actions as $action) {
+            $test = $action[1];
+            $parentTransactionId = $test->id;
+
+            return $parentTransactionId;
+        }
+        
+        return $parentTransactionId;
+    }
+
+    /**
+     * getTotalRefunded
+     *
+     * @param  mixed $ckoPaymentId
+     * @return void
+     */
+    public function getTotalRefunded($ckoPaymentId) 
+    {
+        $environment =  Mage::getModel('ckopayment/checkoutcomConfig')->getEnvironment() == 'sandbox' ? true : false;
+        // Initialize the Checkout Api
+        $checkout = new CheckoutApi($this->_getSecretKey(), $environment);
+        
+        $actions = $checkout->payments()->actions($ckoPaymentId);
+
+        $arr = array();
+
+        foreach ($actions as $action) {
+            foreach ($action as $act) {
+                if ($act->type == 'Refund' ) {
+                    $totalRefunded += $act->amount;
+                }
+            }
+        }
+
+        return $totalRefunded;
+    }
 }
