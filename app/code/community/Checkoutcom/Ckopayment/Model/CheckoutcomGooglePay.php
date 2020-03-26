@@ -31,6 +31,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomGooglePay extends Mage_Payment_Mod
     protected $_canOrder = true;
     protected $_canSaveCc = false;
     protected $_canRefundInvoicePartial = true;
+    protected $_canCapturePartial = true;
 
     /**
      * @return $this|Mage_Payment_Model_Abstract
@@ -277,7 +278,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomGooglePay extends Mage_Payment_Mod
                 }
 
                 // Update order payment information with payment id from checkout.com
-                $payment->setTransactionId($response->id);
+                $payment->setTransactionId($response->action_id);
                 $payment->setAdditionalInformation('ckoPaymentId', $response->id);
                 $payment->setIsTransactionClosed(0);
             }
@@ -305,77 +306,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomGooglePay extends Mage_Payment_Mod
      */
     public function capture(Varien_Object $payment, $amount)
     {
-        $ckoPaymentId = $payment->getAdditionalInformation('ckoPaymentId');
-        $order = $payment->getOrder();
-        $orderId = $order->getIncrementId();
-
-        // Check if CKO payment id exist in order
-        if (empty($ckoPaymentId)) {
-            $errorMessage = 'CKO PaymentId not found for order Id : ' . $orderId;
-
-            Mage::log($errorMessage, null, $this->_code . '.log');
-            Mage::throwException($errorMessage);
-        }
-
-        $currencyCode = $order->getOrderCurrencyCode();
-        $grandTotals = $order->getGrandTotal();
-        $grandTotalsCents = Mage::getModel('ckopayment/checkoutcomUtils')->valueToDecimal($grandTotals, $currencyCode);
-        $amountCents = Mage::getModel('ckopayment/checkoutcomUtils')->valueToDecimal($amount, $currencyCode);
-
-        $amountLessThanGrandTotal = $amountCents < $grandTotalsCents ? true : false;
-
-        $environment =  Mage::getModel('ckopayment/checkoutcomConfig')->getEnvironment() == 'sandbox' ? true : false;
-        // Initialize the Checkout Api
-        $checkout = new CheckoutApi($this->_getSecretKey(), $environment);
-
-        try {
-            // Check if payment is already voided or captured on checkout.com hub
-            $details = $checkout->payments()->details($ckoPaymentId);
-
-            if ($details->status == 'Voided' || $details->status == 'Captured' && !$amountLessThanGrandTotal) {
-                $errorMessage = 'Payment has already been voided or captured on Checkout.com hub for order Id : ' . $orderId;
-
-                Mage::log($errorMessage, null, $this->_code . '.log');
-                Mage::throwException($errorMessage);
-
-                return $this;
-            }
-
-            $ckoPayment = new Capture($ckoPaymentId);
-
-            // Process partial capture if amount is less than grand total
-            if ($amountLessThanGrandTotal) {
-                $ckoPayment->amount = $amountCents;
-                $ckoPayment->reference = $orderId;
-            }
-
-            $response = $checkout->payments()->capture($ckoPayment);
-
-            if (!$response->isSuccessful()) {
-                $errorMessage = 'An error has occurred while processing your capture payment on Checkout.com hub. Order Id : ' . $orderId;
-
-                Mage::log($errorMessage, null, $this->_code . '.log');
-                Mage::log($response, Zend_Log::DEBUG, $this->_code . '.log', true);
-
-                Mage::throwException($errorMessage);
-            } else {
-                $payment->setTransactionId($response->id);
-                $payment->setIsTransactionClosed(0);
-
-                $order->setPaymentIsCaptured(1);
-                $order->save();
-            }
-        } catch (CheckoutModelException $ex) {
-            $errorMessage = "An error has occurred while processing your capture request. ";
-            Mage::log($errorMessage, null, $this->_code . '.log');
-            Mage::log($ex->getBody(), Zend_Log::DEBUG, $this->_code . '.log', true);
-            Mage::throwException($errorMessage);
-        } catch (CheckoutHttpException $ex) {
-            Mage::log($ex->getMessage(), Zend_Log::DEBUG, $this->_code . '.log', true);
-            $errorMessage = "An error has occurred while processing your capture request. ";
-            Mage::throwException($errorMessage);
-        }
-
+        Mage::getModel('ckopayment/checkoutcomCards')->capture($payment, $amount);
 
         return $this;
     }
@@ -390,73 +321,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomGooglePay extends Mage_Payment_Mod
      */
     public function refund(Varien_Object $payment, $amount)
     {
-        $ckoPaymentId = $payment->getAdditionalInformation('ckoPaymentId');
-        $order = $payment->getOrder();
-        $orderId = $order->getIncrementId();
-
-        // Check if CKO payment id exist in order
-        if (empty($ckoPaymentId)) {
-            $errorMessage = 'CKO PaymentId not found for order Id : ' . $orderId;
-
-            Mage::log($errorMessage, null, $this->_code . '.log');
-            Mage::throwException($errorMessage);
-        }
-
-        $currencyCode = $order->getOrderCurrencyCode();
-        $grandTotals = $order->getGrandTotal();
-        $grandTotalsCents = Mage::getModel('ckopayment/checkoutcomUtils')->valueToDecimal($grandTotals, $currencyCode);
-        $amountCents = Mage::getModel('ckopayment/checkoutcomUtils')->valueToDecimal($amount, $currencyCode);
-
-        $amountLessThanGrandTotal = $amountCents < $grandTotalsCents ? true : false;
-
-        $environment =  Mage::getModel('ckopayment/checkoutcomConfig')->getEnvironment() == 'sandbox' ? true : false;
-        // Initialize the Checkout Api
-        $checkout = new CheckoutApi($this->_getSecretKey(), $environment);
-
-        try {
-            // Check if payment is already voided or captured on checkout.com hub
-            $details = $checkout->payments()->details($ckoPaymentId);
-
-            if ($details->status == 'Refunded' && !$amountLessThanGrandTotal) {
-                $errorMessage = 'Payment has already been refunded on Checkout.com hub for order Id : ' . $orderId;
-
-                Mage::log($errorMessage, null, $this->_code . '.log');
-                Mage::throwException($errorMessage);
-
-                return $this;
-            }
-
-            $ckoPayment = new Refund($ckoPaymentId);
-
-            // Process partial refund if amount is less than grand total
-            if ($amountLessThanGrandTotal) {
-                $ckoPayment->amount = $amountCents;
-                $ckoPayment->reference = $orderId;
-            }
-
-            $response = $checkout->payments()->refund($ckoPayment);
-
-            if (!$response->isSuccessful()) {
-                $errorMessage = 'An error has occurred while processing your refund payment on Checkout.com hub. Order Id : ' . $orderId;
-
-                Mage::log($errorMessage, null, $this->_code . '.log');
-                Mage::log($response, Zend_Log::DEBUG, $this->_code . '.log', true);
-
-                Mage::throwException($errorMessage);
-            } else {
-                $order->setPaymentIsRefunded(1);
-                $order->save();
-            }
-        }  catch (CheckoutModelException $ex) {
-            $errorMessage = "An error has occurred while processing your refund request. ";
-            Mage::log($errorMessage, null, $this->_code . '.log');
-            Mage::log($ex->getBody(), Zend_Log::DEBUG, $this->_code . '.log', true);
-            Mage::throwException($errorMessage);
-        } catch (CheckoutHttpException $ex) {
-            Mage::log($ex->getMessage(), Zend_Log::DEBUG, $this->_code . '.log', true);
-            $errorMessage = "An error has occurred while processing your refund request. ";
-            Mage::throwException($errorMessage);
-        }
+        Mage::getModel('ckopayment/checkoutcomCards')->refund($payment, $amount);
 
         return $this;
     }
@@ -470,62 +335,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomGooglePay extends Mage_Payment_Mod
      */
     public function void(Varien_Object $payment)
     {
-        $ckoPaymentId = $payment->getAdditionalInformation('ckoPaymentId');
-        $order = $payment->getOrder();
-        $orderId = $order->getIncrementId();
-
-        // Check if CKO payment id exist in order
-        if (empty($ckoPaymentId)) {
-            $errorMessage = 'CKO PaymentId not found for order Id : ' . $orderId;
-
-            Mage::log($errorMessage, null, $this->_code . '.log');
-            Mage::throwException($errorMessage);
-        }
-
-        $environment =  Mage::getModel('ckopayment/checkoutcomConfig')->getEnvironment() == 'sandbox' ? true : false;
-        // Initialize the Checkout Api
-        $checkout = new CheckoutApi($this->_getSecretKey(), $environment);
-
-        try {
-            // Check if payment is already voided or captured on checkout.com hub
-            $details = $checkout->payments()->details($ckoPaymentId);
-
-            if ($details->status == 'Voided' || $details->status == 'Captured') {
-                $errorMessage = 'Payment has already been voided or captured on Checkout.com hub for order Id : ' . $orderId;
-
-                Mage::log($errorMessage, null, $this->_code . '.log');
-                Mage::throwException($errorMessage);
-
-                return $this;
-            }
-
-            // Prepare void payload
-            $ckoPayment = new Voids($ckoPaymentId, $orderId);
-
-            // Process void payment on checkout.com
-            $response = $checkout->payments()->void($ckoPayment);
-
-            if (!$response->isSuccessful()) {
-                $errorMessage = 'An error has occurred while processing your void payment on Checkout.com hub. Order Id : ' . $orderId;
-
-                Mage::log($errorMessage, null, $this->_code . '.log');
-                Mage::log($response, Zend_Log::DEBUG, $this->_code . '.log', true);
-
-                Mage::throwException($errorMessage);
-            } else {
-                $order->setPaymentIsVoided(1);
-                $order->save();
-            }
-        } catch (CheckoutModelException $ex) {
-            $errorMessage = "An error has occurred while processing your void request. ";
-            Mage::log($errorMessage, null, $this->_code . '.log');
-            Mage::log($ex->getBody(), Zend_Log::DEBUG, $this->_code . '.log', true);
-            Mage::throwException($errorMessage);
-        } catch (CheckoutHttpException $ex) {
-            Mage::log($ex->getMessage(), Zend_Log::DEBUG, $this->_code . '.log', true);
-            $errorMessage = "An error has occurred while processing your void request. ";
-            Mage::throwException($errorMessage);
-        }
+        Mage::getModel('ckopayment/checkoutcomCards')->void($payment, null);
 
         return $this;
     }
