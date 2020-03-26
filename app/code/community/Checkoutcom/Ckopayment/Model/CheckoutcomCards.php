@@ -380,7 +380,6 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
 
                 Mage::throwException($errorMessage);
             } else {
-                $order->setPaymentIsRefunded(1);
 
                 $parentTransactionId = $this->getCkoLastTransId('Refund', $ckoPaymentId);
                 $payment->setTransactionId($response->action_id);
@@ -388,6 +387,8 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
 
                 if ($amountLessThanGrandTotal) {
                     $payment->setIsTransactionClosed(0);
+                } else {
+                    $order->setPaymentIsRefunded(1);
                 }
                 
                 $order->save();
