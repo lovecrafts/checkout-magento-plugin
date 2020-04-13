@@ -38,32 +38,47 @@ class Checkoutcom_Ckopayment_Block_Form_CheckoutcomApms extends Mage_Payment_Blo
         $apmArray = array();
         $apmSelect = $this->_getConfigModel()->getAlternativePaymentMethods();
         $currencyCode = Mage::app()->getStore()->getCurrentCurrencyCode();
+        $quote = Mage::getModel('ckopayment/checkoutcomUtils')->getQuote(null);
+        $billingAddress = $quote->getBillingAddress();
+        $countryCode = $billingAddress->getCountry();
 
         if ($apmSelect !== 0) {
             $apmArr = explode(',', $apmSelect);
 
             foreach ($apmArr as $value) {
-                if ($value == 'ideal' && $currencyCode == 'EUR') {
+
+                if ($value == 'ideal' && $currencyCode == 'EUR' && $countryCode == 'NL') {
                     array_push($apmArray, $value);
                 }
 
                 if ($value == 'sofort' && $currencyCode == 'EUR') {
-                    array_push($apmArray, $value);
+
+                    if ($countryCode == 'BE'
+                        || $countryCode == 'DE'
+                        || $countryCode == 'IT'
+                        || $countryCode == 'NL'
+                        || $countryCode == 'AT'
+                        || $countryCode == 'ES'
+                    ) {
+                        array_push($apmArray, $value);
+                    }
                 }
 
-                if ($value == 'boleto' ) {
+                if ($value == 'boleto' && $countryCode == 'BR') {
                     if ($currencyCode == 'BRL' || $currencyCode == 'USD' ) {
                         array_push($apmArray, $value);
                     }
                 }
 
-                if ($value == 'giropay' && $currencyCode == 'EUR') {
+                if ($value == 'giropay' && $currencyCode == 'EUR' && $countryCode == 'DE') {
                     array_push($apmArray, $value);
                 }
 
                 if ($value == 'poli') {
                     if ($currencyCode == 'AUD' || $currencyCode == 'NZD') {
-                        array_push($apmArray, $value);
+                        if ($countryCode == 'AU' || $countryCode == 'NZ') {
+                            array_push($apmArray, $value);
+                        }
                     }
                 }
 
@@ -72,33 +87,81 @@ class Checkoutcom_Ckopayment_Block_Form_CheckoutcomApms extends Mage_Payment_Blo
                         || $currencyCode == 'DKK'
                         || $currencyCode == 'GBP'
                         || $currencyCode == 'NOR'
-                        || $currencyCode == 'SEK')
-                    {
-                        array_push($apmArray, $value);
+                        || $currencyCode == 'SEK'
+                    ) {
+                        if ($currencyCode == 'AT'
+                            || $currencyCode == 'DK'
+                            || $currencyCode == 'FI'
+                            || $currencyCode == 'DE'
+                            || $currencyCode == 'NL'
+                            || $currencyCode == 'NO'
+                            || $currencyCode == 'SE'
+                            || $currencyCode == 'GB'
+                        ) {
+                            array_push($apmArray, $value);
+                        }
                     }
                 }
 
                 if ($value == 'sepa' && $currencyCode == 'EUR') {
+
+                    if ($countryCode == 'AD'
+                        || $countryCode == 'AT'
+                        || $countryCode == 'BE'
+                        || $countryCode == 'CY'
+                        || $countryCode == 'EE'
+                        || $countryCode == 'FI'
+                        || $countryCode == 'DE'
+                        || $countryCode == 'GR'
+                        || $countryCode == 'IE'
+                        || $countryCode == 'IT'
+                        || $countryCode == 'LV'
+                        || $countryCode == 'LT'
+                        || $countryCode == 'LU'
+                        || $countryCode == 'MT'
+                        || $countryCode == 'MC'
+                        || $countryCode == 'NL'
+                        || $countryCode == 'PT'
+                        || $countryCode == 'SM'
+                        || $countryCode == 'SK'
+                        || $countryCode == 'SI'
+                        || $countryCode == 'ES'
+                        || $countryCode == 'VA'
+                        || $countryCode == 'BG'
+                        || $countryCode == 'HR'
+                        || $countryCode == 'CZ'
+                        || $countryCode == 'DK'
+                        || $countryCode == 'HU'
+                        || $countryCode == 'IS'
+                        || $countryCode == 'LI'
+                        || $countryCode == 'NO'
+                        || $countryCode == 'PL'
+                        || $countryCode == 'RO'
+                        || $countryCode == 'SE'
+                        || $countryCode == 'CH'
+                        || $countryCode == 'GB'  
+                    ) {
+                        array_push($apmArray, $value);
+                    }
+                }
+
+                if ($value == 'eps' && $currencyCode == 'EUR' && $countryCode == 'AT') {
                     array_push($apmArray, $value);
                 }
 
-                if ($value == 'eps' && $currencyCode == 'EUR') {
+                if ($value == 'bancontact' && $currencyCode == 'EUR' && $countryCode == 'BE') {
                     array_push($apmArray, $value);
                 }
 
-                if ($value == 'bancontact' && $currencyCode == 'EUR') {
+                if ($value == 'knet' && $currencyCode == 'KWD' && $countryCode == 'KW') {
                     array_push($apmArray, $value);
                 }
 
-                if ($value == 'knet' && $currencyCode == 'KWD') {
+                if ($value == 'fawry' && $currencyCode == 'EGP' && $countryCode == 'EG') {
                     array_push($apmArray, $value);
                 }
 
-                if ($value == 'fawry' && $currencyCode == 'EGP') {
-                    array_push($apmArray, $value);
-                }
-
-                if ($value == 'alipay' && $currencyCode == 'USD') {
+                if ($value == 'alipay' && $currencyCode == 'USD' && $countryCode == 'CN') {
                     array_push($apmArray, $value);
                 }
             }
@@ -312,7 +375,8 @@ class Checkoutcom_Ckopayment_Block_Form_CheckoutcomApms extends Mage_Payment_Blo
         $products = array();
 
         foreach($items as $item) {
-            $unitPrice = Mage::getModel('ckopayment/checkoutcomUtils')->valueToDecimal($item->getPrice(), $currencyCode);
+            $unitPrice = Mage::getModel('ckopayment/checkoutcomUtils')->valueToDecimal($item->getPriceInclTax(), $currencyCode);
+            
             $products[] = array(
                 "name" => $item->getName(),
                 "quantity" => $item->getQty(),
