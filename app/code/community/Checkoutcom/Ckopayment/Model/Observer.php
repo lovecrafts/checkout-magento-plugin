@@ -75,32 +75,4 @@ class Checkoutcom_Ckopayment_Model_Observer
         return $this;
     }
 
-    /**
-     * Set order status depending on selection from Refunded order status from Checkout.com configuration
-     *
-     * @return $this
-     * @throws Exception
-     */
-    public function setRefundOrderStatus()
-    {
-        $orderId = Mage::app()->getRequest()->getParam('order_id');
-        $order = Mage::getModel('sales/order')->load($orderId);
-        $payment = $order->getPayment();
-
-        $refundStatus = Mage::getModel('ckopayment/checkoutcomConfig')->getRefundedOrderStatus();
-
-        // Set order status selected from admin module setting;
-        if ($refundStatus == 'processing') {
-            return $this;
-        } elseif ($refundStatus == 'closed') {
-            $payment->setIsTransactionClosed(0);
-            $payment->save();
-        } else {
-            $order->addStatusToHistory($refundStatus, 'Payment refunded successfully on checkout.com hub.');
-        }
-
-        $order->save();
-
-        return $this;
-    }
 }
