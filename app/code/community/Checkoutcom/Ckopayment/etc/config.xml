@@ -148,14 +148,6 @@
 					</ckopayment>
 				</observers>
 			</controller_action_postdispatch_adminhtml_sales_order_invoice_save>
-			<controller_action_postdispatch_adminhtml_sales_order_creditmemo_save>
-				<observers>
-					<ckopayment>
-						<class>ckopayment/observer</class>
-						<method>setRefundOrderStatus</method>
-					</ckopayment>
-				</observers>
-			</controller_action_postdispatch_adminhtml_sales_order_creditmemo_save>
 		</events>
 	</adminhtml>
 </config>
