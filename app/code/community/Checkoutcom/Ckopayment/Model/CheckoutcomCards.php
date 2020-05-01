@@ -626,14 +626,16 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
         // Set redirection url in payment request
         $payment->success_url = Mage::getBaseUrl() . 'ckopayment/api/success';
         $payment->failure_url = Mage::getBaseUrl() . 'ckopayment/api/error';
-
+        
         // Additional info in metadata
+        $udf5 = "Platform Data - Magento " . Mage::getVersion() 
+        . ", Integration Data - Checkout.com " 
+        . Mage::helper('ckopayment')->getExtensionVersion() 
+        . ", SDK Data - PHP SDK ". CheckoutApi::VERSION 
+        . ", order Id - " . $orderId . ", Server - " . Mage::getBaseUrl();
+
         $metadata = array(
-            'server' => Mage::getBaseUrl(),
-            'sdk_data' => "PHP SDK v".CheckoutApi::VERSION,
-            'integration_data' => "Checkout.com Magento Plugin v".Mage::helper('ckopayment')->getExtensionVersion(),
-            'platform_data' => "Magento v".Mage::getVersion(),
-            'quoteId' => $quote->getId(),
+            'udf5' => $udf5
         );
 
 
