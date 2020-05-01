@@ -89,14 +89,14 @@ class Checkoutcom_Ckopayment_Block_Form_CheckoutcomApms extends Mage_Payment_Blo
                         || $currencyCode == 'NOR'
                         || $currencyCode == 'SEK'
                     ) {
-                        if ($currencyCode == 'AT'
-                            || $currencyCode == 'DK'
-                            || $currencyCode == 'FI'
-                            || $currencyCode == 'DE'
-                            || $currencyCode == 'NL'
-                            || $currencyCode == 'NO'
-                            || $currencyCode == 'SE'
-                            || $currencyCode == 'GB'
+                        if ($countryCode == 'AT'
+                            || $countryCode == 'DK'
+                            || $countryCode == 'FI'
+                            || $countryCode == 'DE'
+                            || $countryCode == 'NL'
+                            || $countryCode == 'NO'
+                            || $countryCode == 'SE'
+                            || $countryCode == 'GB'
                         ) {
                             array_push($apmArray, $value);
                         }
@@ -301,6 +301,7 @@ class Checkoutcom_Ckopayment_Block_Form_CheckoutcomApms extends Mage_Payment_Blo
 
         $data = array(
             "billing_address" => $cartInfo['billing_address'],
+            "shipping_address" => $cartInfo['shipping_address'],
             "purchase_country" => $cartInfo['purchase_country'],
             "currency" => $cartInfo['purchase_currency'],
             "locale" => $cartInfo['locale'],
@@ -416,13 +417,25 @@ class Checkoutcom_Ckopayment_Block_Form_CheckoutcomApms extends Mage_Payment_Blo
                 "given_name" => $billingAddress->getFirstname(),
                 "family_name" => $billingAddress->getLastname(),
                 "email" => Mage::helper('ckopayment')->getCustomerEmail(null),
-                "street_address" => $billStreet[0],
+                "street_address" =>$billStreet[0],
                 "street_address2" => $billStreet[1],
                 "postal_code" => $billingAddress->getPostcode(),
                 "city" => $billingAddress->getCity(),
                 "region" => $billingAddress->getCity(),
-                "phone" => $phoneNumber,
+                "phone" => $billingAddress->getTelephone(),
                 "country" => $billingAddress->getCountry(),
+            ),
+            "shipping_address" => array(
+                "given_name" => $shippingAddress->getFirstname(),
+                "family_name" => $shippingAddress->getLastname(),
+                "email" => Mage::helper('ckopayment')->getCustomerEmail(null),
+                "street_address" => $shipStreet[0],
+                "street_address2" => $shipStreet[1],
+                "postal_code" => $shippingAddress->getPostcode(),
+                "city" => $shippingAddress->getCity(),
+                "region" => $shippingAddress->getCity(),
+                "phone" => $phoneNumber,
+                "country" => $shippingAddress->getCountry(),
             ),
             "order_amount" => $amountCent,
             "order_tax_amount" => 0,

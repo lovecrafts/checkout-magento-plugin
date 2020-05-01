@@ -134,7 +134,7 @@
             <?php if (!empty($paymentMethodCategories)): ?>
                 <?php foreach ($paymentMethodCategories as $key => $value): ?>
                 <label>
-                    <input type="radio" class="klarna_widgets" id="<?php echo $value->identifier; ?>" name="klarna_widgets" value="<?php echo $value->identifier; ?>" style="opacity: 0;" >
+                    <input type="radio" class="klarna_widgets" id="<?php echo $value->identifier; ?>" name="klarna_widgets" value="<?php echo $value->identifier; ?>" style="opacity: 1;" >
                     <?php echo $value->name; ?> 
                 </label>
                 <?php endforeach?>
