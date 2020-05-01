@@ -326,7 +326,7 @@
 }
 
 .klarna_widgets {
-	display: flex;
+	display: inline-grid;
 }
 
 .klarna_widgets img{
@@ -530,7 +530,6 @@
 
 .input-container {
   position: relative;
-  display: flex;
   height: 40px;
 }
 .icon-container:last-child {
