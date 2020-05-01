@@ -245,6 +245,15 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomApms extends Mage_Payment_Model_Me
         $billingAddressParam->state = $billingAddress->getRegion();
         $billingAddressParam->zip = $billingAddress->getPostcode();
         $billingAddressParam->country = $billingAddress->getCountry();
+        
+        // Set shipping Address
+        $shippingAddressParam = new Address();
+        $shippingAddressParam->address_line1 = $shipStreet[0];
+        $shippingAddressParam->address_line2 = $shipStreet[1];
+        $shippingAddressParam->city = $shippingAddress->getCity();
+        $shippingAddressParam->state = $shippingAddress->getRegion();
+        $shippingAddressParam->zip = $shippingAddress->getPostcode();
+        $shippingAddressParam->country = $shippingAddress->getCountry();
 
         // Create a payment method instance depending on apm name
         switch ($apmName) {
@@ -332,10 +341,22 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomApms extends Mage_Payment_Model_Me
                 $billingAddressParam->postal_code = $billingAddress->getPostcode();
                 $billingAddressParam->city = $billingAddress->getCity();
                 $billingAddressParam->region = $billingAddress->getCity();
-                $billingAddressParam->phone = $phoneNumber;
+                $billingAddressParam->phone = $billingAddress->getTelephone();
                 $billingAddressParam->country = $billingAddress->getCountry();
+                
+                $shippingAddressParam = new Address();
+                $shippingAddressParam->given_name = $shippingAddress->getFirstname();
+                $shippingAddressParam->family_name = $shippingAddress->getLastname();
+                $shippingAddressParam->email = Mage::helper('ckopayment')->getCustomerEmail(null);
+                $shippingAddressParam->street_address = $shipStreet[0];
+                $shippingAddressParam->street_address2 = $shipStreet[1];
+                $shippingAddressParam->postal_code = $shippingAddress->getPostcode();
+                $shippingAddressParam->city = $shippingAddress->getCity();
+                $shippingAddressParam->region = $shippingAddress->getCity();
+                $shippingAddressParam->phone = $phoneNumber;
+                $shippingAddressParam->country = $shippingAddress->getCountry();
 
-                $method = new KlarnaSource($klarnaToken, $countryCode, $locale, $billingAddressParam, 0, $products);
+                $method = new KlarnaSource($klarnaToken, $countryCode, $locale, $billingAddressParam, $shippingAddressParam, 0, $products, $orderId);
 
                 break;
             case 'poli':
@@ -473,15 +494,6 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomApms extends Mage_Payment_Model_Me
             'name' => $billingAddress->getName(),
         );
 
-        // Set shipping Address
-        $shippingAddressParam = new Address();
-        $shippingAddressParam->address_line1 = $shipStreet[0];
-        $shippingAddressParam->address_line2 = $shipStreet[1];
-        $shippingAddressParam->city = $shippingAddress->getCity();
-        $shippingAddressParam->state = $shippingAddress->getRegion();
-        $shippingAddressParam->zip = $shippingAddress->getPostcode();
-        $shippingAddressParam->country = $shippingAddress->getCountry();
-
         $phone = new Phone();
         $phone->number = $phoneNumber;
 
@@ -491,13 +503,15 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomApms extends Mage_Payment_Model_Me
         $payment->success_url = Mage::getBaseUrl() . 'ckopayment/api/success';
         $payment->failure_url = Mage::getBaseUrl() . 'ckopayment/api/error';
 
-        // Set additional info in payment request
+        // Additional info in metadata
+        $udf5 = "Platform Data - Magento " . Mage::getVersion() 
+        . ", Integration Data - Checkout.com " 
+        . Mage::helper('ckopayment')->getExtensionVersion() 
+        . ", SDK Data - PHP SDK ". CheckoutApi::VERSION 
+        . ", order Id - " . $orderId . ", Server - " . Mage::getBaseUrl();
+
         $metadata = array(
-            'server' => Mage::getBaseUrl(),
-            'sdk_data' => "PHP SDK v".CheckoutApi::VERSION,
-            'integration_data' => "Checkout.com Magento Plugin v".Mage::helper('ckopayment')->getExtensionVersion(),
-            'platform_data' => "Magento v".Mage::getVersion(),
-            'quoteId' => $quote->getId(),
+            'udf5' => $udf5
         );
 
         if($apmName == 'sepa'){
