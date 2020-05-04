@@ -18,16 +18,13 @@
 	</ckopayment_cards_index>
 	<checkout_onepage_index translate="label">
 		<reference name="head">
-			<action method="addJs">
-				<script>checkoutcom/chargepayment.js</script>
-			</action>
 			<action method="addCss">
 				<stylesheet>css/checkoutcom-styles.css</stylesheet>
 			</action>
 			<block type="core/text" name="checkout.com.jquery">
 				<action method="setText">
 					<text>
-						<![CDATA[<script type="text/javascript" src="https://cdn.checkout.com/js/frames.js"></script><script type="text/javascript">jQuery.noConflict();</script>]]>
+						<![CDATA[<script type="text/javascript" src="https://cdn.checkout.com/js/framesv2.min.js"></script><script type="text/javascript">jQuery.noConflict();</script>]]>
 					</text>
 				</action>
 			</block>
@@ -56,4 +53,59 @@
 			</block>
 		</reference>
 	</checkout_onepage_review>
+	<default>
+		<reference name="head">
+			<action method="addCss">
+				<stylesheet>css/checkoutcom-styles.css</stylesheet>
+			</action>
+			<block type="core/text" name="checkout.com.jquery">
+				<action method="setText">
+					<text>
+						<![CDATA[<script type="text/javascript" src="https://cdn.checkout.com/js/framesv2.min.js"></script><script type="text/javascript">jQuery.noConflict();</script>]]>
+					</text>
+				</action>
+			</block>
+		</reference>
+		<reference name="header">
+			<reference name="top.container">
+				<block type="core/text" name="checkout.com.jquery">
+					<action method="setText">
+						<text>
+							<![CDATA[<script type="text/javascript" src="https://cdn.checkout.com/js/framesv2.min.js"></script><script type="text/javascript">jQuery.noConflict();</script>]]>
+						</text>
+					</action>
+				</block>
+				<block type="core/text" name="checkout.com.gpay">
+					<action method="setText">
+						<text>
+							<![CDATA[<script type="text/javascript" src="https://pay.google.com/gp/p/js/pay.js"></script><script type="text/javascript">jQuery.noConflict();</script>]]>
+						</text>
+					</action>
+				</block>
+			</reference>
+		</reference>
+	</default>
+	<onestepcheckout_index_index>
+		<reference name="head">
+			<action method="addCss">
+				<stylesheet>css/checkoutcom-styles.css</stylesheet>
+			</action>
+			<block type="core/text" name="checkout.com.jquery">
+				<action method="setText">
+					<text>
+						<![CDATA[<script type="text/javascript" src="https://cdn.checkout.com/js/framesv2.min.js"></script><script type="text/javascript">jQuery.noConflict();</script>]]>
+					</text>
+				</action>
+			</block>
+		</reference>
+	</onestepcheckout_index_index>
+    <aw_onestepcheckout_index_index>
+        <reference name="aw_onestepcheckout.onestep.form.paymentmethod.extra">
+            <block name="checkoutcom.default" type="ckopayment/default" >
+                <action method="setTemplate"  ifconfig="payment/checkoutcomcards/active">
+                        <template>checkoutcom/default.phtml</template>
+                </action>
+            </block>
+        </reference>
+    </aw_onestepcheckout_index_index>
 </layout>

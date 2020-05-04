@@ -7,6 +7,7 @@ use Checkout\Models\Payments\Payment;
 use Checkout\Models\Payments\Refund;
 use Checkout\Models\Payments\Shipping;
 use Checkout\Models\Payments\ThreeDs;
+use Checkout\Models\Payments\Risk;
 use Checkout\Models\Payments\TokenSource;
 use Checkout\Models\Payments\Voids;
 use Checkout\Models\Payments\BillingDescriptor;
@@ -15,8 +16,9 @@ use Checkout\Models\Payments\IdSource;
 use Checkout\Library\Exceptions\CheckoutHttpException;
 use Checkout\Library\Exceptions\CheckoutModelException;
 
+
 /**
- * Class Checkoutcom_Ckopayment_Model_CheckoutcomCards
+ * Checkoutcom_Ckopayment_Model_CheckoutcomCards
  */
 class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_Method_Cc
 {
@@ -263,7 +265,6 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
             // Check if payment is already voided or captured on checkout.com hub
             $details = $checkout->payments()->details($ckoPaymentId);
 
-
             if ($details->status == 'Voided' || $details->status == 'Captured' && !$amountLessThanGrandTotal) {
                 $errorMessage = 'Payment has already been voided or captured on Checkout.com hub for order Id : ' . $orderId;
 
@@ -291,7 +292,11 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
 
                 Mage::throwException($errorMessage);
             } else {
+
+                $parentTransactionId = $this->getCkoParentTransId('Authorization', $ckoPaymentId);
+
                 $payment->setTransactionId($response->action_id);
+                $payment->setParentTransactionId($parentTransactionId);
                 $payment->setIsTransactionClosed(0);
 
                 $order->setPaymentIsCaptured(1);
@@ -310,7 +315,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
 
         return $this;
     }
-
+        
     /**
      * Used to process refund from backend
      *
@@ -375,9 +380,20 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
 
                 Mage::throwException($errorMessage);
             } else {
-                $order->setPaymentIsRefunded(1);
+
+                $parentTransactionId = $this->getCkoLastTransId('Refund', $ckoPaymentId);
+                $payment->setTransactionId($response->action_id);
+                $payment->setParentTransactionId($parentTransactionId);
+
+                if ($amountLessThanGrandTotal) {
+                    $payment->setIsTransactionClosed(0);
+                } else {
+                    $order->setPaymentIsRefunded(1);
+                }
+                
                 $order->save();
             }
+
         } catch (CheckoutModelException $ex) {
             $errorMessage = "An error has occurred while processing your refund request. ";
             Mage::log($errorMessage, null, $this->_code . '.log');
@@ -445,6 +461,10 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
                 Mage::throwException($errorMessage);
             } else {
                 $order->setPaymentIsVoided(1);
+                $parentTransactionId = $this->getCkoParentTransId('Authorization', $ckoPaymentId);
+                $payment->setTransactionId($response->action_id);
+                $payment->setParentTransactionId($parentTransactionId);
+
                 $order->save();
             }
         } catch (CheckoutModelException $ex) {
@@ -595,6 +615,13 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
             'name' => $customerName,
         );
 
+        // Set 3ds to false if admin order
+        if(Mage::app()->getRequest()->getParam('order')){
+            $threeD = false;
+            $risk = new Risk(false);
+            $payment->risk = $risk;
+        }
+
         $threeDs = new ThreeDs($threeD);
 
         if ($threeD) {
@@ -626,14 +653,16 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
         // Set redirection url in payment request
         $payment->success_url = Mage::getBaseUrl() . 'ckopayment/api/success';
         $payment->failure_url = Mage::getBaseUrl() . 'ckopayment/api/error';
-
+        
         // Additional info in metadata
+        $udf5 = "Platform Data - Magento " . Mage::getVersion() 
+        . ", Integration Data - Checkout.com " 
+        . Mage::helper('ckopayment')->getExtensionVersion() 
+        . ", SDK Data - PHP SDK ". CheckoutApi::VERSION 
+        . ", order Id - " . $orderId . ", Server - " . Mage::getBaseUrl();
+
         $metadata = array(
-            'server' => Mage::getBaseUrl(),
-            'sdk_data' => "PHP SDK v".CheckoutApi::VERSION,
-            'integration_data' => "Checkout.com Magento Plugin v".Mage::helper('ckopayment')->getExtensionVersion(),
-            'platform_data' => "Magento v".Mage::getVersion(),
-            'quoteId' => $quote->getId(),
+            'udf5' => $udf5
         );
 
 
@@ -821,4 +850,85 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
         return $isMada;
     }
 
+    /**
+     * getCkoParentTransId
+     * 
+     * Get payment action id from cko 
+     *
+     * @param  mixed $actionType
+     * @param  mixed $ckoPaymentId
+     * @return void
+     */
+    public function getCkoParentTransId($actionType, $ckoPaymentId) 
+    {
+        $environment =  Mage::getModel('ckopayment/checkoutcomConfig')->getEnvironment() == 'sandbox' ? true : false;
+        // Initialize the Checkout Api
+        $checkout = new CheckoutApi($this->_getSecretKey(), $environment);
+        
+        $actions = $checkout->payments()->actions($ckoPaymentId);
+        $parentTransactionId = '';
+
+        foreach ($actions as $action) {
+            foreach ($action as $act) {
+                if ($act->type == $actionType ) {
+                    $parentTransactionId = $act->id;
+                }
+            }
+        }
+
+        return $parentTransactionId;
+    }
+    
+    /**
+     * getCkoLastTransId
+     *
+     * @param  mixed $actionType
+     * @param  mixed $ckoPaymentId
+     * @return void
+     */
+    public function getCkoLastTransId($actionType, $ckoPaymentId) 
+    {
+        $environment =  Mage::getModel('ckopayment/checkoutcomConfig')->getEnvironment() == 'sandbox' ? true : false;
+        // Initialize the Checkout Api
+        $checkout = new CheckoutApi($this->_getSecretKey(), $environment);
+        
+        $actions = $checkout->payments()->actions($ckoPaymentId);
+        $parentTransactionId = '';
+
+        foreach ($actions as $action) {
+            $test = $action[1];
+            $parentTransactionId = $test->id;
+
+            return $parentTransactionId;
+        }
+        
+        return $parentTransactionId;
+    }
+
+    /**
+     * getTotalRefunded
+     *
+     * @param  mixed $ckoPaymentId
+     * @return void
+     */
+    public function getTotalRefunded($ckoPaymentId) 
+    {
+        $environment =  Mage::getModel('ckopayment/checkoutcomConfig')->getEnvironment() == 'sandbox' ? true : false;
+        // Initialize the Checkout Api
+        $checkout = new CheckoutApi($this->_getSecretKey(), $environment);
+        
+        $actions = $checkout->payments()->actions($ckoPaymentId);
+
+        $arr = array();
+
+        foreach ($actions as $action) {
+            foreach ($action as $act) {
+                if ($act->type == 'Refund' ) {
+                    $totalRefunded += $act->amount;
+                }
+            }
+        }
+
+        return $totalRefunded;
+    }
 }
