@@ -1,12 +1,12 @@
 {
-    "name": "lovecrafts/checkout-magento-plugin",
+    "name": "checkout/checkout-magento-plugin",
     "description": "Magento Plugin to connect to Payment Service Provider CheckoutCom.",
     "type": "magento-module",
-    "homepage": "https://github.com/lovecrafts/checkout-magento-plugin",
+    "homepage": "https://github.com/checkout/checkout-magento-plugin",
     "authors": [
         {
-            "name": "Lovecrafts",
-            "email": "support@lovecrafts.com"
+            "name": "checkout",
+            "email": "support@checkout.com"
         }
     ],
     "require": {
