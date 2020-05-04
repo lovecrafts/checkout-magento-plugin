@@ -325,7 +325,7 @@
 }
 
 .klarna_widgets {
-	display: flex;
+	display: inline-grid;
 }
 
 .klarna_widgets img{
