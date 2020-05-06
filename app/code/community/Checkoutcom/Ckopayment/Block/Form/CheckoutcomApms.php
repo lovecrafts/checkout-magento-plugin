@@ -396,19 +396,7 @@ class Checkoutcom_Ckopayment_Block_Form_CheckoutcomApms extends Mage_Payment_Blo
         $shippingMethodCode = Mage::getSingleton('checkout/session')->getQuote()->getShippingAddress()->getShippingMethod();
         $shippingAmount = Mage::getSingleton('checkout/session')->getQuote()->getShippingAddress()->getShippingAmount();
         $shippingAmountCents = Mage::getModel('ckopayment/checkoutcomUtils')->valueToDecimal($shippingAmount, $currencyCode);
-        // Set shipping method in product to calculate total amount correctly.
-        $products[] = array(
-            "name" => $shippingMethod,
-            "quantity" => 1,
-            "unit_price" => $shippingAmountCents,
-            "tax_rate" => 0,
-            "total_amount" => $shippingAmountCents,
-            "total_tax_amount" => 0,
-            "type" => "shipping_fee",
-            "reference" => $shippingMethodCode,
-            "total_discount_amount" => 0
-        );
-
+        
         $cartInfo = array(
             "purchase_country" =>$billingAddress->getCountry(),
             "purchase_currency" => $currencyCode,
@@ -417,7 +405,7 @@ class Checkoutcom_Ckopayment_Block_Form_CheckoutcomApms extends Mage_Payment_Blo
                 "given_name" => $billingAddress->getFirstname(),
                 "family_name" => $billingAddress->getLastname(),
                 "email" => Mage::helper('ckopayment')->getCustomerEmail(null),
-                "street_address" =>$billStreet[0],
+                "street_address" => $billStreet[0],
                 "street_address2" => $billStreet[1],
                 "postal_code" => $billingAddress->getPostcode(),
                 "city" => $billingAddress->getCity(),
@@ -425,7 +413,26 @@ class Checkoutcom_Ckopayment_Block_Form_CheckoutcomApms extends Mage_Payment_Blo
                 "phone" => $billingAddress->getTelephone(),
                 "country" => $billingAddress->getCountry(),
             ),
-            "shipping_address" => array(
+            "order_amount" => $amountCent,
+            "order_tax_amount" => 0,
+        );
+
+        if($shippingMethodCode) {
+            // Set shipping method in product to calculate total amount correctly.
+            $products[] = array(
+                "name" => $shippingMethod,
+                "quantity" => 1,
+                "unit_price" => $shippingAmountCents,
+                "tax_rate" => 0,
+                "total_amount" => $shippingAmountCents,
+                "total_tax_amount" => 0,
+                "type" => "shipping_fee",
+                "reference" => $shippingMethodCode,
+                "total_discount_amount" => 0
+            );
+
+            // Set shipping address if shipping method exist
+            $shippingAddress = array(
                 "given_name" => $shippingAddress->getFirstname(),
                 "family_name" => $shippingAddress->getLastname(),
                 "email" => Mage::helper('ckopayment')->getCustomerEmail(null),
@@ -436,11 +443,13 @@ class Checkoutcom_Ckopayment_Block_Form_CheckoutcomApms extends Mage_Payment_Blo
                 "region" => $shippingAddress->getCity(),
                 "phone" => $phoneNumber,
                 "country" => $shippingAddress->getCountry(),
-            ),
-            "order_amount" => $amountCent,
-            "order_tax_amount" => 0,
-            "order_lines" => $products
-        );
+            );
+
+           $cartInfo['shipping_address'] = $shippingAddress;
+        }
+
+        // Set order line
+        $cartInfo['order_lines'] = $products;
 
         return $cartInfo;
     }
