@@ -39,14 +39,6 @@
 					</ckopayment>
 				</observers>
 			</sales_order_place_after>
-			<controller_front_init_before>
-				<observers>
-					<ckopayment>
-						<class>ckopayment/autoloader</class>
-						<method>controllerFrontInitBefore</method>
-					</ckopayment>
-				</observers>
-			</controller_front_init_before>
 		</events>
 		<resources>
 			<ckopayment_setup>

@@ -1,0 +1,15 @@
+app/code/community/Checkoutcom/Ckopayment    app/code/community/Checkoutcom/Ckopayment
+app/etc/modules/Checkoutcom.xml              app/etc/modules/Checkoutcom.xml
+
+app/design/frontend/base/default/template/checkoutcom             app/design/frontend/base/default/template/checkoutcom
+app/design/frontend/base/default/layout/checkoutcom.xml           app/design/frontend/base/default/layout/checkoutcom.xml
+app/design/adminhtml/default/default/template/checkoutcom         app/design/adminhtml/default/default/template/checkoutcom
+app/design/adminhtml/default/default/layout/checkoutcom.xml       app/design/adminhtml/default/default/layout/checkoutcom.xml
+
+js/checkoutcom           js/checkoutcom
+lib/checkout-sdk-php     lib/checkout-sdk-php
+
+skin/frontend/base/default/css/checkoutcom-styles.css      skin/frontend/base/default/css/checkoutcom-styles.css
+skin/frontend/base/default/images/checkoutcom             skin/frontend/base/default/images/checkoutcom
+skin/adminhtml/default/default/images/checkoutcom         skin/adminhtml/default/default/images/checkoutcom
+
