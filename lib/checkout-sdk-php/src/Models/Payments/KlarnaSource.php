@@ -56,18 +56,20 @@ class KlarnaSource extends IdSource
     /**
      * Magic Methods
      */
-
+    
     /**
      * Initialise payment
      *
-     * @param      string   $token     Klarna authentication token, obtained by the merchant during client transaction authorization.
-     * @param      string  $currency  The currency in which the payment is being made (three-letter ISO 4217 code)
-     * @param      string  $locale    The customer's locale (RFC 1766 code).
-     * @param      Address  $billing   Customer's billing address.
-     * @param      integer   $tax       Total tax amount of the order.
-     * @param      Product[]    $products  This object is passed directly to Klarna as order_lines.
+     * @param string $token Klarna authentication token, obtained by the merchant during client transaction authorization.
+     * @param $country
+     * @param string $locale The customer's locale (RFC 1766 code).
+     * @param Address $billing Customer's billing address.
+     * @param null|Address $shipping
+     * @param integer $tax Total tax amount of the order.
+     * @param Product[] $products This object is passed directly to Klarna as order_lines.
+     * @param $reference
      */
-    public function __construct($token, $country, $locale, Address $billing, Address $shipping, $tax, array $products, $reference)
+    public function __construct($token, $country, $locale, Address $billing, ?Address $shipping, $tax, array $products, $reference)
     {
         $this->type = static::MODEL_NAME;
         $this->authorization_token = $token;
