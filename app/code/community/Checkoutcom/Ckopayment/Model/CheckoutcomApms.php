@@ -361,8 +361,13 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomApms extends Mage_Payment_Model_Me
                 $billingAddressParam->phone = $billingAddress->getTelephone();
                 $billingAddressParam->country = $billingAddress->getCountry();
 
-                $method = new KlarnaSource($klarnaToken, $countryCode, $locale, $billingAddressParam, $shippingAddressParam, 0, $products, $orderId);
-
+                $method = new KlarnaSource($klarnaToken, $countryCode, $locale, $billingAddressParam, 0, $products);
+                
+                if($shippingMethodCode) {
+                    $method->shipping_address = $shippingAddressParam;
+                    $method->merchant_reference1 = $orderId;
+                }
+                
                 break;
             case 'poli':
                 $method = new PoliSource();
