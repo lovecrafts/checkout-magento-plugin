@@ -138,6 +138,8 @@
                     <?php echo $value->name; ?> 
                 </label>
                 <?php endforeach?>
+            <?php else: ?>
+                    <?php echo $this->__('Klarna is not available at the moment. Please try with a different payment method'); ?>
             <?php endif;?>
         </div>
         <!-- Display form based on widgets click -->
