@@ -14,6 +14,12 @@ class Checkoutcom_Ckopayment_Model_Observer
     {
         $order = $observer->getEvent()->getOrder();
 
+        $isCko = $this->getPayMethod($order);
+
+        if (!$isCko) {
+            return;
+        }
+
         $authStatus = Mage::getModel('ckopayment/checkoutcomConfig')->getAuthorisedOrderStatus();
 
         $payment = $order->getPayment();
@@ -36,6 +42,12 @@ class Checkoutcom_Ckopayment_Model_Observer
     {
         $orderId = Mage::app()->getRequest()->getParam('order_id');
         $order = Mage::getModel('sales/order')->load($orderId);
+
+        $isCko = $this->getPayMethod($order);
+
+        if (!$isCko) {
+            return;
+        }
 
         $voidStatus = Mage::getModel('ckopayment/checkoutcomConfig')->getVoidedOrderStatus();
         $authStatus = Mage::getModel('ckopayment/checkoutcomConfig')->getAuthorisedOrderStatus();
@@ -64,6 +76,12 @@ class Checkoutcom_Ckopayment_Model_Observer
         $orderId = Mage::app()->getRequest()->getParam('order_id');
         $order = Mage::getModel('sales/order')->load($orderId);
 
+        $isCko = $this->getPayMethod($order);
+
+        if (!$isCko) {
+            return;
+        }
+
         $captureStatus = Mage::getModel('ckopayment/checkoutcomConfig')->getCapturedOrderStatus();
 
         // Set order status selected from admin module setting;
@@ -73,6 +91,29 @@ class Checkoutcom_Ckopayment_Model_Observer
         }
 
         return $this;
+    }
+
+    /**
+     * Check if payment method is checkout.com
+     */
+    public function getPayMethod($order)
+    {
+        $result = false;
+
+        $paymentMethod = $order->getPayment()->getMethodInstance()->getCode();
+
+        $arr = array(
+            Checkoutcom_Ckopayment_Helper_Data::CODE_CHECKOUT_COM_CARDS,
+            Checkoutcom_Ckopayment_Helper_Data::CODE_CHECKOUT_COM_APPLEPAY,
+            Checkoutcom_Ckopayment_Helper_Data::CODE_CHECKOUT_COM_APMS,
+            Checkoutcom_Ckopayment_Helper_Data::CODE_CHECKOUT_COM_GOOGLEPAY
+        );
+
+        if (in_array($paymentMethod, $arr)) {
+             $result = true;
+        }
+
+        return $result;
     }
 
 }
