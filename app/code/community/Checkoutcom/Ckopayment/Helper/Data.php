@@ -108,7 +108,7 @@ class Checkoutcom_Ckopayment_Helper_Data extends Mage_Core_Helper_Abstract
     public function isMadaCard($bin)
     {
         // Path to MADA_BIN.csv
-        $csvPath = Mage::getModuleDir('Model', 'Checkoutcom_Ckopayment') . "\Model\Files\Mada\MADA_BINS.csv";
+        $csvPath = Mage::getModuleDir('Model', 'Checkoutcom_Ckopayment') . "/Model/Files/Mada/MADA_BINS.csv";
 
         $csv = new Varien_File_Csv();
         // Get the data from the file
