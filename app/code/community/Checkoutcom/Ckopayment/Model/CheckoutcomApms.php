@@ -301,7 +301,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomApms extends Mage_Payment_Model_Me
 
                 foreach($items as $item) {
                     $unitPrice = Mage::getModel('ckopayment/checkoutcomutils')
-                        ->valueToDecimal($item->getPrice(), $currencyCode);
+                        ->valueToDecimal($item->getPriceInclTax(), $currencyCode);
 
                     $products[] = array(
                         "name" => $item->getName(),
