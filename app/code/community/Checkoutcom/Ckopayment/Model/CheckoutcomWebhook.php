@@ -87,7 +87,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomWebhook
                 $this->_addTransaction(
                     $payment,
                     $actionId,
-                    'refund',
+                    'capture',
                     array('is_transaction_closed' => 0),
                     array('real_transaction_id' => $actionId),
                     false
