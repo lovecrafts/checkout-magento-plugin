@@ -1,9 +1,9 @@
 <?php
 
 /*
- *class Checkoutcom_Ckopayment_Block_Adminhtml_System_config_Fieldset_Fieldset
+ *class Checkoutcom_Ckopayment_Block_Adminhtml_System_Config_Fieldset_Fieldset
  */
-class Checkoutcom_Ckopayment_Block_Adminhtml_System_config_Fieldset_Fieldset
+class Checkoutcom_Ckopayment_Block_Adminhtml_System_Config_Fieldset_Fieldset
     extends Mage_Adminhtml_Block_System_Config_Form_Fieldset
 {
     /**

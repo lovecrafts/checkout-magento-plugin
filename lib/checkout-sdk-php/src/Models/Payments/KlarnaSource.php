@@ -67,16 +67,14 @@ class KlarnaSource extends IdSource
      * @param      integer   $tax       Total tax amount of the order.
      * @param      Product[]    $products  This object is passed directly to Klarna as order_lines.
      */
-    public function __construct($token, $country, $locale, Address $billing, Address $shipping, $tax, array $products, $reference)
+    public function __construct($token, $country, $locale, Address $billing, $tax, array $products)
     {
         $this->type = static::MODEL_NAME;
         $this->authorization_token = $token;
         $this->billing_address = $billing;
-        $this->shipping_address = $shipping;
         $this->purchase_country = $country;
         $this->locale = $locale;
         $this->tax_amount = $tax;
         $this->products = $products;
-        $this->merchant_reference1 = $reference;
     }
 }

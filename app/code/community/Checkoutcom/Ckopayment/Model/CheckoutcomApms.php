@@ -255,6 +255,19 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomApms extends Mage_Payment_Model_Me
         $shippingAddressParam->zip = $shippingAddress->getPostcode();
         $shippingAddressParam->country = $shippingAddress->getCountry();
 
+        $shippingMethod = Mage::getSingleton('checkout/session')
+            ->getQuote()
+            ->getShippingAddress()
+            ->getShippingDescription();
+        $shippingMethodCode = Mage::getSingleton('checkout/session')
+            ->getQuote()
+            ->getShippingAddress()
+            ->getShippingMethod();
+        $shippingAmount = Mage::getSingleton('checkout/session')
+            ->getQuote()
+            ->getShippingAddress()
+            ->getShippingAmount();
+
         // Create a payment method instance depending on apm name
         switch ($apmName) {
             case 'alipay':
@@ -288,7 +301,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomApms extends Mage_Payment_Model_Me
 
                 foreach($items as $item) {
                     $unitPrice = Mage::getModel('ckopayment/checkoutcomutils')
-                        ->valueToDecimal($item->getPrice(), $currencyCode);
+                        ->valueToDecimal($item->getPriceInclTax(), $currencyCode);
 
                     $products[] = array(
                         "name" => $item->getName(),
@@ -304,33 +317,38 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomApms extends Mage_Payment_Model_Me
                     );
                 }
 
-                $shippingMethod = Mage::getSingleton('checkout/session')
-                    ->getQuote()
-                    ->getShippingAddress()
-                    ->getShippingDescription();
-                $shippingMethodCode = Mage::getSingleton('checkout/session')
-                    ->getQuote()
-                    ->getShippingAddress()
-                    ->getShippingMethod();
-                $shippingAmount = Mage::getSingleton('checkout/session')
-                    ->getQuote()
-                    ->getShippingAddress()
-                    ->getShippingAmount();
 
                 $shippingAmountCents = Mage::getModel('ckopayment/checkoutcomutils')
                     ->valueToDecimal($shippingAmount, $currencyCode);
-                // Set shipping method as product to calculate klarna total amount correctly.
-                $products[] = array(
-                    "name" => $shippingMethod,
-                    "quantity" => 1,
-                    "unit_price" => $shippingAmountCents,
-                    "tax_rate" => 0,
-                    "total_amount" => $shippingAmountCents,
-                    "total_tax_amount" => 0,
-                    "type" => "shipping_fee",
-                    "reference" => $shippingMethodCode,
-                    "total_discount_amount" => 0
-                );
+                $shipAddress = null;
+
+                if($shippingMethodCode) {
+                    // Set shipping method as product to calculate klarna total amount correctly.
+                    $products[] = array(
+                        "name" => $shippingMethod,
+                        "quantity" => 1,
+                        "unit_price" => $shippingAmountCents,
+                        "tax_rate" => 0,
+                        "total_amount" => $shippingAmountCents,
+                        "total_tax_amount" => 0,
+                        "type" => "shipping_fee",
+                        "reference" => $shippingMethodCode,
+                        "total_discount_amount" => 0
+                    );
+
+                    // Set shipping address if shipping method exist
+                    $shipAddress = new Address();
+                    $shipAddress->given_name = $shippingAddress->getFirstname();
+                    $shipAddress->family_name = $shippingAddress->getLastname();
+                    $shipAddress->email = Mage::helper('ckopayment')->getCustomerEmail(null);
+                    $shipAddress->street_address = $shipStreet[0];
+                    $shipAddress->street_address2 = $shipStreet[1];
+                    $shipAddress->postal_code = $shippingAddress->getPostcode();
+                    $shipAddress->city = $shippingAddress->getCity();
+                    $shipAddress->region = $shippingAddress->getCity();
+                    $shipAddress->phone = $phoneNumber;
+                    $shipAddress->country = $shippingAddress->getCountry();
+                }
 
                 $billingAddressParam = new Address();
                 $billingAddressParam->given_name = $billingAddress->getFirstname();
@@ -343,21 +361,14 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomApms extends Mage_Payment_Model_Me
                 $billingAddressParam->region = $billingAddress->getCity();
                 $billingAddressParam->phone = $billingAddress->getTelephone();
                 $billingAddressParam->country = $billingAddress->getCountry();
+
+                $method = new KlarnaSource($klarnaToken, $countryCode, $locale, $billingAddressParam, 0, $products);
+                $method->merchant_reference1 = $orderId;
                 
-                $shippingAddressParam = new Address();
-                $shippingAddressParam->given_name = $shippingAddress->getFirstname();
-                $shippingAddressParam->family_name = $shippingAddress->getLastname();
-                $shippingAddressParam->email = Mage::helper('ckopayment')->getCustomerEmail(null);
-                $shippingAddressParam->street_address = $shipStreet[0];
-                $shippingAddressParam->street_address2 = $shipStreet[1];
-                $shippingAddressParam->postal_code = $shippingAddress->getPostcode();
-                $shippingAddressParam->city = $shippingAddress->getCity();
-                $shippingAddressParam->region = $shippingAddress->getCity();
-                $shippingAddressParam->phone = $phoneNumber;
-                $shippingAddressParam->country = $shippingAddress->getCountry();
-
-                $method = new KlarnaSource($klarnaToken, $countryCode, $locale, $billingAddressParam, $shippingAddressParam, 0, $products, $orderId);
-
+                if($shippingMethodCode) {
+                    $method->shipping_address = $shipAddress;
+                }
+                
                 break;
             case 'poli':
                 $method = new PoliSource();
@@ -497,7 +508,9 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomApms extends Mage_Payment_Model_Me
         $phone = new Phone();
         $phone->number = $phoneNumber;
 
-        $payment->shipping = new Shipping($shippingAddressParam, $phone);
+        if($shippingMethodCode) {
+            $payment->shipping = new Shipping($shippingAddressParam, $phone);
+        }
 
         // Set redirection url in payment request
         $payment->success_url = Mage::getBaseUrl() . 'ckopayment/api/success';
