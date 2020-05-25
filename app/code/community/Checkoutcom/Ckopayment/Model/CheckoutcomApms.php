@@ -306,9 +306,8 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomApms extends Mage_Payment_Model_Me
                     // reference max length is 64 characters
                     // substr is used to cut name with more than 64 characters
                     $itemName = $item -> getName();
-                    $itemNameLength = strlen($itemName);
 
-                    if($itemNameLength > 64) {
+                    if(strlen($itemName) > 64) {
                         $itemName = substr($itemName, 0, 64);
                     }
 
