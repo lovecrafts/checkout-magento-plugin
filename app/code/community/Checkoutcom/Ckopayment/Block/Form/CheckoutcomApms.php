@@ -294,7 +294,7 @@ class Checkoutcom_Ckopayment_Block_Form_CheckoutcomApms extends Mage_Payment_Blo
         if ($environment == 'sandbox') {
             $creditSessionUrl = 'https://api.sandbox.checkout.com/klarna-external/credit-sessions';
         } else {
-            $creditSessionUrl = 'https://api.checkout.com/klarna-external/credit-sessions';
+            $creditSessionUrl = 'https://api.checkout.com/klarna/credit-sessions';
         }
 
         $cartInfo = $this->getCartInfo();
