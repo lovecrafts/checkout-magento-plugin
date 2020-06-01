@@ -294,7 +294,7 @@ class Checkoutcom_Ckopayment_Block_Form_CheckoutcomApms extends Mage_Payment_Blo
         if ($environment == 'sandbox') {
             $creditSessionUrl = 'https://api.sandbox.checkout.com/klarna-external/credit-sessions';
         } else {
-            $creditSessionUrl = 'https://api.checkout.com/klarna-external/credit-sessions';
+            $creditSessionUrl = 'https://api.checkout.com/klarna/credit-sessions';
         }
 
         $cartInfo = $this->getCartInfo();
@@ -377,7 +377,15 @@ class Checkoutcom_Ckopayment_Block_Form_CheckoutcomApms extends Mage_Payment_Blo
 
         foreach($items as $item) {
             $unitPrice = Mage::getModel('ckopayment/checkoutcomUtils')->valueToDecimal($item->getPriceInclTax(), $currencyCode);
-            
+
+            // reference max length is 64 characters
+            // substr is used to cut name with more than 64 characters
+            $itemName = $item -> getName();
+ 
+            if(strlen($itemName) > 64) {
+                $itemName = substr($itemName, 0, 64);
+            }
+
             $products[] = array(
                 "name" => $item->getName(),
                 "quantity" => $item->getQty(),
@@ -386,7 +394,7 @@ class Checkoutcom_Ckopayment_Block_Form_CheckoutcomApms extends Mage_Payment_Blo
                 "total_amount" => $unitPrice * $item->getQty(),
                 "total_tax_amount" => 0,
                 "type" => "physical",
-                "reference" => $item->getName(),
+                "reference" => $itemName,
                 "total_discount_amount" => 0
 
             );
