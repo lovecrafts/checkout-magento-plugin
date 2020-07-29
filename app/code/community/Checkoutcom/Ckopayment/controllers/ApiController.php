@@ -157,22 +157,15 @@ class Checkoutcom_Ckopayment_ApiController extends Mage_Core_Controller_Front_Ac
                     ->setShouldCloseParentTransaction(0)
                     ->setAdditionalInformation('ckoPaymentId', $response->id)
                     ->setIsTransactionClosed(0)
+                    ->setIsFraudDetected(true)
                     ->registerAuthorizationNotification($amount);
 
                 // Payment Flagged status from config
                 $flagStatus = Mage::getModel('ckopayment/checkoutcomConfig')->getFlaggedOrderStatus();
 
-                // check if flagged status configured in module equals to suspected_fraud
-                if ($flagStatus == "suspected_fraud") {
-                    $state = Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW;
-                    $status = Mage_Sales_Model_Order::STATUS_FRAUD;
-                    $message = 'Payment flagged on Checkout.com';
-
-                    $order->setState($state, $status, $message);
-
-                } else {
+                // check if flagged status configured is not suspected fraud
+                if ($flagStatus !== 'suspected_fraud') {
                     $order->setState(Mage_Sales_Model_Order::STATE_NEW, true);
-                    $order->addStatusHistoryComment('Payment flagged on Checkout.com ', false);
                 }
 
             } elseif ($paymentStatus == 'Captured') {
