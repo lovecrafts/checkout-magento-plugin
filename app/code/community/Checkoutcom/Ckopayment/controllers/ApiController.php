@@ -181,7 +181,9 @@ class Checkoutcom_Ckopayment_ApiController extends Mage_Core_Controller_Front_Ac
                 $payment->setTransactionId($id)
                     ->setShouldCloseParentTransaction(0)
                     ->setAdditionalInformation('ckoPaymentId', $response->id)
+                    ->setIsTransactionPending(true)
                     ->setIsTransactionClosed(0)
+                    ->setIsFraudDetected(false)
                     ->registerAuthorizationNotification($amount);
 
                 if ($authorisedStatus == 'pending') {
