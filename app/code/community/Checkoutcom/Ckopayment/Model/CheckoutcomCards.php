@@ -201,7 +201,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomCards extends Mage_Payment_Model_M
                     // Update order payment information with payment id from checkout.com
                     $payment->setTransactionId($response->action_id);
                     $payment->setAdditionalInformation('ckoPaymentId', $response->id);
-
+                    $payment->setIsTransactionPending(true);
                     $payment->setIsTransactionClosed(0);
                 }
             } else {
