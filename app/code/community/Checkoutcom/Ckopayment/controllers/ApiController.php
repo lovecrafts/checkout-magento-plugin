@@ -150,12 +150,12 @@ class Checkoutcom_Ckopayment_ApiController extends Mage_Core_Controller_Front_Ac
             $amountCents = $response->amount;
             $amount = $this->_getUtilsModel()->decimalToValue($amountCents, $response->currency);
             $payment = $order->getPayment();
+            $payment->setAdditionalInformation('ckoPaymentId', $response->id);
 
             if ($response->risk['flagged']) {
                 // Register Authorization
                 $payment->setTransactionId($id)
                     ->setShouldCloseParentTransaction(0)
-                    ->setAdditionalInformation('ckoPaymentId', $response->id)
                     ->setIsTransactionClosed(0)
                     ->setIsFraudDetected(true)
                     ->registerAuthorizationNotification($amount);
@@ -180,7 +180,6 @@ class Checkoutcom_Ckopayment_ApiController extends Mage_Core_Controller_Front_Ac
                 // Register Authorization
                 $payment->setTransactionId($id)
                     ->setShouldCloseParentTransaction(0)
-                    ->setAdditionalInformation('ckoPaymentId', $response->id)
                     ->setIsTransactionPending(true)
                     ->setIsTransactionClosed(0)
                     ->setIsFraudDetected(false)
