@@ -183,7 +183,7 @@
 		function performAppleUrlValidation(valURL, callback) {
 			jQuery.ajax({
 				type: 'POST',
-                url: "<?php echo $this->getBaseUrl(); ?>" + "ckopayment/api/validateSession",
+                url: "<?php echo Mage::helper('core/url')->getHomeUrl(); ?>" + "ckopayment/api/validateSession",
 				data: {
 					url: valURL,
 					merchantId: "<?php echo $this->getMerchantIdentifier() ?>",
@@ -205,7 +205,7 @@
 		function generateCheckoutToken(token, callback) {
 			jQuery.ajax({
 				type: 'POST',
-                url: "<?php echo $this->getBaseUrl(); ?>" + "ckopayment/api/generateAppleToken",
+                url: "<?php echo Mage::helper('core/url')->getHomeUrl(); ?>" + "ckopayment/api/generateAppleToken",
 				data: {
 					token: token
 				},
