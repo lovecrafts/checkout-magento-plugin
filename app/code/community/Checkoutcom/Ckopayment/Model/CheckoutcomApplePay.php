@@ -184,7 +184,7 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomApplePay extends Mage_Payment_Mode
         foreach ($quote->getAllItems() as $item) {
             $discountTotal += $item->getDiscountAmount();
         }
-        $shippingCost = $quote->getShippingAddress()->getShippingAmount();
+        $shippingCost = $quote->getShippingAddress()->getShippingInclTax();
         $shippingMethod = $quote->getShippingAddress()->getShippingDescription();
         $currencyCode = Mage::app()->getStore()->getCurrentCurrencyCode();
 
@@ -284,16 +284,6 @@ class Checkoutcom_Ckopayment_Model_CheckoutcomApplePay extends Mage_Payment_Mode
                     }
 
                     $order->addStatusHistoryComment('Payment flagged on Checkout.com ', false);
-                }
-
-                $source = $response->source;
-
-                switch ($source['type']) {
-                    case 'card':
-                        $order->getPayment()->setCcLast4($source['last4'])->setCcType($source['scheme']);
-                        break;
-                    default:
-                        break;
                 }
 
                 // Update order payment information with payment id from checkout.com
