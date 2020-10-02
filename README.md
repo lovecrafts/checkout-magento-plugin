@@ -1,6 +1,6 @@
 <img src="https://cdn.checkout.com/img/checkout-logo-online-payments.jpg" alt="Checkout.com" width="380"/>
 
--! Magento 1 end of life - Magento 1 has been deprecated on 30th June 2020. Due to the new status of this platform, checkout.com is unable to provide full support for merchants continuing to run our plugin on Magento 1. Bug fixes will be limited to major issues. Continued use of Magento 1 exposes merchants and other providers to risk so please consider upgrading to Magento 2 or switching to another platform. To get advice on other integrations supported by checkout.com please reach out to our Customer Support Team (support@checkout.com) !-
+> Magento 1 end of life - Magento 1 has been deprecated on 30th June 2020. Due to the new status of this platform, checkout.com is unable to provide full support for merchants continuing to run our plugin on Magento 1. Bug fixes will be limited to major issues. Continued use of Magento 1 exposes merchants and other providers to risk so please consider upgrading to Magento 2 or switching to another platform. To get advice on other integrations supported by checkout.com please reach out to our Customer Support Team (support@checkout.com)
 
 # Magento 1.x Extension
 
